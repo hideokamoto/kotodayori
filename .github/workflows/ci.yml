@@ -57,7 +57,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build core package
-        run: pnpm --filter @tayori/core build
+        run: pnpm --filter @kotodayori/core build
 
       - name: Run type checking
         run: pnpm typecheck
@@ -87,7 +87,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build core package
-        run: pnpm --filter @tayori/core build
+        run: pnpm --filter @kotodayori/core build
 
       - name: Run tests
         run: pnpm test
@@ -139,4 +139,4 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Check Stripe Event Map sync
-        run: pnpm --filter @tayori/stripe run check-events
+        run: pnpm --filter @kotodayori/stripe run check-events

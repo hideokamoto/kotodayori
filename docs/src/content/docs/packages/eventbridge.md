@@ -1,22 +1,22 @@
 ---
-title: "@tayori/eventbridge"
-description: AWS EventBridge adapter for Tayori
+title: "@kotodayori/eventbridge"
+description: AWS EventBridge adapter for Kotodayori
 ---
 
-The EventBridge adapter runs a Tayori router when invoked by an AWS EventBridge event. Because EventBridge delivers events from within your AWS account, no signature verification is required.
+The EventBridge adapter runs a Kotodayori router when invoked by an AWS EventBridge event. Because EventBridge delivers events from within your AWS account, no signature verification is required.
 
 ## Installation
 
 ```bash
-pnpm add @tayori/eventbridge
+pnpm add @kotodayori/eventbridge
 ```
 
 ## Usage
 
 ```typescript
 import type { EventBridgeEvent } from 'aws-lambda';
-import { WebhookRouter } from '@tayori/core';
-import { eventBridgeAdapter } from '@tayori/eventbridge';
+import { WebhookRouter } from '@kotodayori/core';
+import { eventBridgeAdapter } from '@kotodayori/eventbridge';
 
 const router = new WebhookRouter<MyEventMap>();
 

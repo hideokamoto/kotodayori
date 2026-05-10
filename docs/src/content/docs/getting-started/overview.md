@@ -1,9 +1,9 @@
 ---
 title: Overview
-description: Introduction to Tayori and its architecture
+description: Introduction to Kotodayori and its architecture
 ---
 
-Tayori is a Hono-inspired, type-safe webhook routing library for TypeScript. Originally built for Stripe webhooks, it has evolved into a framework-agnostic webhook handling solution that works with any event source.
+Kotodayori is a Hono-inspired, type-safe webhook routing library for TypeScript. Originally built for Stripe webhooks, it has evolved into a framework-agnostic webhook handling solution that works with any event source.
 
 ## Key characteristics
 
@@ -15,16 +15,16 @@ Tayori is a Hono-inspired, type-safe webhook routing library for TypeScript. Ori
 
 ## Architecture
 
-Tayori follows an **adapter pattern**: the core package (`@tayori/core`) contains all routing logic and has no framework dependencies. Framework-specific packages (Hono, Express, Lambda, EventBridge) wrap the core and expose it for their environment.
+Kotodayori follows an **adapter pattern**: the core package (`@kotodayori/core`) contains all routing logic and has no framework dependencies. Framework-specific packages (Hono, Express, Lambda, EventBridge) wrap the core and expose it for their environment.
 
 ```mermaid
 flowchart LR
-  Core["@tayori/core"]
-  Stripe["@tayori/stripe"]
-  Hono["@tayori/hono"]
-  Express["@tayori/express"]
-  Lambda["@tayori/lambda"]
-  EB["@tayori/eventbridge"]
+  Core["@kotodayori/core"]
+  Stripe["@kotodayori/stripe"]
+  Hono["@kotodayori/hono"]
+  Express["@kotodayori/express"]
+  Lambda["@kotodayori/lambda"]
+  EB["@kotodayori/eventbridge"]
 
   Stripe --> Core
   Hono --> Core
@@ -44,6 +44,6 @@ flowchart LR
 
 ## Next steps
 
-- [Installation](/getting-started/installation/) — Install Tayori and choose your adapter
+- [Installation](/getting-started/installation/) — Install Kotodayori and choose your adapter
 - [Stripe Webhooks](/guides/stripe-webhooks/) — Set up Stripe webhooks with type safety
-- [Custom Webhooks](/guides/custom-webhooks/) — Use Tayori with any webhook provider
+- [Custom Webhooks](/guides/custom-webhooks/) — Use Kotodayori with any webhook provider

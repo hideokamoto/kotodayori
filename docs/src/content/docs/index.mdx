@@ -1,5 +1,5 @@
 ---
-title: Tayori
+title: Kotodayori
 description: A Hono-inspired, type-safe webhook routing library for TypeScript
 template: splash
 hero:
@@ -13,7 +13,7 @@ hero:
       variant: minimal
 ---
 
-Tayori provides a clean, type-safe API for handling webhooks from any event source. It features a modular architecture with adapters for popular frameworks and platforms, and a pluggable verifier system for signature validation.
+Kotodayori provides a clean, type-safe API for handling webhooks from any event source. It features a modular architecture with adapters for popular frameworks and platforms, and a pluggable verifier system for signature validation.
 
 ## Features
 
@@ -29,20 +29,20 @@ Tayori provides a clean, type-safe API for handling webhooks from any event sour
 The fastest way to get started is using the scaffolding tool:
 
 ```bash
-npx create-tayori
+npx create-kotodayori
 ```
 
 Or install and use with Stripe and Hono:
 
 ```bash
-pnpm add @tayori/stripe @tayori/hono stripe
+pnpm add @kotodayori/stripe @kotodayori/hono stripe
 ```
 
 ```typescript
 import { Hono } from 'hono';
 import Stripe from 'stripe';
-import { StripeWebhookRouter, createStripeVerifier } from '@tayori/stripe';
-import { honoAdapter } from '@tayori/hono';
+import { StripeWebhookRouter, createStripeVerifier } from '@kotodayori/stripe';
+import { honoAdapter } from '@kotodayori/hono';
 
 const stripe = new Stripe(process.env.STRIPE_API_KEY!);
 const router = new StripeWebhookRouter();
@@ -63,11 +63,11 @@ export default app;
 
 | Package | Description |
 |---------|-------------|
-| `@tayori/core` | Core webhook routing logic and Verifier type |
-| `@tayori/stripe` | Stripe-specific types, router, and verifier |
-| `@tayori/zod` | Zod schema validation helpers |
-| `@tayori/hono` | Hono framework adapter |
-| `@tayori/express` | Express framework adapter |
-| `@tayori/lambda` | AWS Lambda adapter |
-| `@tayori/eventbridge` | AWS EventBridge adapter |
-| `create-tayori` | Scaffolding tool for new projects |
+| `@kotodayori/core` | Core webhook routing logic and Verifier type |
+| `@kotodayori/stripe` | Stripe-specific types, router, and verifier |
+| `@kotodayori/zod` | Zod schema validation helpers |
+| `@kotodayori/hono` | Hono framework adapter |
+| `@kotodayori/express` | Express framework adapter |
+| `@kotodayori/lambda` | AWS Lambda adapter |
+| `@kotodayori/eventbridge` | AWS EventBridge adapter |
+| `create-kotodayori` | Scaffolding tool for new projects |

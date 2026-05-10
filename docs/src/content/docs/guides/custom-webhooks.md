@@ -1,16 +1,16 @@
 ---
 title: Custom Webhooks
-description: Use Tayori with any webhook provider
+description: Use Kotodayori with any webhook provider
 ---
 
-Tayori is not limited to Stripe. You can use the core router with a custom event type map and verifier for any webhook provider (e.g. GitHub, Slack, or your own API).
+Kotodayori is not limited to Stripe. You can use the core router with a custom event type map and verifier for any webhook provider (e.g. GitHub, Slack, or your own API).
 
 ## 1. Define your event types
 
 Extend `WebhookEvent` and define a type map that maps event type strings to those interfaces:
 
 ```typescript
-import type { WebhookEvent } from '@tayori/core';
+import type { WebhookEvent } from '@kotodayori/core';
 
 interface GitHubPushEvent extends WebhookEvent {
   type: 'push';
@@ -37,7 +37,7 @@ Example for GitHub (X-Hub-Signature-256):
 
 ```typescript
 import crypto from 'crypto';
-import type { Verifier } from '@tayori/core';
+import type { Verifier } from '@kotodayori/core';
 
 function createGitHubVerifier(secret: string): Verifier {
   return (payload, headers) => {
@@ -68,8 +68,8 @@ Use constant-time comparison (e.g. `crypto.timingSafeEqual`) for signatures and 
 ## 3. Create the router and use an adapter
 
 ```typescript
-import { WebhookRouter } from '@tayori/core';
-import { honoAdapter } from '@tayori/hono';
+import { WebhookRouter } from '@kotodayori/core';
+import { honoAdapter } from '@kotodayori/hono';
 
 const router = new WebhookRouter<GitHubEventMap>();
 

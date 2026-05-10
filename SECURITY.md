@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-We release security updates for the following versions of Tayori:
+We release security updates for the following versions of Kotodayori:
 
 | Version | Supported          |
 | ------- | ------------------ |
@@ -10,7 +10,7 @@ We release security updates for the following versions of Tayori:
 
 ## Reporting a Vulnerability
 
-We take the security of Tayori seriously. If you believe you have found a security vulnerability, please report it to us as described below.
+We take the security of Kotodayori seriously. If you believe you have found a security vulnerability, please report it to us as described below.
 
 ### Where to Report
 
@@ -49,7 +49,7 @@ Please include the following information in your report:
 
 ### Security Best Practices for Users
 
-When using Tayori in production:
+When using Kotodayori in production:
 
 1. **Webhook Signature Verification**
    - Always enable signature verification for webhooks
@@ -66,7 +66,7 @@ When using Tayori in production:
    - Validate SSL/TLS certificates
 
 4. **Input Validation**
-   - Use the built-in validation features (e.g., `@tayori/zod`)
+   - Use the built-in validation features (e.g., `@kotodayori/zod`)
    - Validate all webhook payloads before processing
    - Implement rate limiting on webhook endpoints
 
@@ -84,7 +84,7 @@ When using Tayori in production:
 
 #### Webhook Secret Management
 
-Tayori packages that handle webhook verification (e.g., `@tayori/stripe`) require webhook secrets. These secrets must be:
+Kotodayori packages that handle webhook verification (e.g., `@kotodayori/stripe`) require webhook secrets. These secrets must be:
 
 - Stored securely (use environment variables or secret management systems)
 - Never committed to version control
@@ -93,9 +93,9 @@ Tayori packages that handle webhook verification (e.g., `@tayori/stripe`) requir
 
 #### Type Safety
 
-Tayori uses TypeScript for type safety, but runtime validation is still necessary:
+Kotodayori uses TypeScript for type safety, but runtime validation is still necessary:
 
-- Use `@tayori/zod` for runtime validation of webhook payloads
+- Use `@kotodayori/zod` for runtime validation of webhook payloads
 - Don't rely solely on TypeScript types for security
 - Validate all external input before processing
 
@@ -126,4 +126,4 @@ We appreciate security researchers who responsibly disclose vulnerabilities. Wit
 - Include your name in the release notes (unless you prefer to remain anonymous)
 - Provide a reference link to your website or GitHub profile
 
-Thank you for helping keep Tayori and its users secure!
+Thank you for helping keep Kotodayori and its users secure!

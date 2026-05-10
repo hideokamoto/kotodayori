@@ -1,14 +1,14 @@
 ---
-title: "@tayori/lambda"
-description: AWS Lambda (API Gateway) adapter for Tayori
+title: "@kotodayori/lambda"
+description: AWS Lambda (API Gateway) adapter for Kotodayori
 ---
 
-The Lambda adapter runs a Tayori router in response to API Gateway HTTP events (e.g. webhook endpoints behind API Gateway).
+The Lambda adapter runs a Kotodayori router in response to API Gateway HTTP events (e.g. webhook endpoints behind API Gateway).
 
 ## Installation
 
 ```bash
-pnpm add @tayori/lambda
+pnpm add @kotodayori/lambda
 ```
 
 ## Usage
@@ -16,8 +16,8 @@ pnpm add @tayori/lambda
 ```typescript
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import Stripe from 'stripe';
-import { StripeWebhookRouter, createStripeVerifier } from '@tayori/stripe';
-import { lambdaAdapter } from '@tayori/lambda';
+import { StripeWebhookRouter, createStripeVerifier } from '@kotodayori/stripe';
+import { lambdaAdapter } from '@kotodayori/lambda';
 
 const stripe = new Stripe(process.env.STRIPE_API_KEY!);
 const router = new StripeWebhookRouter();

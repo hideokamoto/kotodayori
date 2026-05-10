@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Hono } from 'hono';
 import { honoAdapter } from '../src/index.js';
-import { WebhookRouter, type Verifier, type WebhookEvent } from '@tayori/core';
+import { WebhookRouter, type Verifier, type WebhookEvent } from '@kotodayori/core';
 
 describe('honoAdapter', () => {
   let router: WebhookRouter;

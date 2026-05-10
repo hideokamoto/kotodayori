@@ -1,4 +1,4 @@
-import type { WebhookEvent, Middleware, Verifier, VerifyResult } from '@tayori/core';
+import type { WebhookEvent, Middleware, Verifier, VerifyResult } from '@kotodayori/core';
 import { z } from 'zod';
 
 /**
@@ -418,7 +418,7 @@ export interface ZodVerifierOptions<T extends WebhookEvent> {
  *
  * @example
  * ```typescript
- * import { createStripeVerifier } from '@tayori/stripe';
+ * import { createStripeVerifier } from '@kotodayori/stripe';
  *
  * const registry = new SchemaRegistry()
  *   .registerAll({ paymentIntentSucceeded });

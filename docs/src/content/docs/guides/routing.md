@@ -3,7 +3,7 @@ title: Routing
 description: Group handlers, nested routers, and fanout
 ---
 
-Tayori supports flexible routing: grouping by prefix, mounting nested routers, and running multiple handlers in parallel with fanout.
+Kotodayori supports flexible routing: grouping by prefix, mounting nested routers, and running multiple handlers in parallel with fanout.
 
 ## Grouping by prefix
 

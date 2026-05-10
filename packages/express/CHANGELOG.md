@@ -1,7 +1,7 @@
-# @tayori/express
+# @kotodayori/express
 
 ## 0.0.1
 
 ### Minor Changes
 
-- Initial release of `@tayori/express`: Express framework adapter for Tayori.
+- Initial release of `@kotodayori/express`: Express framework adapter for Kotodayori.

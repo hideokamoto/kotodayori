@@ -1,22 +1,22 @@
-# @tayori/eventbridge
+# @kotodayori/eventbridge
 
-AWS EventBridge adapter for Tayori webhook router.
+AWS EventBridge adapter for Kotodayori webhook router.
 
 ## Overview
 
-`@tayori/eventbridge` enables you to process webhook events routed through AWS EventBridge. Instead of handling webhooks directly in Lambda, you can forward them to EventBridge and use Tayori's type-safe routing for event-driven architectures.
+`@kotodayori/eventbridge` enables you to process webhook events routed through AWS EventBridge. Instead of handling webhooks directly in Lambda, you can forward them to EventBridge and use Kotodayori's type-safe routing for event-driven architectures.
 
 ## Installation
 
 ```bash
-npm install @tayori/eventbridge @tayori/core
+npm install @kotodayori/eventbridge @kotodayori/core
 # or
-pnpm add @tayori/eventbridge @tayori/core
+pnpm add @kotodayori/eventbridge @kotodayori/core
 # or
-yarn add @tayori/eventbridge @tayori/core
+yarn add @kotodayori/eventbridge @kotodayori/core
 ```
 
-**Note**: `@tayori/core` is a peer dependency and must be installed separately.
+**Note**: `@kotodayori/core` is a peer dependency and must be installed separately.
 
 ## Features
 
@@ -32,13 +32,13 @@ yarn add @tayori/eventbridge @tayori/core
 ```
 Stripe/GitHub → API Gateway → Ingestion Lambda → EventBridge → Processing Lambda(s)
                                     ↓
-                              Tayori Router
+                              Kotodayori Router
 ```
 
 This pattern separates concerns:
 1. **Ingestion Lambda**: Validates webhook signature, puts event on EventBridge
 2. **EventBridge**: Routes events to appropriate processors based on rules
-3. **Processing Lambda(s)**: Handle specific event types with Tayori router
+3. **Processing Lambda(s)**: Handle specific event types with Kotodayori router
 
 ## Quick Start
 
@@ -49,9 +49,9 @@ This Lambda receives webhooks and forwards them to EventBridge:
 ```typescript
 import Stripe from 'stripe';
 import { EventBridge } from '@aws-sdk/client-eventbridge';
-import { createStripeVerifier } from '@tayori/stripe';
-import { lambdaAdapter } from '@tayori/lambda';
-import { WebhookRouter } from '@tayori/core';
+import { createStripeVerifier } from '@kotodayori/stripe';
+import { lambdaAdapter } from '@kotodayori/lambda';
+import { WebhookRouter } from '@kotodayori/core';
 
 const stripe = new Stripe(process.env.STRIPE_API_KEY!);
 const eventBridge = new EventBridge({});
@@ -78,8 +78,8 @@ export const handler = lambdaAdapter(router, {
 ### Step 2: Create Processing Lambda with EventBridge Adapter
 
 ```typescript
-import { StripeWebhookRouter } from '@tayori/stripe';
-import { eventBridgeAdapter } from '@tayori/eventbridge';
+import { StripeWebhookRouter } from '@kotodayori/stripe';
+import { eventBridgeAdapter } from '@kotodayori/eventbridge';
 
 const router = new StripeWebhookRouter();
 
@@ -143,7 +143,7 @@ Resources:
 
 ### eventBridgeAdapter
 
-Creates an EventBridge Lambda handler from a Tayori webhook router.
+Creates an EventBridge Lambda handler from a Kotodayori webhook router.
 
 ```typescript
 function eventBridgeAdapter<TEventMap>(
@@ -154,7 +154,7 @@ function eventBridgeAdapter<TEventMap>(
 
 **Parameters:**
 
-- `router` - A `WebhookRouter` instance from `@tayori/core`
+- `router` - A `WebhookRouter` instance from `@kotodayori/core`
 - `options` - Optional configuration options
 
 **Returns:** An AWS Lambda handler for EventBridge events
@@ -419,7 +419,7 @@ Test with sample EventBridge events:
 ```typescript
 import { describe, it, expect } from 'vitest';
 import type { EventBridgeEvent } from 'aws-lambda';
-import { eventBridgeAdapter } from '@tayori/eventbridge';
+import { eventBridgeAdapter } from '@kotodayori/eventbridge';
 
 describe('EventBridge handler', () => {
   it('processes webhook events', async () => {
@@ -471,12 +471,12 @@ describe('EventBridge handler', () => {
 
 ## Related Packages
 
-- [`@tayori/core`](../core) - Core webhook routing logic
-- [`@tayori/stripe`](../stripe) - Stripe-specific type definitions and verifier
-- [`@tayori/lambda`](../lambda) - AWS Lambda adapter
-- [`@tayori/hono`](../hono) - Hono framework adapter
-- [`@tayori/express`](../express) - Express framework adapter
-- [`@tayori/zod`](../zod) - Zod schema validation helpers
+- [`@kotodayori/core`](../core) - Core webhook routing logic
+- [`@kotodayori/stripe`](../stripe) - Stripe-specific type definitions and verifier
+- [`@kotodayori/lambda`](../lambda) - AWS Lambda adapter
+- [`@kotodayori/hono`](../hono) - Hono framework adapter
+- [`@kotodayori/express`](../express) - Express framework adapter
+- [`@kotodayori/zod`](../zod) - Zod schema validation helpers
 
 ## Documentation
 

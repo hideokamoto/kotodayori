@@ -1,7 +1,7 @@
 {
-  "name": "@tayori/hono",
+  "name": "@kotodayori/hono",
   "version": "0.0.1",
-  "description": "Hono adapter for Tayori Webhook Router",
+  "description": "Hono adapter for Kotodayori Webhook Router",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -27,7 +27,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@tayori/core": "workspace:*"
+    "@kotodayori/core": "workspace:*"
   },
   "devDependencies": {
     "hono": "^4.11.9",

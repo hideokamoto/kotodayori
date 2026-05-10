@@ -1,5 +1,5 @@
 ---
-title: "@tayori/stripe"
+title: "@kotodayori/stripe"
 description: Stripe-specific types, router, and verifier
 ---
 
@@ -8,7 +8,7 @@ The Stripe package extends the core router with Stripe-specific types and provid
 ## Installation
 
 ```bash
-pnpm add @tayori/stripe stripe
+pnpm add @kotodayori/stripe stripe
 ```
 
 ## Main exports
@@ -18,14 +18,14 @@ pnpm add @tayori/stripe stripe
 | `StripeWebhookRouter` | Router with full Stripe event type inference |
 | `StripeEventMap` | Type map of 351+ Stripe event types |
 | `createStripeVerifier(stripe, secret)` | Factory for Stripe signature verification |
-| Re-exports from `@tayori/core` | `WebhookRouter`, `WebhookEvent`, `Verifier`, etc. |
+| Re-exports from `@kotodayori/core` | `WebhookRouter`, `WebhookEvent`, `Verifier`, etc. |
 
 ## Type-safe event handlers
 
 Event names are autocompleted and validated; the handler receives the correct Stripe event type:
 
 ```typescript
-import { StripeWebhookRouter } from '@tayori/stripe';
+import { StripeWebhookRouter } from '@kotodayori/stripe';
 
 const router = new StripeWebhookRouter();
 
@@ -47,7 +47,7 @@ Use `createStripeVerifier` with your Stripe instance and webhook signing secret:
 
 ```typescript
 import Stripe from 'stripe';
-import { createStripeVerifier } from '@tayori/stripe';
+import { createStripeVerifier } from '@kotodayori/stripe';
 
 const stripe = new Stripe(process.env.STRIPE_API_KEY!);
 const verifier = createStripeVerifier(stripe, process.env.STRIPE_WEBHOOK_SECRET!);

@@ -1,10 +1,10 @@
-# CLAUDE.md - Tayori Development Guide
+# CLAUDE.md - Kotodayori Development Guide
 
-This document provides comprehensive context for Claude Code and AI assistants working on the Tayori project.
+This document provides comprehensive context for Claude Code and AI assistants working on the Kotodayori project.
 
 ## Project Overview
 
-**Tayori** is a Hono-inspired, type-safe webhook routing library for TypeScript. Originally built for Stripe webhooks, it has evolved into a framework-agnostic webhook handling solution that works with any event source.
+**Kotodayori** is a Hono-inspired, type-safe webhook routing library for TypeScript. Originally built for Stripe webhooks, it has evolved into a framework-agnostic webhook handling solution that works with any event source.
 
 **Key Characteristics**:
 - Type-safe webhook routing with full TypeScript support
@@ -28,7 +28,7 @@ packages/
 ├── express/       # Express framework adapter
 ├── lambda/        # AWS Lambda (API Gateway) adapter
 ├── eventbridge/   # AWS EventBridge adapter
-└── create-tayori/ # CLI scaffolding tool for new projects
+└── create-kotodayori/ # CLI scaffolding tool for new projects
 ```
 
 ### Core Design Principles
@@ -42,7 +42,7 @@ packages/
 
 ## Package Details
 
-### 1. @tayori/core (`packages/core/src/index.ts`)
+### 1. @kotodayori/core (`packages/core/src/index.ts`)
 
 **Purpose**: Framework-agnostic webhook routing engine
 
@@ -78,7 +78,7 @@ class WebhookRouter<TEventMap extends Record<string, WebhookEvent>> {
 - Comprehensive unit tests for all routing features
 - Tests for middleware, grouping, fanout, error handling
 
-### 2. @tayori/stripe (`packages/stripe/src/index.ts`)
+### 2. @kotodayori/stripe (`packages/stripe/src/index.ts`)
 
 **Purpose**: Stripe-specific type definitions and utilities
 
@@ -86,7 +86,7 @@ class WebhookRouter<TEventMap extends Record<string, WebhookEvent>> {
 - `StripeWebhookRouter` - Extends `WebhookRouter` with Stripe-specific types
 - `StripeEventMap` - Type map of all 351+ Stripe event types
 - `createStripeVerifier(stripe, secret)` - Factory for Stripe signature verification
-- Re-exports from `@tayori/core` for convenience
+- Re-exports from `@kotodayori/core` for convenience
 
 **CRITICAL: StripeEventMap Maintenance**:
 The `StripeEventMap` type definition is **manually maintained** and maps event type strings to Stripe SDK types.
@@ -154,7 +154,7 @@ See `packages/stripe/MAINTAINING_STRIPE_EVENTMAP.md` for detailed maintenance pr
 
 **Tests**: `packages/stripe/test/stripe-router.test.ts`
 
-### 3. @tayori/zod (`packages/zod/src/index.ts` - 361 lines)
+### 3. @kotodayori/zod (`packages/zod/src/index.ts` - 361 lines)
 
 **Purpose**: Zod schema validation helpers for runtime validation
 
@@ -177,7 +177,7 @@ See `packages/stripe/MAINTAINING_STRIPE_EVENTMAP.md` for detailed maintenance pr
 
 **Usage Pattern**:
 ```typescript
-import { defineEvent, SchemaRegistry, withValidation } from '@tayori/zod';
+import { defineEvent, SchemaRegistry, withValidation } from '@kotodayori/zod';
 import { z } from 'zod';
 
 // Define event schemas
@@ -198,9 +198,9 @@ router.use(withValidation(registry));
 
 **Tests**: `packages/zod/test/*.test.ts`
 
-### 4. create-tayori (`packages/create-tayori/src/`)
+### 4. create-kotodayori (`packages/create-kotodayori/src/`)
 
-**Purpose**: Interactive CLI scaffolding tool for creating new Tayori projects
+**Purpose**: Interactive CLI scaffolding tool for creating new Kotodayori projects
 
 **Architecture**:
 ```
@@ -218,7 +218,7 @@ src/
 
 **CLI Options**:
 ```bash
-npx create-tayori [project-name] [options]
+npx create-kotodayori [project-name] [options]
 
 Options:
   --fw, --framework <name>    Framework choice (hono, express, lambda, eventbridge)
@@ -234,7 +234,7 @@ Options:
 - 🚧 EventBridge (coming soon)
 
 **Template System**:
-- Templates located in `packages/create-tayori/templates/`
+- Templates located in `packages/create-kotodayori/templates/`
 - Variable replacement: `{{PROJECT_NAME}}`, `{{PACKAGE_MANAGER}}`
 - Copies entire template directory structure
 - Preserves file permissions
@@ -252,7 +252,7 @@ Options:
 - `prompts.test.ts`, `index.test.ts` - Configuration and orchestration
 - `utils/*.test.ts` - Utility functions
 
-### 5. Hono Template (`packages/create-tayori/templates/hono/`)
+### 5. Hono Template (`packages/create-kotodayori/templates/hono/`)
 
 **Template Structure**:
 ```
@@ -283,7 +283,7 @@ templates/hono/
 - Payment: `payment_intent.succeeded`, `payment_intent.payment_failed`, `payment_intent.canceled`, `charge.succeeded`, `charge.refunded`
 - Subscription: `customer.subscription.created`, `updated`, `deleted`, `trial_will_end`, `invoice.paid`, `invoice.payment_failed`
 
-### 6. @tayori/hono (`packages/hono/src/index.ts` - 90 lines)
+### 6. @kotodayori/hono (`packages/hono/src/index.ts` - 90 lines)
 
 **Purpose**: Hono framework adapter
 
@@ -314,7 +314,7 @@ interface HonoAdapterOptions {
 - Signature verification tests
 - Error handling tests
 
-### 7. @tayori/express (`packages/express/src/index.ts` - 106 lines)
+### 7. @kotodayori/express (`packages/express/src/index.ts` - 106 lines)
 
 **Purpose**: Express framework adapter
 
@@ -340,7 +340,7 @@ interface ExpressAdapterOptions {
 
 **Tests**: `packages/express/test/express-adapter.test.ts`
 
-### 8. @tayori/lambda (`packages/lambda/src/index.ts` - 111 lines)
+### 8. @kotodayori/lambda (`packages/lambda/src/index.ts` - 111 lines)
 
 **Purpose**: AWS Lambda (API Gateway) adapter
 
@@ -365,7 +365,7 @@ interface LambdaAdapterOptions {
 
 **Tests**: `packages/lambda/test/lambda-adapter.test.ts`
 
-### 9. @tayori/eventbridge (`packages/eventbridge/src/index.ts` - 48 lines)
+### 9. @kotodayori/eventbridge (`packages/eventbridge/src/index.ts` - 48 lines)
 
 **Purpose**: AWS EventBridge adapter
 
@@ -401,9 +401,9 @@ interface EventBridgeAdapterOptions {
 2. **Initialize package.json**:
    ```json
    {
-     "name": "@tayori/new-adapter",
+     "name": "@kotodayori/new-adapter",
      "dependencies": {
-       "@tayori/core": "workspace:*",
+       "@kotodayori/core": "workspace:*",
        "stripe": ">=17.0.0"
      },
      "peerDependencies": {
@@ -424,7 +424,7 @@ interface EventBridgeAdapterOptions {
 
 4. **Re-export Core Types**:
    ```typescript
-   export { WebhookRouter, type WebhookEvent, type Verifier } from '@tayori/core';
+   export { WebhookRouter, type WebhookEvent, type Verifier } from '@kotodayori/core';
    ```
 
 5. **Add Tests** (`test/adapter.test.ts`):
@@ -439,7 +439,7 @@ interface EventBridgeAdapterOptions {
 
 1. **Create Template Directory**:
    ```bash
-   mkdir -p packages/create-tayori/templates/framework-name
+   mkdir -p packages/create-kotodayori/templates/framework-name
    ```
 
 2. **Add Template Files**:
@@ -451,7 +451,7 @@ interface EventBridgeAdapterOptions {
    - `src/index.ts` - Main application file
    - `src/handlers/` - Example event handlers
 
-3. **Create Generator** (`packages/create-tayori/src/generators/framework-name.ts`):
+3. **Create Generator** (`packages/create-kotodayori/src/generators/framework-name.ts`):
    ```typescript
    import { copyTemplate, replaceInFile } from '../utils/files';
 
@@ -479,11 +479,11 @@ interface EventBridgeAdapterOptions {
    }
    ```
 
-4. **Enable in CLI** (`packages/create-tayori/src/prompts.ts`):
+4. **Enable in CLI** (`packages/create-kotodayori/src/prompts.ts`):
    - Add framework to `FRAMEWORKS` array
    - Implement generation logic in `src/index.ts`
 
-5. **Add Tests** (`packages/create-tayori/src/generators/framework-name.test.ts`)
+5. **Add Tests** (`packages/create-kotodayori/src/generators/framework-name.test.ts`)
 
 ### Updating Stripe Events
 
@@ -574,7 +574,7 @@ class WebhookRouter<TEventMap extends Record<string, WebhookEvent>> {
   - Integration tests with framework
   - Signature verification
   - Error handling
-- create-tayori: `packages/create-tayori/src/**/*.test.ts`
+- create-kotodayori: `packages/create-kotodayori/src/**/*.test.ts`
   - CLI parsing, generators, utilities
 
 **Running Tests**:
@@ -964,7 +964,7 @@ mainRouter.route('customer.subscription', subscriptionRouter);
 
 ```typescript
 import crypto from 'crypto';
-import type { Verifier } from '@tayori/core';
+import type { Verifier } from '@kotodayori/core';
 
 function createGitHubVerifier(secret: string): Verifier {
   return (payload, headers) => {
@@ -1147,9 +1147,9 @@ router.on('event', handler);
 
 ### Scaffolding Files
 
-- `packages/create-tayori/src/index.ts` - Main orchestration
-- `packages/create-tayori/src/cli.ts` - CLI parsing
-- `packages/create-tayori/templates/` - Project templates
+- `packages/create-kotodayori/src/index.ts` - Main orchestration
+- `packages/create-kotodayori/src/cli.ts` - CLI parsing
+- `packages/create-kotodayori/templates/` - Project templates
 
 ### Configuration Files
 
@@ -1173,7 +1173,7 @@ router.on('event', handler);
 **Issue**: Build failing with module resolution errors
 **Solution**: Check `package.json` has correct workspace dependencies (`workspace:*`)
 
-**Issue**: create-tayori not finding templates
+**Issue**: create-kotodayori not finding templates
 **Solution**: Ensure templates are copied to dist during build (check tsup config)
 
 ## Questions to Consider When Making Changes
@@ -1227,12 +1227,12 @@ router.on('event', handler);
 
 ## Summary
 
-Tayori is a production-ready, type-safe webhook routing library with:
+Kotodayori is a production-ready, type-safe webhook routing library with:
 - **8 packages** with clear separation of concerns
 - **351+ Stripe event types** with full type safety
 - **Zod validation integration** for runtime schema validation
 - **Framework-agnostic core** with adapters for major platforms
-- **Scaffolding tool** for quick project setup via `npx create-tayori`
+- **Scaffolding tool** for quick project setup via `npx create-kotodayori`
 - **Comprehensive test coverage** following TDD principles
 - **Professional build system** with tsup and vitest
 - **Monorepo architecture** using pnpm workspaces

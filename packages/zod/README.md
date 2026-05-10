@@ -1,22 +1,22 @@
-# @tayori/zod
+# @kotodayori/zod
 
-Zod schema validation helpers for Tayori webhook router.
+Zod schema validation helpers for Kotodayori webhook router.
 
 ## Overview
 
-`@tayori/zod` adds runtime validation to your webhook handlers using [Zod](https://zod.dev/) schemas. Validate event payloads, enforce data contracts, and catch malformed webhooks before they reach your business logic.
+`@kotodayori/zod` adds runtime validation to your webhook handlers using [Zod](https://zod.dev/) schemas. Validate event payloads, enforce data contracts, and catch malformed webhooks before they reach your business logic.
 
 ## Installation
 
 ```bash
-npm install @tayori/zod @tayori/core zod
+npm install @kotodayori/zod @kotodayori/core zod
 # or
-pnpm add @tayori/zod @tayori/core zod
+pnpm add @kotodayori/zod @kotodayori/core zod
 # or
-yarn add @tayori/zod @tayori/core zod
+yarn add @kotodayori/zod @kotodayori/core zod
 ```
 
-**Note**: Both `@tayori/core` and `zod` are peer dependencies and must be installed separately. Requires Zod v4.0.0 or higher.
+**Note**: Both `@kotodayori/core` and `zod` are peer dependencies and must be installed separately. Requires Zod v4.0.0 or higher.
 
 ## Features
 
@@ -33,8 +33,8 @@ yarn add @tayori/zod @tayori/core zod
 ### Basic Validation with Middleware
 
 ```typescript
-import { WebhookRouter } from '@tayori/core';
-import { SchemaRegistry, withValidation, createEventSchema } from '@tayori/zod';
+import { WebhookRouter } from '@kotodayori/core';
+import { SchemaRegistry, withValidation, createEventSchema } from '@kotodayori/zod';
 import { z } from 'zod';
 
 // Define schemas for your events
@@ -70,7 +70,7 @@ router.on('issue.opened', async (event) => {
 ### Validation at Verifier Level
 
 ```typescript
-import { createZodVerifier } from '@tayori/zod';
+import { createZodVerifier } from '@kotodayori/zod';
 
 const verifier = createZodVerifier({
   verifier: createMyCustomVerifier(secret),
@@ -278,8 +278,8 @@ const verifier = createZodVerifier({
 ### GitHub Webhooks
 
 ```typescript
-import { WebhookRouter } from '@tayori/core';
-import { SchemaRegistry, defineEvent, withValidation, InferEventMap } from '@tayori/zod';
+import { WebhookRouter } from '@kotodayori/core';
+import { SchemaRegistry, defineEvent, withValidation, InferEventMap } from '@kotodayori/zod';
 import { z } from 'zod';
 
 // Define GitHub event schemas
@@ -403,7 +403,7 @@ const notificationSchema = createEventSchema('notification', z.object({
 Thrown when event validation fails:
 
 ```typescript
-import { WebhookValidationError } from '@tayori/zod';
+import { WebhookValidationError } from '@kotodayori/zod';
 
 router.use(withValidation(registry, {
   onError: (error) => {
@@ -420,7 +420,7 @@ router.use(withValidation(registry, {
 Thrown when `allowUnknownEvents: false` and an unregistered event is received:
 
 ```typescript
-import { UnknownEventTypeError } from '@tayori/zod';
+import { UnknownEventTypeError } from '@kotodayori/zod';
 
 router.use(withValidation(registry, {
   allowUnknownEvents: false,
@@ -499,7 +499,7 @@ const priceSchema = z.object({
 
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { SchemaRegistry, createEventSchema } from '@tayori/zod';
+import { SchemaRegistry, createEventSchema } from '@kotodayori/zod';
 import { z } from 'zod';
 
 describe('Event validation', () => {
@@ -568,12 +568,12 @@ router.on('payment.succeeded', async (event) => {
 
 ## Related Packages
 
-- [`@tayori/core`](../core) - Core webhook routing logic
-- [`@tayori/stripe`](../stripe) - Stripe-specific type definitions and verifier
-- [`@tayori/hono`](../hono) - Hono framework adapter
-- [`@tayori/express`](../express) - Express framework adapter
-- [`@tayori/lambda`](../lambda) - AWS Lambda adapter
-- [`@tayori/eventbridge`](../eventbridge) - AWS EventBridge adapter
+- [`@kotodayori/core`](../core) - Core webhook routing logic
+- [`@kotodayori/stripe`](../stripe) - Stripe-specific type definitions and verifier
+- [`@kotodayori/hono`](../hono) - Hono framework adapter
+- [`@kotodayori/express`](../express) - Express framework adapter
+- [`@kotodayori/lambda`](../lambda) - AWS Lambda adapter
+- [`@kotodayori/eventbridge`](../eventbridge) - AWS EventBridge adapter
 
 ## Documentation
 

@@ -8,7 +8,7 @@ export default defineConfig({
   site: 'https://tayori-docs.workers.dev',
   integrations: [
     starlight({
-      title: 'Tayori',
+      title: 'Kotodayori',
       description: 'A Hono-inspired, type-safe webhook routing library for TypeScript.',
       plugins: [
         starlightChangelogs(),
@@ -54,7 +54,7 @@ export default defineConfig({
             { label: 'Express', slug: 'packages/express' },
             { label: 'Lambda', slug: 'packages/lambda' },
             { label: 'EventBridge', slug: 'packages/eventbridge' },
-            { label: 'create-tayori', slug: 'packages/create-tayori' },
+            { label: 'create-kotodayori', slug: 'packages/create-kotodayori' },
           ],
         },
         {
@@ -70,14 +70,14 @@ export default defineConfig({
           label: 'Changelog',
           items: [
             ...makeChangelogsSidebarLinks([
-              { type: 'latest', label: '@tayori/core', base: 'changelog/core' },
-              { type: 'latest', label: '@tayori/stripe', base: 'changelog/stripe' },
-              { type: 'latest', label: '@tayori/zod', base: 'changelog/zod' },
-              { type: 'latest', label: '@tayori/hono', base: 'changelog/hono' },
-              { type: 'latest', label: '@tayori/express', base: 'changelog/express' },
-              { type: 'latest', label: '@tayori/lambda', base: 'changelog/lambda' },
-              { type: 'latest', label: '@tayori/eventbridge', base: 'changelog/eventbridge' },
-              { type: 'latest', label: 'create-tayori', base: 'changelog/create-tayori' },
+              { type: 'latest', label: '@kotodayori/core', base: 'changelog/core' },
+              { type: 'latest', label: '@kotodayori/stripe', base: 'changelog/stripe' },
+              { type: 'latest', label: '@kotodayori/zod', base: 'changelog/zod' },
+              { type: 'latest', label: '@kotodayori/hono', base: 'changelog/hono' },
+              { type: 'latest', label: '@kotodayori/express', base: 'changelog/express' },
+              { type: 'latest', label: '@kotodayori/lambda', base: 'changelog/lambda' },
+              { type: 'latest', label: '@kotodayori/eventbridge', base: 'changelog/eventbridge' },
+              { type: 'latest', label: 'create-kotodayori', base: 'changelog/create-kotodayori' },
             ]),
           ],
         },

@@ -1,14 +1,14 @@
 ---
-title: "@tayori/hono"
-description: Hono framework adapter for Tayori
+title: "@kotodayori/hono"
+description: Hono framework adapter for Kotodayori
 ---
 
-The Hono adapter connects a Tayori router to a Hono app, handling raw body extraction, signature verification, and response formatting.
+The Hono adapter connects a Kotodayori router to a Hono app, handling raw body extraction, signature verification, and response formatting.
 
 ## Installation
 
 ```bash
-pnpm add @tayori/hono hono
+pnpm add @kotodayori/hono hono
 ```
 
 **Peer dependency**: `hono` >= 4.0.0
@@ -18,8 +18,8 @@ pnpm add @tayori/hono hono
 ```typescript
 import { Hono } from 'hono';
 import Stripe from 'stripe';
-import { StripeWebhookRouter, createStripeVerifier } from '@tayori/stripe';
-import { honoAdapter } from '@tayori/hono';
+import { StripeWebhookRouter, createStripeVerifier } from '@kotodayori/stripe';
+import { honoAdapter } from '@kotodayori/hono';
 
 const stripe = new Stripe(process.env.STRIPE_API_KEY!);
 const router = new StripeWebhookRouter();

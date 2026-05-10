@@ -1,10 +1,10 @@
-# Tayori
+# Kotodayori
 
 A Hono-inspired, type-safe webhook routing library for TypeScript.
 
 ## Overview
 
-Tayori provides a clean, type-safe API for handling webhooks from any event source. It features a modular architecture with adapters for popular frameworks and platforms, and a pluggable verifier system for signature validation.
+Kotodayori provides a clean, type-safe API for handling webhooks from any event source. It features a modular architecture with adapters for popular frameworks and platforms, and a pluggable verifier system for signature validation.
 
 ## Features
 
@@ -17,48 +17,48 @@ Tayori provides a clean, type-safe API for handling webhooks from any event sour
 
 ## Packages
 
-- `@tayori/core` - Core webhook routing logic and Verifier type
-- `@tayori/stripe` - Stripe-specific type definitions, router, and verifier
-- `@tayori/hono` - Hono framework adapter
-- `@tayori/express` - Express framework adapter
-- `@tayori/lambda` - AWS Lambda adapter
-- `@tayori/eventbridge` - AWS EventBridge adapter
-- `create-tayori` - Scaffolding tool for creating new projects
+- `@kotodayori/core` - Core webhook routing logic and Verifier type
+- `@kotodayori/stripe` - Stripe-specific type definitions, router, and verifier
+- `@kotodayori/hono` - Hono framework adapter
+- `@kotodayori/express` - Express framework adapter
+- `@kotodayori/lambda` - AWS Lambda adapter
+- `@kotodayori/eventbridge` - AWS EventBridge adapter
+- `create-kotodayori` - Scaffolding tool for creating new projects
 
 ## Getting Started
 
 The fastest way to get started is using the scaffolding tool:
 
 ```bash
-npx create-tayori
+npx create-kotodayori
 ```
 
-This will interactively guide you through creating a new Tayori project with your preferred framework and package manager.
+This will interactively guide you through creating a new Kotodayori project with your preferred framework and package manager.
 
 You can also specify options directly:
 
 ```bash
 # Create a new Hono-based webhook handler
-npx create-tayori my-webhook-handler --fw=hono
+npx create-kotodayori my-webhook-handler --fw=hono
 
 # With custom package manager
-npx create-tayori my-webhook-handler --fw=hono --pm=pnpm
+npx create-kotodayori my-webhook-handler --fw=hono --pm=pnpm
 ```
 
 ## Installation
 
 ```bash
 # For Stripe with Hono
-pnpm add @tayori/stripe @tayori/hono stripe
+pnpm add @kotodayori/stripe @kotodayori/hono stripe
 
 # For Stripe with Express
-pnpm add @tayori/stripe @tayori/express stripe
+pnpm add @kotodayori/stripe @kotodayori/express stripe
 
 # For Stripe with AWS Lambda
-pnpm add @tayori/stripe @tayori/lambda stripe
+pnpm add @kotodayori/stripe @kotodayori/lambda stripe
 
 # For custom webhooks (without Stripe)
-pnpm add @tayori/core @tayori/hono  # or @tayori/express, @tayori/lambda
+pnpm add @kotodayori/core @kotodayori/hono  # or @kotodayori/express, @kotodayori/lambda
 ```
 
 ## Quick Start (Stripe)
@@ -68,8 +68,8 @@ pnpm add @tayori/core @tayori/hono  # or @tayori/express, @tayori/lambda
 ```typescript
 import { Hono } from 'hono';
 import Stripe from 'stripe';
-import { StripeWebhookRouter, createStripeVerifier } from '@tayori/stripe';
-import { honoAdapter } from '@tayori/hono';
+import { StripeWebhookRouter, createStripeVerifier } from '@kotodayori/stripe';
+import { honoAdapter } from '@kotodayori/hono';
 
 const stripe = new Stripe(process.env.STRIPE_API_KEY!);
 const router = new StripeWebhookRouter();
@@ -97,8 +97,8 @@ export default app;
 ```typescript
 import express from 'express';
 import Stripe from 'stripe';
-import { StripeWebhookRouter, createStripeVerifier } from '@tayori/stripe';
-import { expressAdapter } from '@tayori/express';
+import { StripeWebhookRouter, createStripeVerifier } from '@kotodayori/stripe';
+import { expressAdapter } from '@kotodayori/express';
 
 const stripe = new Stripe(process.env.STRIPE_API_KEY!);
 const router = new StripeWebhookRouter();
@@ -123,8 +123,8 @@ app.listen(3000);
 
 ```typescript
 import Stripe from 'stripe';
-import { StripeWebhookRouter, createStripeVerifier } from '@tayori/stripe';
-import { lambdaAdapter } from '@tayori/lambda';
+import { StripeWebhookRouter, createStripeVerifier } from '@kotodayori/stripe';
+import { lambdaAdapter } from '@kotodayori/lambda';
 
 const stripe = new Stripe(process.env.STRIPE_API_KEY!);
 const router = new StripeWebhookRouter();
@@ -140,12 +140,12 @@ export const handler = lambdaAdapter(router, {
 
 ## Custom Webhooks (Non-Stripe)
 
-Tayori can be used with any webhook provider by implementing a custom verifier.
+Kotodayori can be used with any webhook provider by implementing a custom verifier.
 
 ### Define Your Event Types
 
 ```typescript
-import { WebhookRouter, type WebhookEvent, type Verifier } from '@tayori/core';
+import { WebhookRouter, type WebhookEvent, type Verifier } from '@kotodayori/core';
 
 // Define your event types
 interface GitHubPushEvent extends WebhookEvent {
@@ -200,8 +200,8 @@ function createGitHubVerifier(secret: string): Verifier {
 
 ```typescript
 import { Hono } from 'hono';
-import { WebhookRouter } from '@tayori/core';
-import { honoAdapter } from '@tayori/hono';
+import { WebhookRouter } from '@kotodayori/core';
+import { honoAdapter } from '@kotodayori/hono';
 
 const router = new WebhookRouter<GitHubEventMap>();
 
@@ -335,7 +335,7 @@ app.post('/webhook', honoAdapter(router, {
 
 ## Type Safety
 
-Tayori provides full type inference for all Stripe events:
+Kotodayori provides full type inference for all Stripe events:
 
 ```typescript
 router.on('payment_intent.succeeded', async (event) => {
@@ -374,7 +374,7 @@ pnpm lint
 ### Project Structure
 
 ```
-tayori/
+kotodayori/
 ├── packages/
 │   ├── core/          # Core routing logic and Verifier type
 │   ├── stripe/        # Stripe type definitions and verifier
@@ -401,7 +401,7 @@ See [MAINTAINING_STRIPE_EVENTMAP.md](packages/stripe/MAINTAINING_STRIPE_EVENTMAP
 
 - Node.js >= 18
 - TypeScript >= 5.3
-- Stripe SDK >= 17.0.0 (for `@tayori/stripe`)
+- Stripe SDK >= 17.0.0 (for `@kotodayori/stripe`)
 
 ## License
 

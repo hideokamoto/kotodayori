@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { z } from 'zod';
-import { WebhookRouter } from '@tayori/core';
+import { WebhookRouter } from '@kotodayori/core';
 import {
   baseEventSchema,
   createEventSchema,

@@ -1,7 +1,7 @@
-# @tayori/hono
+# @kotodayori/hono
 
 ## 0.0.1
 
 ### Minor Changes
 
-- Initial release of `@tayori/hono`: Hono framework adapter for Tayori.
+- Initial release of `@kotodayori/hono`: Hono framework adapter for Kotodayori.
