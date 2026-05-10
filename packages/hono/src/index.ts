@@ -1,5 +1,5 @@
 import type { Context } from 'hono';
-import type { WebhookRouter, WebhookEvent, Verifier } from '@tayori/core';
+import type { WebhookRouter, WebhookEvent, Verifier } from '@kotodayori/core';
 
 /**
  * Options for the Hono adapter
@@ -20,8 +20,8 @@ export interface HonoAdapterOptions<T extends WebhookEvent = WebhookEvent> {
  * @example
  * ```typescript
  * import { Hono } from 'hono';
- * import { honoAdapter } from '@tayori/hono';
- * import { createStripeVerifier, StripeWebhookRouter } from '@tayori/stripe';
+ * import { honoAdapter } from '@kotodayori/hono';
+ * import { createStripeVerifier, StripeWebhookRouter } from '@kotodayori/stripe';
  *
  * const router = new StripeWebhookRouter();
  * const app = new Hono();
@@ -87,4 +87,4 @@ export function honoAdapter<TEventMap extends Record<string, WebhookEvent>>(
 }
 
 // Re-export core types
-export { WebhookRouter, type WebhookEvent, type EventHandler, type Middleware, type Verifier, type VerifyResult } from '@tayori/core';
+export { WebhookRouter, type WebhookEvent, type EventHandler, type Middleware, type Verifier, type VerifyResult } from '@kotodayori/core';

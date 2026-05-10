@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import express from 'express';
 import * as http from 'node:http';
 import { expressAdapter } from '../src/index.js';
-import { WebhookRouter, type WebhookEvent, type Verifier } from '@tayori/core';
+import { WebhookRouter, type WebhookEvent, type Verifier } from '@kotodayori/core';
 
 /**
  * Integration tests for the Express adapter using a real express() app instance.

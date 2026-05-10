@@ -1,5 +1,5 @@
 ---
-title: "@tayori/core"
+title: "@kotodayori/core"
 description: Framework-agnostic webhook routing engine
 ---
 
@@ -8,7 +8,7 @@ The core package provides the webhook routing engine with no framework dependenc
 ## Installation
 
 ```bash
-pnpm add @tayori/core
+pnpm add @kotodayori/core
 ```
 
 ## Main exports
@@ -39,7 +39,7 @@ class WebhookRouter<TEventMap extends Record<string, WebhookEvent>> {
 When using the core router with custom events, define a type map that maps event type strings to your event interfaces:
 
 ```typescript
-import { WebhookRouter, type WebhookEvent } from '@tayori/core';
+import { WebhookRouter, type WebhookEvent } from '@kotodayori/core';
 
 interface MyEvent extends WebhookEvent {
   type: 'my.event';

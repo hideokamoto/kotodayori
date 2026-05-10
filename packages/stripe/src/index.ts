@@ -366,7 +366,7 @@ export type StripeEventType<T extends StripeEventName> = StripeEventMap[T];
 export type { Stripe };
 
 // Re-export core types and classes
-import { WebhookRouter, type WebhookEvent, type EventHandler, type Verifier, type VerifyResult } from '@tayori/core';
+import { WebhookRouter, type WebhookEvent, type EventHandler, type Verifier, type VerifyResult } from '@kotodayori/core';
 export { WebhookRouter, type WebhookEvent, type EventHandler, type Verifier, type VerifyResult };
 
 /**
@@ -383,13 +383,13 @@ export class StripeWebhookRouter extends WebhookRouter<StripeEventMap> {}
  *
  * @param stripe - Pre-configured Stripe instance
  * @param webhookSecret - Stripe webhook secret (starts with 'whsec_')
- * @returns A Verifier function compatible with all Tayori adapters
+ * @returns A Verifier function compatible with all Kotodayori adapters
  *
  * @example
  * ```typescript
  * import Stripe from 'stripe';
- * import { createStripeVerifier, StripeWebhookRouter } from '@tayori/stripe';
- * import { honoAdapter } from '@tayori/hono';
+ * import { createStripeVerifier, StripeWebhookRouter } from '@kotodayori/stripe';
+ * import { honoAdapter } from '@kotodayori/hono';
  *
  * const stripe = new Stripe(process.env.STRIPE_API_KEY!);
  * const router = new StripeWebhookRouter();

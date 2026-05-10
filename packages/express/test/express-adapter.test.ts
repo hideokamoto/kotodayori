@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { Request, Response } from 'express';
 import { expressAdapter } from '../src/index.js';
-import { WebhookRouter, type Verifier, type WebhookEvent } from '@tayori/core';
+import { WebhookRouter, type Verifier, type WebhookEvent } from '@kotodayori/core';
 
 describe('expressAdapter', () => {
   let mockReq: Partial<Request>;

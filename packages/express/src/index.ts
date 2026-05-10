@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import type { WebhookRouter, WebhookEvent, Verifier } from '@tayori/core';
+import type { WebhookRouter, WebhookEvent, Verifier } from '@kotodayori/core';
 
 /**
  * Options for the Express adapter
@@ -20,8 +20,8 @@ export interface ExpressAdapterOptions<T extends WebhookEvent = WebhookEvent> {
  * @example
  * ```typescript
  * import express from 'express';
- * import { expressAdapter } from '@tayori/express';
- * import { createStripeVerifier, StripeWebhookRouter } from '@tayori/stripe';
+ * import { expressAdapter } from '@kotodayori/express';
+ * import { createStripeVerifier, StripeWebhookRouter } from '@kotodayori/stripe';
  *
  * const router = new StripeWebhookRouter();
  * const app = express();
@@ -110,4 +110,4 @@ export function expressAdapter<TEventMap extends Record<string, WebhookEvent>>(
 }
 
 // Re-export core types
-export { WebhookRouter, type WebhookEvent, type EventHandler, type Middleware, type Verifier, type VerifyResult } from '@tayori/core';
+export { WebhookRouter, type WebhookEvent, type EventHandler, type Middleware, type Verifier, type VerifyResult } from '@kotodayori/core';

@@ -1,14 +1,14 @@
 ---
-title: "@tayori/zod"
+title: "@kotodayori/zod"
 description: Zod schema validation helpers for runtime validation
 ---
 
-The Zod package adds runtime schema validation on top of Tayori’s type-safe routing. Use it when you need to validate webhook payloads at runtime (e.g. for external or less trusted sources).
+The Zod package adds runtime schema validation on top of Kotodayori’s type-safe routing. Use it when you need to validate webhook payloads at runtime (e.g. for external or less trusted sources).
 
 ## Installation
 
 ```bash
-pnpm add @tayori/zod zod
+pnpm add @kotodayori/zod zod
 ```
 
 **Peer dependency**: `zod` ^4.0.0
@@ -31,7 +31,7 @@ pnpm add @tayori/zod zod
 Define event schemas with `defineEvent`, register them in a `SchemaRegistry`, and use `withValidation` middleware:
 
 ```typescript
-import { defineEvent, SchemaRegistry, withValidation } from '@tayori/zod';
+import { defineEvent, SchemaRegistry, withValidation } from '@kotodayori/zod';
 import { z } from 'zod';
 
 const issueOpened = defineEvent('issue.opened', z.object({

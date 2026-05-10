@@ -1,22 +1,22 @@
-# @tayori/lambda
+# @kotodayori/lambda
 
-AWS Lambda adapter for Tayori webhook router.
+AWS Lambda adapter for Kotodayori webhook router.
 
 ## Overview
 
-`@tayori/lambda` provides a seamless integration between Tayori's type-safe webhook routing and AWS Lambda. Perfect for serverless webhook handlers with API Gateway or Lambda Function URLs.
+`@kotodayori/lambda` provides a seamless integration between Kotodayori's type-safe webhook routing and AWS Lambda. Perfect for serverless webhook handlers with API Gateway or Lambda Function URLs.
 
 ## Installation
 
 ```bash
-npm install @tayori/lambda @tayori/core
+npm install @kotodayori/lambda @kotodayori/core
 # or
-pnpm add @tayori/lambda @tayori/core
+pnpm add @kotodayori/lambda @kotodayori/core
 # or
-yarn add @tayori/lambda @tayori/core
+yarn add @kotodayori/lambda @kotodayori/core
 ```
 
-**Note**: `@tayori/core` is a peer dependency and must be installed separately.
+**Note**: `@kotodayori/core` is a peer dependency and must be installed separately.
 
 ## Features
 
@@ -33,8 +33,8 @@ yarn add @tayori/lambda @tayori/core
 
 ```typescript
 import Stripe from 'stripe';
-import { StripeWebhookRouter, createStripeVerifier } from '@tayori/stripe';
-import { lambdaAdapter } from '@tayori/lambda';
+import { StripeWebhookRouter, createStripeVerifier } from '@kotodayori/stripe';
+import { lambdaAdapter } from '@kotodayori/lambda';
 
 const stripe = new Stripe(process.env.STRIPE_API_KEY!);
 const router = new StripeWebhookRouter();
@@ -57,8 +57,8 @@ export const handler = lambdaAdapter(router, {
 ### With Custom Webhooks
 
 ```typescript
-import { WebhookRouter, type Verifier, type WebhookEvent } from '@tayori/core';
-import { lambdaAdapter } from '@tayori/lambda';
+import { WebhookRouter, type Verifier, type WebhookEvent } from '@kotodayori/core';
+import { lambdaAdapter } from '@kotodayori/lambda';
 
 // Define your event types
 interface MyEvent extends WebhookEvent {
@@ -98,7 +98,7 @@ export const handler = lambdaAdapter(router, {
 
 ### lambdaAdapter
 
-Creates an AWS Lambda handler from a Tayori webhook router.
+Creates an AWS Lambda handler from a Kotodayori webhook router.
 
 ```typescript
 function lambdaAdapter<TEventMap>(
@@ -109,7 +109,7 @@ function lambdaAdapter<TEventMap>(
 
 **Parameters:**
 
-- `router` - A `WebhookRouter` instance from `@tayori/core`
+- `router` - A `WebhookRouter` instance from `@kotodayori/core`
 - `options` - Configuration options
 
 **Returns:** An AWS Lambda `Handler` function
@@ -235,7 +235,7 @@ webhookResource.addMethod('POST', new apigateway.LambdaIntegration(webhookFn));
 
 ```typescript
 // Lambda function code (no changes needed)
-import { lambdaAdapter } from '@tayori/lambda';
+import { lambdaAdapter } from '@kotodayori/lambda';
 // ... rest of your code
 
 export const handler = lambdaAdapter(router, { verifier });
@@ -382,8 +382,8 @@ curl -X POST http://localhost:3000/webhook \
 ```typescript
 import { describe, it, expect } from 'vitest';
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
-import { StripeWebhookRouter } from '@tayori/stripe';
-import { lambdaAdapter } from '@tayori/lambda';
+import { StripeWebhookRouter } from '@kotodayori/stripe';
+import { lambdaAdapter } from '@kotodayori/lambda';
 
 describe('Lambda webhook handler', () => {
   it('processes webhook events', async () => {
@@ -450,7 +450,7 @@ Package common dependencies in Lambda Layers:
 # Create layer
 mkdir -p layer/nodejs
 cd layer/nodejs
-npm install stripe @tayori/stripe @tayori/lambda @tayori/core
+npm install stripe @kotodayori/stripe @kotodayori/lambda @kotodayori/core
 
 # Package layer
 cd ..
@@ -506,12 +506,12 @@ router.on('payment_intent.succeeded', async (event) => {
 
 ## Related Packages
 
-- [`@tayori/core`](../core) - Core webhook routing logic
-- [`@tayori/stripe`](../stripe) - Stripe-specific type definitions and verifier
-- [`@tayori/hono`](../hono) - Hono framework adapter
-- [`@tayori/express`](../express) - Express framework adapter
-- [`@tayori/eventbridge`](../eventbridge) - AWS EventBridge adapter
-- [`@tayori/zod`](../zod) - Zod schema validation helpers
+- [`@kotodayori/core`](../core) - Core webhook routing logic
+- [`@kotodayori/stripe`](../stripe) - Stripe-specific type definitions and verifier
+- [`@kotodayori/hono`](../hono) - Hono framework adapter
+- [`@kotodayori/express`](../express) - Express framework adapter
+- [`@kotodayori/eventbridge`](../eventbridge) - AWS EventBridge adapter
+- [`@kotodayori/zod`](../zod) - Zod schema validation helpers
 
 ## Documentation
 

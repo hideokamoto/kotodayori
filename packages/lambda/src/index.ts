@@ -1,5 +1,5 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
-import type { WebhookRouter, WebhookEvent, Verifier } from '@tayori/core';
+import type { WebhookRouter, WebhookEvent, Verifier } from '@kotodayori/core';
 
 /**
  * Options for the Lambda adapter
@@ -20,8 +20,8 @@ export interface LambdaAdapterOptions<T extends WebhookEvent = WebhookEvent> {
  *
  * @example
  * ```typescript
- * import { lambdaAdapter } from '@tayori/lambda';
- * import { createStripeVerifier, StripeWebhookRouter } from '@tayori/stripe';
+ * import { lambdaAdapter } from '@kotodayori/lambda';
+ * import { createStripeVerifier, StripeWebhookRouter } from '@kotodayori/stripe';
  *
  * const router = new StripeWebhookRouter();
  *
@@ -119,4 +119,4 @@ export function lambdaAdapter<TEventMap extends Record<string, WebhookEvent>>(
 }
 
 // Re-export core types
-export { WebhookRouter, type WebhookEvent, type EventHandler, type Middleware, type Verifier, type VerifyResult } from '@tayori/core';
+export { WebhookRouter, type WebhookEvent, type EventHandler, type Middleware, type Verifier, type VerifyResult } from '@kotodayori/core';

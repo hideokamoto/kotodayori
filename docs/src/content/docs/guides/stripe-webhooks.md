@@ -1,16 +1,16 @@
 ---
 title: Stripe Webhooks
-description: Set up Stripe webhooks with Tayori
+description: Set up Stripe webhooks with Kotodayori
 ---
 
-This guide walks through setting up Stripe webhooks with Tayori using the Stripe router and adapter of your choice.
+This guide walks through setting up Stripe webhooks with Kotodayori using the Stripe router and adapter of your choice.
 
 ## 1. Install dependencies
 
 For Hono (replace with your framework if needed):
 
 ```bash
-pnpm add @tayori/stripe @tayori/hono stripe
+pnpm add @kotodayori/stripe @kotodayori/hono stripe
 ```
 
 ## 2. Get your webhook secret
@@ -21,7 +21,7 @@ In the [Stripe Dashboard](https://dashboard.stripe.com/webhooks), create a webho
 
 ```typescript
 import Stripe from 'stripe';
-import { StripeWebhookRouter, createStripeVerifier } from '@tayori/stripe';
+import { StripeWebhookRouter, createStripeVerifier } from '@kotodayori/stripe';
 
 const stripe = new Stripe(process.env.STRIPE_API_KEY!);
 const router = new StripeWebhookRouter();
@@ -43,7 +43,7 @@ Example with Hono:
 
 ```typescript
 import { Hono } from 'hono';
-import { honoAdapter } from '@tayori/hono';
+import { honoAdapter } from '@kotodayori/hono';
 
 const app = new Hono();
 

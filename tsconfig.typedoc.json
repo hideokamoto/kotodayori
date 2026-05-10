@@ -3,13 +3,13 @@
   "compilerOptions": {
     "skipLibCheck": true,
     "paths": {
-      "@tayori/core": ["./packages/core/src/index.ts"],
-      "@tayori/stripe": ["./packages/stripe/src/index.ts"],
-      "@tayori/zod": ["./packages/zod/src/index.ts"],
-      "@tayori/hono": ["./packages/hono/src/index.ts"],
-      "@tayori/express": ["./packages/express/src/index.ts"],
-      "@tayori/lambda": ["./packages/lambda/src/index.ts"],
-      "@tayori/eventbridge": ["./packages/eventbridge/src/index.ts"]
+      "@kotodayori/core": ["./packages/core/src/index.ts"],
+      "@kotodayori/stripe": ["./packages/stripe/src/index.ts"],
+      "@kotodayori/zod": ["./packages/zod/src/index.ts"],
+      "@kotodayori/hono": ["./packages/hono/src/index.ts"],
+      "@kotodayori/express": ["./packages/express/src/index.ts"],
+      "@kotodayori/lambda": ["./packages/lambda/src/index.ts"],
+      "@kotodayori/eventbridge": ["./packages/eventbridge/src/index.ts"]
     }
   },
   "include": [
@@ -23,7 +23,7 @@
   ],
   "exclude": [
     "node_modules",
-    "packages/create-tayori/**/*",
+    "packages/create-kotodayori/**/*",
     "docs/**/*"
   ]
 }

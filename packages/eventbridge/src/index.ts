@@ -1,5 +1,5 @@
 import type { EventBridgeEvent, Context } from 'aws-lambda';
-import type { WebhookRouter, WebhookEvent } from '@tayori/core';
+import type { WebhookRouter, WebhookEvent } from '@kotodayori/core';
 
 /**
  * Options for the EventBridge adapter
@@ -67,4 +67,4 @@ export function eventBridgeAdapter<TEventMap extends Record<string, WebhookEvent
 }
 
 // Re-export core types
-export { WebhookRouter, type WebhookEvent, type EventHandler, type Middleware, type Verifier, type VerifyResult } from '@tayori/core';
+export { WebhookRouter, type WebhookEvent, type EventHandler, type Middleware, type Verifier, type VerifyResult } from '@kotodayori/core';

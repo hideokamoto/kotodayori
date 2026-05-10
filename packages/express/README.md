@@ -1,22 +1,22 @@
-# @tayori/express
+# @kotodayori/express
 
-Express framework adapter for Tayori webhook router.
+Express framework adapter for Kotodayori webhook router.
 
 ## Overview
 
-`@tayori/express` provides a seamless integration between Tayori's type-safe webhook routing and the [Express](https://expressjs.com/) web framework. Built for Node.js applications with the familiar Express middleware pattern.
+`@kotodayori/express` provides a seamless integration between Kotodayori's type-safe webhook routing and the [Express](https://expressjs.com/) web framework. Built for Node.js applications with the familiar Express middleware pattern.
 
 ## Installation
 
 ```bash
-npm install @tayori/express @tayori/core express
+npm install @kotodayori/express @kotodayori/core express
 # or
-pnpm add @tayori/express @tayori/core express
+pnpm add @kotodayori/express @kotodayori/core express
 # or
-yarn add @tayori/express @tayori/core express
+yarn add @kotodayori/express @kotodayori/core express
 ```
 
-**Note**: Both `@tayori/core` and `express` are peer dependencies and must be installed separately.
+**Note**: Both `@kotodayori/core` and `express` are peer dependencies and must be installed separately.
 
 ## Features
 
@@ -33,8 +33,8 @@ yarn add @tayori/express @tayori/core express
 ```typescript
 import express from 'express';
 import Stripe from 'stripe';
-import { StripeWebhookRouter, createStripeVerifier } from '@tayori/stripe';
-import { expressAdapter } from '@tayori/express';
+import { StripeWebhookRouter, createStripeVerifier } from '@kotodayori/stripe';
+import { expressAdapter } from '@kotodayori/express';
 
 const stripe = new Stripe(process.env.STRIPE_API_KEY!);
 const router = new StripeWebhookRouter();
@@ -66,8 +66,8 @@ app.listen(3000, () => {
 
 ```typescript
 import express from 'express';
-import { WebhookRouter, type Verifier, type WebhookEvent } from '@tayori/core';
-import { expressAdapter } from '@tayori/express';
+import { WebhookRouter, type Verifier, type WebhookEvent } from '@kotodayori/core';
+import { expressAdapter } from '@kotodayori/express';
 
 // Define your event types
 interface MyEvent extends WebhookEvent {
@@ -114,7 +114,7 @@ app.listen(3000);
 
 ### expressAdapter
 
-Creates an Express middleware from a Tayori webhook router.
+Creates an Express middleware from a Kotodayori webhook router.
 
 ```typescript
 function expressAdapter<TEventMap>(
@@ -125,7 +125,7 @@ function expressAdapter<TEventMap>(
 
 **Parameters:**
 
-- `router` - A `WebhookRouter` instance from `@tayori/core`
+- `router` - A `WebhookRouter` instance from `@kotodayori/core`
 - `options` - Configuration options
 
 **Returns:** An Express `RequestHandler` middleware
@@ -364,8 +364,8 @@ The adapter automatically returns appropriate HTTP responses:
 import { describe, it, expect } from 'vitest';
 import express from 'express';
 import request from 'supertest';
-import { StripeWebhookRouter } from '@tayori/stripe';
-import { expressAdapter } from '@tayori/express';
+import { StripeWebhookRouter } from '@kotodayori/stripe';
+import { expressAdapter } from '@kotodayori/express';
 
 describe('Webhook handler', () => {
   it('processes payment_intent.succeeded events', async () => {
@@ -456,12 +456,12 @@ router.on('customer.subscription.created', async (event) => {
 
 ## Related Packages
 
-- [`@tayori/core`](../core) - Core webhook routing logic
-- [`@tayori/stripe`](../stripe) - Stripe-specific type definitions and verifier
-- [`@tayori/hono`](../hono) - Hono framework adapter
-- [`@tayori/lambda`](../lambda) - AWS Lambda adapter
-- [`@tayori/eventbridge`](../eventbridge) - AWS EventBridge adapter
-- [`@tayori/zod`](../zod) - Zod schema validation helpers
+- [`@kotodayori/core`](../core) - Core webhook routing logic
+- [`@kotodayori/stripe`](../stripe) - Stripe-specific type definitions and verifier
+- [`@kotodayori/hono`](../hono) - Hono framework adapter
+- [`@kotodayori/lambda`](../lambda) - AWS Lambda adapter
+- [`@kotodayori/eventbridge`](../eventbridge) - AWS EventBridge adapter
+- [`@kotodayori/zod`](../zod) - Zod schema validation helpers
 
 ## Documentation
 

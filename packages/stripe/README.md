@@ -1,19 +1,19 @@
-# @tayori/stripe
+# @kotodayori/stripe
 
-Stripe-specific type definitions, router, and webhook verifier for Tayori.
+Stripe-specific type definitions, router, and webhook verifier for Kotodayori.
 
 ## Overview
 
-`@tayori/stripe` provides first-class support for Stripe webhooks with complete type definitions for all 253+ Stripe event types, a specialized router with type-safe event handling, and a signature verification utility.
+`@kotodayori/stripe` provides first-class support for Stripe webhooks with complete type definitions for all 253+ Stripe event types, a specialized router with type-safe event handling, and a signature verification utility.
 
 ## Installation
 
 ```bash
-npm install @tayori/stripe stripe
+npm install @kotodayori/stripe stripe
 # or
-pnpm add @tayori/stripe stripe
+pnpm add @kotodayori/stripe stripe
 # or
-yarn add @tayori/stripe stripe
+yarn add @kotodayori/stripe stripe
 ```
 
 **Note**: `stripe` is a peer dependency and must be installed separately.
@@ -32,8 +32,8 @@ yarn add @tayori/stripe stripe
 
 ```typescript
 import Stripe from 'stripe';
-import { StripeWebhookRouter, createStripeVerifier } from '@tayori/stripe';
-import { honoAdapter } from '@tayori/hono';
+import { StripeWebhookRouter, createStripeVerifier } from '@kotodayori/stripe';
+import { honoAdapter } from '@kotodayori/hono';
 import { Hono } from 'hono';
 
 const stripe = new Stripe(process.env.STRIPE_API_KEY!);
@@ -68,7 +68,7 @@ export default app;
 A specialized router for Stripe webhook events with full type safety.
 
 ```typescript
-import { StripeWebhookRouter } from '@tayori/stripe';
+import { StripeWebhookRouter } from '@kotodayori/stripe';
 
 const router = new StripeWebhookRouter();
 ```
@@ -130,7 +130,7 @@ Create a verifier function for Stripe webhook signature validation.
 
 ```typescript
 import Stripe from 'stripe';
-import { createStripeVerifier } from '@tayori/stripe';
+import { createStripeVerifier } from '@kotodayori/stripe';
 
 const stripe = new Stripe(process.env.STRIPE_API_KEY!);
 
@@ -156,8 +156,8 @@ The verifier will:
 ```typescript
 import { Hono } from 'hono';
 import Stripe from 'stripe';
-import { StripeWebhookRouter, createStripeVerifier } from '@tayori/stripe';
-import { honoAdapter } from '@tayori/hono';
+import { StripeWebhookRouter, createStripeVerifier } from '@kotodayori/stripe';
+import { honoAdapter } from '@kotodayori/hono';
 
 const stripe = new Stripe(process.env.STRIPE_API_KEY!);
 const router = new StripeWebhookRouter();
@@ -180,8 +180,8 @@ export default app;
 ```typescript
 import express from 'express';
 import Stripe from 'stripe';
-import { StripeWebhookRouter, createStripeVerifier } from '@tayori/stripe';
-import { expressAdapter } from '@tayori/express';
+import { StripeWebhookRouter, createStripeVerifier } from '@kotodayori/stripe';
+import { expressAdapter } from '@kotodayori/express';
 
 const stripe = new Stripe(process.env.STRIPE_API_KEY!);
 const router = new StripeWebhookRouter();
@@ -206,8 +206,8 @@ app.listen(3000);
 
 ```typescript
 import Stripe from 'stripe';
-import { StripeWebhookRouter, createStripeVerifier } from '@tayori/stripe';
-import { lambdaAdapter } from '@tayori/lambda';
+import { StripeWebhookRouter, createStripeVerifier } from '@kotodayori/stripe';
+import { lambdaAdapter } from '@kotodayori/lambda';
 
 const stripe = new Stripe(process.env.STRIPE_API_KEY!);
 const router = new StripeWebhookRouter();
@@ -314,7 +314,7 @@ All webhook events must be verified using the signature provided by Stripe to en
 
 ```typescript
 import Stripe from 'stripe';
-import { createStripeVerifier } from '@tayori/stripe';
+import { createStripeVerifier } from '@kotodayori/stripe';
 
 const stripe = new Stripe(process.env.STRIPE_API_KEY!);
 
@@ -339,8 +339,8 @@ To prevent processing the same webhook event multiple times, implement idempoten
 
 ```typescript
 import Stripe from 'stripe';
-import { StripeWebhookRouter, createStripeVerifier } from '@tayori/stripe';
-import { honoAdapter } from '@tayori/hono';
+import { StripeWebhookRouter, createStripeVerifier } from '@kotodayori/stripe';
+import { honoAdapter } from '@kotodayori/hono';
 import { Hono } from 'hono';
 
 // In-memory store for demonstration (use a database in production)
@@ -472,12 +472,12 @@ See [MAINTAINING_STRIPE_EVENTMAP.md](./MAINTAINING_STRIPE_EVENTMAP.md) for detai
 
 ## Related Packages
 
-- [`@tayori/core`](../core) - Core webhook routing logic
-- [`@tayori/hono`](../hono) - Hono framework adapter
-- [`@tayori/express`](../express) - Express framework adapter
-- [`@tayori/lambda`](../lambda) - AWS Lambda adapter
-- [`@tayori/eventbridge`](../eventbridge) - AWS EventBridge adapter
-- [`@tayori/zod`](../zod) - Zod schema validation helpers
+- [`@kotodayori/core`](../core) - Core webhook routing logic
+- [`@kotodayori/hono`](../hono) - Hono framework adapter
+- [`@kotodayori/express`](../express) - Express framework adapter
+- [`@kotodayori/lambda`](../lambda) - AWS Lambda adapter
+- [`@kotodayori/eventbridge`](../eventbridge) - AWS EventBridge adapter
+- [`@kotodayori/zod`](../zod) - Zod schema validation helpers
 
 ## Documentation
 

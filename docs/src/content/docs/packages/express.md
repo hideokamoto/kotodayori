@@ -1,14 +1,14 @@
 ---
-title: "@tayori/express"
-description: Express framework adapter for Tayori
+title: "@kotodayori/express"
+description: Express framework adapter for Kotodayori
 ---
 
-The Express adapter connects a Tayori router to an Express app. You must provide the raw request body for signature verification.
+The Express adapter connects a Kotodayori router to an Express app. You must provide the raw request body for signature verification.
 
 ## Installation
 
 ```bash
-pnpm add @tayori/express express
+pnpm add @kotodayori/express express
 ```
 
 **Peer dependency**: `express` >= 4.0.0
@@ -20,8 +20,8 @@ You **must** use `express.raw({ type: 'application/json' })` so the route receiv
 ```typescript
 import express from 'express';
 import Stripe from 'stripe';
-import { StripeWebhookRouter, createStripeVerifier } from '@tayori/stripe';
-import { expressAdapter } from '@tayori/express';
+import { StripeWebhookRouter, createStripeVerifier } from '@kotodayori/stripe';
+import { expressAdapter } from '@kotodayori/express';
 
 const stripe = new Stripe(process.env.STRIPE_API_KEY!);
 const router = new StripeWebhookRouter();

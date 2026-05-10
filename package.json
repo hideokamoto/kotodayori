@@ -1,5 +1,5 @@
 {
-  "name": "tayori",
+  "name": "kotodayori",
   "version": "0.0.0",
   "private": true,
   "description": "A Hono-inspired type-safe Stripe Webhook routing library",

@@ -1,22 +1,22 @@
-# @tayori/hono
+# @kotodayori/hono
 
-Hono framework adapter for Tayori webhook router.
+Hono framework adapter for Kotodayori webhook router.
 
 ## Overview
 
-`@tayori/hono` provides a seamless integration between Tayori's type-safe webhook routing and the [Hono](https://hono.dev/) web framework. Perfect for edge computing platforms like Cloudflare Workers, Deno, and Bun.
+`@kotodayori/hono` provides a seamless integration between Kotodayori's type-safe webhook routing and the [Hono](https://hono.dev/) web framework. Perfect for edge computing platforms like Cloudflare Workers, Deno, and Bun.
 
 ## Installation
 
 ```bash
-npm install @tayori/hono @tayori/core hono
+npm install @kotodayori/hono @kotodayori/core hono
 # or
-pnpm add @tayori/hono @tayori/core hono
+pnpm add @kotodayori/hono @kotodayori/core hono
 # or
-yarn add @tayori/hono @tayori/core hono
+yarn add @kotodayori/hono @kotodayori/core hono
 ```
 
-**Note**: Both `@tayori/core` and `hono` are peer dependencies and must be installed separately.
+**Note**: Both `@kotodayori/core` and `hono` are peer dependencies and must be installed separately.
 
 ## Features
 
@@ -33,8 +33,8 @@ yarn add @tayori/hono @tayori/core hono
 ```typescript
 import { Hono } from 'hono';
 import Stripe from 'stripe';
-import { StripeWebhookRouter, createStripeVerifier } from '@tayori/stripe';
-import { honoAdapter } from '@tayori/hono';
+import { StripeWebhookRouter, createStripeVerifier } from '@kotodayori/stripe';
+import { honoAdapter } from '@kotodayori/hono';
 
 const stripe = new Stripe(process.env.STRIPE_API_KEY!);
 const router = new StripeWebhookRouter();
@@ -60,8 +60,8 @@ export default app;
 
 ```typescript
 import { Hono } from 'hono';
-import { WebhookRouter, type Verifier } from '@tayori/core';
-import { honoAdapter } from '@tayori/hono';
+import { WebhookRouter, type Verifier } from '@kotodayori/core';
+import { honoAdapter } from '@kotodayori/hono';
 
 // Define your event types
 interface MyEvent extends WebhookEvent {
@@ -105,7 +105,7 @@ export default app;
 
 ### honoAdapter
 
-Creates a Hono handler from a Tayori webhook router.
+Creates a Hono handler from a Kotodayori webhook router.
 
 ```typescript
 function honoAdapter<TEventMap>(
@@ -116,7 +116,7 @@ function honoAdapter<TEventMap>(
 
 **Parameters:**
 
-- `router` - A `WebhookRouter` instance from `@tayori/core`
+- `router` - A `WebhookRouter` instance from `@kotodayori/core`
 - `options` - Configuration options
 
 **Returns:** A Hono `Handler` function
@@ -213,8 +213,8 @@ app.post('/webhooks/github', honoAdapter(githubRouter, {
 
 ```typescript
 import { Hono } from 'hono';
-import { StripeWebhookRouter, createStripeVerifier } from '@tayori/stripe';
-import { honoAdapter } from '@tayori/hono';
+import { StripeWebhookRouter, createStripeVerifier } from '@kotodayori/stripe';
+import { honoAdapter } from '@kotodayori/hono';
 import Stripe from 'stripe';
 
 const app = new Hono();
@@ -239,8 +239,8 @@ export default app;
 ```typescript
 import { Hono } from 'https://deno.land/x/hono/mod.ts';
 import Stripe from 'npm:stripe';
-import { StripeWebhookRouter, createStripeVerifier } from 'npm:@tayori/stripe';
-import { honoAdapter } from 'npm:@tayori/hono';
+import { StripeWebhookRouter, createStripeVerifier } from 'npm:@kotodayori/stripe';
+import { honoAdapter } from 'npm:@kotodayori/hono';
 
 const app = new Hono();
 const router = new StripeWebhookRouter();
@@ -264,8 +264,8 @@ Deno.serve(app.fetch);
 ```typescript
 import { Hono } from 'hono';
 import Stripe from 'stripe';
-import { StripeWebhookRouter, createStripeVerifier } from '@tayori/stripe';
-import { honoAdapter } from '@tayori/hono';
+import { StripeWebhookRouter, createStripeVerifier } from '@kotodayori/stripe';
+import { honoAdapter } from '@kotodayori/hono';
 
 const app = new Hono();
 const router = new StripeWebhookRouter();
@@ -322,8 +322,8 @@ The adapter automatically returns appropriate HTTP responses:
 ```typescript
 import { describe, it, expect } from 'vitest';
 import { Hono } from 'hono';
-import { StripeWebhookRouter } from '@tayori/stripe';
-import { honoAdapter } from '@tayori/hono';
+import { StripeWebhookRouter } from '@kotodayori/stripe';
+import { honoAdapter } from '@kotodayori/hono';
 
 describe('Webhook handler', () => {
   it('processes payment_intent.succeeded events', async () => {
@@ -358,12 +358,12 @@ describe('Webhook handler', () => {
 
 ## Related Packages
 
-- [`@tayori/core`](../core) - Core webhook routing logic
-- [`@tayori/stripe`](../stripe) - Stripe-specific type definitions and verifier
-- [`@tayori/express`](../express) - Express framework adapter
-- [`@tayori/lambda`](../lambda) - AWS Lambda adapter
-- [`@tayori/eventbridge`](../eventbridge) - AWS EventBridge adapter
-- [`@tayori/zod`](../zod) - Zod schema validation helpers
+- [`@kotodayori/core`](../core) - Core webhook routing logic
+- [`@kotodayori/stripe`](../stripe) - Stripe-specific type definitions and verifier
+- [`@kotodayori/express`](../express) - Express framework adapter
+- [`@kotodayori/lambda`](../lambda) - AWS Lambda adapter
+- [`@kotodayori/eventbridge`](../eventbridge) - AWS EventBridge adapter
+- [`@kotodayori/zod`](../zod) - Zod schema validation helpers
 
 ## Documentation
 

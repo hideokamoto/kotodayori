@@ -1,6 +1,6 @@
-# Contributing to Tayori
+# Contributing to Kotodayori
 
-Thank you for your interest in contributing to Tayori! This document provides guidelines and instructions for contributing to the project.
+Thank you for your interest in contributing to Kotodayori! This document provides guidelines and instructions for contributing to the project.
 
 ## Table of Contents
 
@@ -64,10 +64,10 @@ pnpm test
 
 ## Project Structure
 
-Tayori is a monorepo managed with pnpm workspaces:
+Kotodayori is a monorepo managed with pnpm workspaces:
 
 ```
-tayori/
+kotodayori/
 ├── packages/
 │   ├── core/          # Core routing logic and Verifier type
 │   ├── stripe/        # Stripe type definitions and verifier
@@ -76,7 +76,7 @@ tayori/
 │   ├── express/       # Express framework adapter
 │   ├── lambda/        # AWS Lambda adapter
 │   ├── eventbridge/   # AWS EventBridge adapter
-│   └── create-tayori/ # Project scaffolding CLI
+│   └── create-kotodayori/ # Project scaffolding CLI
 ├── package.json       # Root package with workspace scripts
 ├── pnpm-workspace.yaml
 └── tsconfig.base.json # Shared TypeScript config
@@ -141,7 +141,7 @@ pnpm typecheck
 
 ### Building
 
-Tayori uses [tsup](https://tsup.egoist.dev/) for building packages. The build configuration is in `tsup.config.ts` for each package.
+Kotodayori uses [tsup](https://tsup.egoist.dev/) for building packages. The build configuration is in `tsup.config.ts` for each package.
 
 Build outputs:
 - CommonJS: `dist/index.cjs`
@@ -258,7 +258,7 @@ The scope should be the package name for package-specific changes:
 - `lambda`
 - `eventbridge`
 - `zod`
-- `create-tayori`
+- `create-kotodayori`
 
 For root-level files (README.md, CONTRIBUTING.md, etc.), you can either:
 - Omit the scope: `docs: update installation instructions`
@@ -344,7 +344,7 @@ cd packages/my-package
 
 ```json
 {
-  "name": "@tayori/my-package",
+  "name": "@kotodayori/my-package",
   "version": "0.1.0",
   "description": "Description",
   "type": "module",
@@ -429,4 +429,4 @@ If you have questions or need help:
 - Check existing documentation in the [README](README.md)
 - Look at existing packages for examples
 
-Thank you for contributing to Tayori!
+Thank you for contributing to Kotodayori!

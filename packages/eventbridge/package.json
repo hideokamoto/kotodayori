@@ -1,7 +1,7 @@
 {
-  "name": "@tayori/eventbridge",
+  "name": "@kotodayori/eventbridge",
   "version": "0.0.1",
-  "description": "AWS EventBridge adapter for Tayori Webhook Router",
+  "description": "AWS EventBridge adapter for Kotodayori Webhook Router",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -27,7 +27,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@tayori/core": "workspace:*"
+    "@kotodayori/core": "workspace:*"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.159",

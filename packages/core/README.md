@@ -1,19 +1,19 @@
-# @tayori/core
+# @kotodayori/core
 
 Type-safe webhook routing framework for any event source.
 
 ## Overview
 
-`@tayori/core` provides the foundational routing logic for building type-safe webhook handlers. It offers a flexible, framework-agnostic API for routing webhook events with full TypeScript support, middleware capabilities, and flexible routing patterns.
+`@kotodayori/core` provides the foundational routing logic for building type-safe webhook handlers. It offers a flexible, framework-agnostic API for routing webhook events with full TypeScript support, middleware capabilities, and flexible routing patterns.
 
 ## Installation
 
 ```bash
-npm install @tayori/core
+npm install @kotodayori/core
 # or
-pnpm add @tayori/core
+pnpm add @kotodayori/core
 # or
-yarn add @tayori/core
+yarn add @kotodayori/core
 ```
 
 ## Features
@@ -29,7 +29,7 @@ yarn add @tayori/core
 ### Basic Usage
 
 ```typescript
-import { WebhookRouter, type WebhookEvent, type Verifier } from '@tayori/core';
+import { WebhookRouter, type WebhookEvent, type Verifier } from '@kotodayori/core';
 
 // Define your event types
 interface MyEvent extends WebhookEvent {
@@ -357,19 +357,19 @@ mainRouter.route('payment', paymentRouter);
 
 ## Using with Framework Adapters
 
-`@tayori/core` is framework-agnostic. Use it with framework-specific adapters:
+`@kotodayori/core` is framework-agnostic. Use it with framework-specific adapters:
 
-- [`@tayori/hono`](../hono) - Hono framework
-- [`@tayori/express`](../express) - Express framework
-- [`@tayori/lambda`](../lambda) - AWS Lambda
-- [`@tayori/eventbridge`](../eventbridge) - AWS EventBridge
+- [`@kotodayori/hono`](../hono) - Hono framework
+- [`@kotodayori/express`](../express) - Express framework
+- [`@kotodayori/lambda`](../lambda) - AWS Lambda
+- [`@kotodayori/eventbridge`](../eventbridge) - AWS EventBridge
 
 Example with Hono:
 
 ```typescript
 import { Hono } from 'hono';
-import { WebhookRouter } from '@tayori/core';
-import { honoAdapter } from '@tayori/hono';
+import { WebhookRouter } from '@kotodayori/core';
+import { honoAdapter } from '@kotodayori/hono';
 
 const router = new WebhookRouter();
 router.on('my.event', async (event) => {
@@ -387,7 +387,7 @@ app.post('/webhook', honoAdapter(router, {
 ### Strict Event Typing
 
 ```typescript
-import type { WebhookEvent } from '@tayori/core';
+import type { WebhookEvent } from '@kotodayori/core';
 
 // Define your events
 interface PaymentSucceededEvent extends WebhookEvent {
@@ -428,12 +428,12 @@ router.on('payment.succeeded', async (event) => {
 
 ## Related Packages
 
-- [`@tayori/stripe`](../stripe) - Stripe-specific type definitions and verifier
-- [`@tayori/hono`](../hono) - Hono framework adapter
-- [`@tayori/express`](../express) - Express framework adapter
-- [`@tayori/lambda`](../lambda) - AWS Lambda adapter
-- [`@tayori/eventbridge`](../eventbridge) - AWS EventBridge adapter
-- [`@tayori/zod`](../zod) - Zod schema validation helpers
+- [`@kotodayori/stripe`](../stripe) - Stripe-specific type definitions and verifier
+- [`@kotodayori/hono`](../hono) - Hono framework adapter
+- [`@kotodayori/express`](../express) - Express framework adapter
+- [`@kotodayori/lambda`](../lambda) - AWS Lambda adapter
+- [`@kotodayori/eventbridge`](../eventbridge) - AWS EventBridge adapter
+- [`@kotodayori/zod`](../zod) - Zod schema validation helpers
 
 ## Documentation
 

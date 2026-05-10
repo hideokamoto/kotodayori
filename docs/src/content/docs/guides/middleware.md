@@ -64,10 +64,10 @@ router.on('payment_intent.succeeded', handler);
 
 ## With validation
 
-When using `@tayori/zod`, add `withValidation(registry)` as middleware so events are validated before reaching handlers. Place it where you want validation in the pipeline (e.g. after logging, before handlers).
+When using `@kotodayori/zod`, add `withValidation(registry)` as middleware so events are validated before reaching handlers. Place it where you want validation in the pipeline (e.g. after logging, before handlers).
 
 ```typescript
-import { SchemaRegistry, withValidation } from '@tayori/zod';
+import { SchemaRegistry, withValidation } from '@kotodayori/zod';
 
 const registry = new SchemaRegistry();
 // Register your event schemas with registry...
