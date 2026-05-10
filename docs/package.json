@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "deploy:workers": "astro build && wrangler deploy"
   },
   "dependencies": {
     "@astrojs/starlight": "^0.37.6",
@@ -19,7 +20,8 @@
   },
   "devDependencies": {
     "@types/node": "^25.0.3",
-    "typescript": "^5.3.0"
+    "typescript": "^5.3.0",
+    "wrangler": "^4.90.0"
   },
   "engines": {
     "node": ">=18"

@@ -1,0 +1,20 @@
+# Entry for CircleCI: path filtering → continuation to `.circleci/docs-release.yml`.
+# Enable Dynamic Configuration in Project Settings → Advanced.
+#
+# Secrets: Org Context `cloudflare` defines CLOUDFLARE_* (see RELEASE.md).
+
+version: 2.1
+
+setup: true
+
+orbs:
+  path-filtering: circleci/path-filtering@3.0.0
+
+workflows:
+  setup-docs-release-path-filter:
+    jobs:
+      - path-filtering/filter:
+          base-revision: main
+          config-path: .circleci/docs-release.yml
+          mapping: |
+            (\\.circleci/docs-release\\.yml|docs/.*) run-docs-deploy true

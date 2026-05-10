@@ -1,0 +1,61 @@
+# Continuation config: Kotodayori docs → Cloudflare Workers only when `.circleci/config.yml`
+# path filter turns on `run-docs-deploy` and the branch is main.
+#
+# Deploy markers integrate with CircleCI Deploys UI:
+# https://circleci.com/docs/guides/deploy/configure-deploy-markers/
+
+version: 2.1
+
+parameters:
+  run-docs-deploy:
+    type: boolean
+    default: false
+
+orbs:
+  node: circleci/node@7.2.1
+
+jobs:
+  deploy-docs:
+    executor:
+      name: node/default
+      tag: '22.21'
+    resource_class: small
+    steps:
+      - checkout
+      - node/install-packages:
+          pkg-manager: pnpm
+          cache-version: kotodayori-docs-v1
+      - run:
+          name: Plan deployment (deploy marker)
+          command: |
+            SHORT_SHA=$(echo "$CIRCLE_SHA1" | cut -c1-7)
+            circleci run release plan docs-workers-deploy \
+              --environment-name=production \
+              --component-name=kotodayori-docs \
+              --target-version="build.${CIRCLE_BUILD_NUM}-${SHORT_SHA}"
+      - run:
+          name: Build docs (Starlight)
+          command: pnpm --filter kotodayori-docs build
+      - run:
+          name: Deploy to Cloudflare Workers
+          working_directory: docs
+          command: pnpm exec wrangler deploy
+      - run:
+          name: Deploy marker — RUNNING
+          command: circleci run release update docs-workers-deploy --status=running
+      - run:
+          name: Deploy marker — SUCCESS
+          command: circleci run release update docs-workers-deploy --status=SUCCESS
+          when: on_success
+      - run:
+          name: Deploy marker — FAILED
+          command: circleci run release update docs-workers-deploy --status=FAILED
+          when: on_fail
+
+workflows:
+  docs-release:
+    when: pipeline.parameters.run-docs-deploy == true and pipeline.git.branch == "main"
+    jobs:
+      - deploy-docs:
+          context:
+            - cloudflare
