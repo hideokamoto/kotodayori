@@ -1,6 +1,6 @@
 {
   "name": "create-kotodayori",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Scaffolding tool for Kotodayori webhook handlers",
   "type": "module",
   "bin": {
