@@ -69,6 +69,7 @@ function createGitHubVerifier(secret: string): Verifier {
 
 ```typescript
 import { WebhookRouter } from '@kotodayori/core';
+import { Hono } from 'hono';
 import { honoAdapter } from '@kotodayori/hono';
 
 const router = new WebhookRouter<GitHubEventMap>();
