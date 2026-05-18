@@ -1,0 +1,73 @@
+---
+title: Kotodayori
+description: TypeScript 向けの Hono ライクな型安全 Webhook ルーティングライブラリ
+template: splash
+hero:
+  tagline: TypeScript 向けの Hono ライクな型安全 Webhook ルーティングライブラリ
+  actions:
+    - text: はじめる
+      link: /ja/getting-started/overview/
+      variant: primary
+    - text: GitHub
+      link: https://github.com/hideokamoto/stripe-webhook-router
+      variant: minimal
+---
+
+Kotodayori は、あらゆるイベントソースからの Webhook を処理するためのクリーンで型安全な API を提供します。人気フレームワークやプラットフォーム向けのアダプターによるモジュラーアーキテクチャと、署名検証のためのプラグイン可能な Verifier システムを特徴としています。
+
+## 特徴
+
+- **型安全** — ジェネリクスを使った完全な TypeScript サポート
+- **フレームワークアダプター** — Hono・Express・AWS Lambda・EventBridge を標準サポート
+- **プラグイン可能な検証** — あらゆる Webhook プロバイダーに対応した独自 Verifier の利用が可能
+- **ミドルウェアサポート** — 横断的な処理をミドルウェアで追加
+- **柔軟なルーティング** — ハンドラーのグルーピング・ネストしたルーター・ファンアウトパターンに対応
+- **Stripe サポート** — 351 種類以上の Stripe イベントタイプを完全サポート
+
+## クイックスタート
+
+最も手軽に始めるには、スキャフォールディングツールを使用します：
+
+```bash
+npx create-kotodayori
+```
+
+または、Stripe と Hono をインストールして直接使用する場合：
+
+```bash
+pnpm add @kotodayori/stripe @kotodayori/hono stripe
+```
+
+```typescript
+import { Hono } from 'hono';
+import Stripe from 'stripe';
+import { StripeWebhookRouter, createStripeVerifier } from '@kotodayori/stripe';
+import { honoAdapter } from '@kotodayori/hono';
+
+const stripe = new Stripe(process.env.STRIPE_API_KEY!);
+const router = new StripeWebhookRouter();
+
+router.on('payment_intent.succeeded', async (event) => {
+  console.log('支払い成功:', event.data.object.id);
+});
+
+const app = new Hono();
+app.post('/webhook', honoAdapter(router, {
+  verifier: createStripeVerifier(stripe, process.env.STRIPE_WEBHOOK_SECRET!),
+}));
+
+export default app;
+```
+
+## パッケージ
+
+| パッケージ | 説明 |
+|---------|-------------|
+| `@kotodayori/core` | Webhook ルーティングのコアロジックと Verifier 型 |
+| `@kotodayori/stripe` | Stripe 固有の型・ルーター・Verifier |
+| `@kotodayori/zod` | Zod スキーマバリデーションヘルパー |
+| `@kotodayori/hono` | Hono フレームワークアダプター |
+| `@kotodayori/express` | Express フレームワークアダプター |
+| `@kotodayori/lambda` | AWS Lambda アダプター |
+| `@kotodayori/eventbridge` | AWS EventBridge アダプター |
+| `create-kotodayori` | 新規プロジェクト用スキャフォールディングツール |
