@@ -10,7 +10,7 @@
 
 ## インストール（`npx skills add`）
 
-リポジトリの **既定ブランチ（通常 `main`）** が GitHub にある前提です。
+リポジトリの **既定ブランチ（通常 `main`）** が GitHub にマージ済みである前提です。PR ブランチだけにある版を試す場合は、URL のブランチ名を差し替えてください（例: `tree/cursor/kotodayori-agent-skill-abe1/skills/kotodayori-webhooks`）。
 
 ```bash
 # このリポジトリから kotodayori-webhooks だけをプロジェクトに入れる
