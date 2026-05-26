@@ -19,6 +19,12 @@ Kotodayori is a pnpm monorepo of TypeScript packages for type-safe webhook routi
 | Runnable samples | `examples/sample-hono-stripe`, `examples/sample-express-stripe` |
 | Human-oriented guide | `claude.md` |
 
-## On-demand skill
+## On-demand skill (installable)
 
-For end-to-end workflows (scaffolding, adapter wiring, Stripe testing, monorepo conventions), load **`$kotodayori-webhooks`** — see `.agents/skills/kotodayori-webhooks/SKILL.md` (mirrored under `.cursor/skills/` and `.claude/skills/` for tool discovery).
+The **`kotodayori-webhooks`** skill is distributed under [`skills/kotodayori-webhooks/`](./skills/kotodayori-webhooks/SKILL.md) for tools such as `npx skills add` (same layout as [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills)). Install into your editor/agent from any project:
+
+```bash
+npx skills add hideokamoto/kotodayori --skill kotodayori-webhooks -y
+```
+
+See [`skills/README.md`](./skills/README.md) for `gh` and sparse-checkout variants.

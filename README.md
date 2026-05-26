@@ -31,8 +31,12 @@ Runnable sample apps live under [`examples/`](./examples/README.md): `sample-hon
 
 ## AI agents (Cursor / Claude Code)
 
-- Root [`AGENTS.md`](./AGENTS.md) — short always-on context for coding agents.
-- Skill **`kotodayori-webhooks`**: identical [`SKILL.md`](./.agents/skills/kotodayori-webhooks/SKILL.md) is also copied under [`.cursor/skills/`](./.cursor/skills/kotodayori-webhooks/SKILL.md) and [`.claude/skills/`](./.claude/skills/kotodayori-webhooks/SKILL.md) so Cursor Rules/Skills and Claude Code can discover it. Format follows the Agent Skills style used by projects such as [Next.js](https://github.com/vercel/next.js/tree/canary/.agents/skills) (YAML frontmatter + markdown body).
+- Root [`AGENTS.md`](./AGENTS.md) — short always-on context when working in this repository.
+- **Distributable skill `kotodayori-webhooks`**: lives under [`skills/kotodayori-webhooks/SKILL.md`](./skills/kotodayori-webhooks/SKILL.md) in the [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) layout so you can install it with the official CLI or `gh` — see [`skills/README.md`](./skills/README.md).
+
+```bash
+npx skills add hideokamoto/kotodayori --skill kotodayori-webhooks -y
+```
 
 ## Getting Started
 
