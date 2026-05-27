@@ -96,9 +96,8 @@ Create a `Dockerfile`:
 ```dockerfile
 FROM node:20-alpine
 WORKDIR /app
-COPY package.json pnpm-lock.yaml .npmrc pnpm-workspace.yaml ./
-RUN corepack enable && corepack prepare pnpm@latest --activate
-RUN pnpm install --frozen-lockfile --prod
+COPY package.json ./
+RUN npm install --production
 COPY dist/ ./dist/
 EXPOSE 3000
 CMD ["node", "dist/index.js"]

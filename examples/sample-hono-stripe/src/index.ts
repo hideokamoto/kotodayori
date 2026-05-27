@@ -1,5 +1,4 @@
 import { Hono } from 'hono';
-import { serve } from '@hono/node-server';
 import Stripe from 'stripe';
 import {
   StripeWebhookRouter,
@@ -60,14 +59,5 @@ app.post(
     },
   })
 );
-
-// Start server when run directly
-const port = Number(process.env.PORT) || 3000;
-serve({
-  fetch: app.fetch,
-  port,
-});
-
-console.log(`Server is running on http://localhost:${port}`);
 
 export default app;
