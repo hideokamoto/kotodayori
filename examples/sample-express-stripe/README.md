@@ -1,6 +1,6 @@
 # sample-express-stripe
 
-A Stripe webhook handler built with [Kotodayori](https://github.com/hideokamoto/stripe-webhook-router) and [Express](https://expressjs.com).
+A Stripe webhook handler built with [Kotodayori](https://github.com/hideokamoto/kotodayori) and [Express](https://expressjs.com).
 
 ## Getting Started
 
@@ -96,8 +96,9 @@ Create a `Dockerfile`:
 ```dockerfile
 FROM node:20-alpine
 WORKDIR /app
-COPY package.json ./
-RUN npm install --production
+COPY package.json pnpm-lock.yaml .npmrc pnpm-workspace.yaml ./
+RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN pnpm install --frozen-lockfile --prod
 COPY dist/ ./dist/
 EXPOSE 3000
 CMD ["node", "dist/index.js"]
@@ -105,7 +106,7 @@ CMD ["node", "dist/index.js"]
 
 ## Resources
 
-- [Kotodayori Documentation](https://github.com/hideokamoto/stripe-webhook-router)
+- [Kotodayori Documentation](https://github.com/hideokamoto/kotodayori)
 - [Express Documentation](https://expressjs.com)
 - [Stripe Webhooks Guide](https://stripe.com/docs/webhooks)
 - [Stripe Event Types Reference](https://stripe.com/docs/api/events/types)
