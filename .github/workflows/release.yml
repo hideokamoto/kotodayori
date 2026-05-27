@@ -74,6 +74,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build workspace packages (for typecheck and tests)
+        run: pnpm --filter "./packages/*" build
+
       - name: Run linting
         run: pnpm lint
 

@@ -25,6 +25,19 @@ Kotodayori provides a clean, type-safe API for handling webhooks from any event 
 - `@kotodayori/eventbridge` - AWS EventBridge adapter
 - `create-kotodayori` - Scaffolding tool for creating new projects
 
+## Examples (monorepo)
+
+Runnable sample apps live under [`examples/`](./examples/README.md): `sample-hono-stripe` and `sample-express-stripe`. They use `workspace:*` to depend on local `@kotodayori/*` packages. After `pnpm install` and `pnpm build` from the repo root, run `pnpm dev` inside an example directory.
+
+## AI agents (Cursor / Claude Code)
+
+- Root [`AGENTS.md`](./AGENTS.md) — short always-on context when working in this repository.
+- **Distributable skill `kotodayori-webhooks`**: lives under [`skills/kotodayori-webhooks/SKILL.md`](./skills/kotodayori-webhooks/SKILL.md) in the [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) layout so you can install it with the official CLI or `gh` — see [`skills/README.md`](./skills/README.md).
+
+```bash
+npx skills add hideokamoto/kotodayori --skill kotodayori-webhooks -y
+```
+
 ## Getting Started
 
 The fastest way to get started is using the scaffolding tool:

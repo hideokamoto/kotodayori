@@ -1255,6 +1255,11 @@ When working on this codebase:
 9. **Run all checks** - Build, typecheck, lint, and test before committing
 10. **Ask when uncertain** - If implementation approach is unclear, ask for clarification
 
+### Agent skills and AGENTS.md
+
+- Read the repository root **`AGENTS.md`** for a compact map of packages and non-negotiable rules (raw body, Express `express.raw`, verification order).
+- For webhook-specific workflows, use the distributable **`kotodayori-webhooks`** skill under `skills/kotodayori-webhooks/SKILL.md`. Install into an agent with `npx skills add hideokamoto/kotodayori --skill kotodayori-webhooks -y` (see `skills/README.md` for `gh` / sparse-checkout). It complements this file with CLI usage, example paths, and verification commands.
+
 **Key Files to Review Before Changes**:
 - `packages/core/src/index.ts` - Core routing logic (290 lines)
 - `packages/stripe/src/index.ts` - Stripe event map (438 lines)

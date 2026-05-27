@@ -56,8 +56,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build core package
-        run: pnpm --filter @kotodayori/core build
+      # examples/* typecheck imports workspace packages via dist/*.d.ts — build all libraries first (excludes docs).
+      - name: Build packages for type resolution
+        run: pnpm --filter "./packages/*" build
 
       - name: Run type checking
         run: pnpm typecheck
@@ -86,8 +87,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build core package
-        run: pnpm --filter @kotodayori/core build
+      - name: Build packages for tests
+        run: pnpm --filter "./packages/*" build
 
       - name: Run tests
         run: pnpm test

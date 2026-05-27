@@ -1,0 +1,11 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "notGrouped": "bottom",
+  "groupings": [
+    {
+      "title": "Kotodayori",
+      "description": "Type-safe webhook routing for TypeScript (Stripe, Hono, Express, Lambda, EventBridge).",
+      "skills": ["kotodayori-webhooks"]
+    }
+  ]
+}
