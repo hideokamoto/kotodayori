@@ -23,5 +23,8 @@
         ]
       }
     ]
+  },
+  "env": {
+    "OTEL_RESOURCE_ATTRIBUTES": "project.name=kotodayori"
   }
 }
