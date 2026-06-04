@@ -18,7 +18,7 @@ export default defineConfig({
       head: [
         {
           tag: 'script',
-          content: `(function(){try{if(localStorage.getItem('lang-preference'))return;var lang=(navigator.language||'').toLowerCase();var path=location.pathname;var isJa=/^\\/ja(\\/|$)/.test(path);var pref=lang.startsWith('ja')?'ja':'en';localStorage.setItem('lang-preference',pref);if(pref==='ja'&&!isJa){location.replace('/ja'+path);}}catch(e){}})();`,
+          content: `(function(){try{if(localStorage.getItem('lang-preference'))return;var lang=(navigator.language||'').toLowerCase();var path=location.pathname;var isJa=/^\\/ja(\\/|$)/.test(path);var pref=lang.startsWith('ja')?'ja':'en';localStorage.setItem('lang-preference',pref);if(pref==='ja'&&!isJa){location.replace('/ja'+path+location.search+location.hash);}}catch(e){}})();`,
         },
       ],
       plugins: [
