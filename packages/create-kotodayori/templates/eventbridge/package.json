@@ -6,8 +6,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@kotodayori/eventbridge": "^0.1.0",
-    "@kotodayori/stripe": "^0.1.0",
+    "@kotodayori/eventbridge": "^1.0.0",
+    "@kotodayori/stripe": "^1.0.0",
     "stripe": "^18.5.0"
   },
   "devDependencies": {
