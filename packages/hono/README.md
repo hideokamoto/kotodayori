@@ -211,25 +211,38 @@ app.post('/webhooks/github', honoAdapter(githubRouter, {
 
 ### Cloudflare Workers
 
+On Workers, configure Stripe with `Stripe.createFetchHttpClient()` and read
+secrets from the `env` bindings (there is no `process.env`). `createStripeVerifier`
+uses Stripe's `constructEventAsync()` internally, so signature verification works
+on the Workers runtime — which requires async Web Crypto — out of the box.
+
 ```typescript
 import { Hono } from 'hono';
 import { StripeWebhookRouter, createStripeVerifier } from '@kotodayori/stripe';
 import { honoAdapter } from '@kotodayori/hono';
 import Stripe from 'stripe';
 
-const app = new Hono();
-const router = new StripeWebhookRouter();
+type Bindings = {
+  STRIPE_API_KEY: string;
+  STRIPE_WEBHOOK_SECRET: string;
+};
 
-router.on('payment_intent.succeeded', async (event) => {
-  console.log('Payment:', event.data.object.id);
+const app = new Hono<{ Bindings: Bindings }>();
+
+app.post('/webhook', (c) => {
+  const stripe = new Stripe(c.env.STRIPE_API_KEY, {
+    httpClient: Stripe.createFetchHttpClient(),
+  });
+
+  const router = new StripeWebhookRouter();
+  router.on('payment_intent.succeeded', async (event) => {
+    console.log('Payment:', event.data.object.id);
+  });
+
+  return honoAdapter(router, {
+    verifier: createStripeVerifier(stripe, c.env.STRIPE_WEBHOOK_SECRET),
+  })(c);
 });
-
-app.post('/webhook', honoAdapter(router, {
-  verifier: createStripeVerifier(
-    new Stripe(process.env.STRIPE_API_KEY!),
-    process.env.STRIPE_WEBHOOK_SECRET!
-  ),
-}));
 
 export default app;
 ```

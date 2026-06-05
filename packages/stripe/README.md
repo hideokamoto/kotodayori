@@ -145,9 +145,16 @@ const verifier = createStripeVerifier(
 - `secret` - Webhook signing secret from Stripe Dashboard
 
 The verifier will:
-1. Validate the webhook signature using `stripe.webhooks.constructEvent()`
+1. Validate the webhook signature using `stripe.webhooks.constructEventAsync()`
 2. Parse the event payload
-3. Return the typed Stripe event
+3. Return the typed Stripe event (as a `Promise<VerifyResult<Stripe.Event>>`)
+
+> **Note:** The verifier is asynchronous and uses Stripe's `constructEventAsync()`.
+> This works on Node.js **and** Edge runtimes such as Cloudflare Workers and Deno
+> Deploy, where Stripe relies on the Web Crypto `SubtleCryptoProvider` (which only
+> supports async signature verification). All Kotodayori adapters already `await`
+> the verifier, so no extra wiring is needed. See
+> [Cloudflare Workers / Edge runtimes](#with-cloudflare-workers--edge-runtimes).
 
 ## Usage with Framework Adapters
 
@@ -220,6 +227,51 @@ export const handler = lambdaAdapter(router, {
   verifier: createStripeVerifier(stripe, process.env.STRIPE_WEBHOOK_SECRET!),
 });
 ```
+
+### With Cloudflare Workers / Edge runtimes
+
+On Cloudflare Workers (and other Edge runtimes like Deno Deploy), configure the
+Stripe SDK with `Stripe.createFetchHttpClient()`. In this mode the SDK uses the
+Web Crypto `SubtleCryptoProvider`, which only supports **asynchronous** signature
+verification. `createStripeVerifier` already uses `constructEventAsync()`
+internally, so it works without any extra configuration.
+
+```typescript
+import { Hono } from 'hono';
+import Stripe from 'stripe';
+import { StripeWebhookRouter, createStripeVerifier } from '@kotodayori/stripe';
+import { honoAdapter } from '@kotodayori/hono';
+
+type Bindings = {
+  STRIPE_API_KEY: string;
+  STRIPE_WEBHOOK_SECRET: string;
+};
+
+const app = new Hono<{ Bindings: Bindings }>();
+
+app.post('/webhook', (c) => {
+  // On Workers, secrets come from the `env` bindings, not process.env
+  const stripe = new Stripe(c.env.STRIPE_API_KEY, {
+    httpClient: Stripe.createFetchHttpClient(),
+  });
+
+  const router = new StripeWebhookRouter();
+  router.on('payment_intent.succeeded', async (event) => {
+    console.log('Payment:', event.data.object.id);
+  });
+
+  return honoAdapter(router, {
+    verifier: createStripeVerifier(stripe, c.env.STRIPE_WEBHOOK_SECRET),
+  })(c);
+});
+
+export default app;
+```
+
+> **Why this matters:** With the synchronous `constructEvent()`, Edge runtimes
+> throw `SubtleCryptoProvider cannot be used in a synchronous context`. Because
+> `createStripeVerifier` is async and the adapters `await` it, the same code runs
+> on Node.js and Edge without changes.
 
 ## Common Use Cases
 

@@ -381,6 +381,13 @@ export class StripeWebhookRouter extends WebhookRouter<StripeEventMap> {}
  * This verifier handles Stripe signature verification using the stripe-signature header
  * and returns the verified Stripe event.
  *
+ * Internally it uses Stripe's asynchronous `constructEventAsync`, which works in
+ * both Node.js and Edge runtimes (e.g. Cloudflare Workers, Deno Deploy). On Edge
+ * runtimes the Stripe SDK relies on `SubtleCryptoProvider`, which only supports
+ * asynchronous signature verification, so the synchronous `constructEvent` cannot
+ * be used there. `constructEventAsync` runs fine on Node.js too, making this a
+ * single verifier that works across all supported runtimes.
+ *
  * @param stripe - Pre-configured Stripe instance
  * @param webhookSecret - Stripe webhook secret (starts with 'whsec_')
  * @returns A Verifier function compatible with all Kotodayori adapters
@@ -411,23 +418,31 @@ export class StripeWebhookRouter extends WebhookRouter<StripeEventMap> {}
  * export const handler = lambdaAdapter(router, {
  *   verifier: createStripeVerifier(stripe, process.env.STRIPE_WEBHOOK_SECRET!),
  * });
+ *
+ * // With Cloudflare Workers / Edge runtimes
+ * const stripe = new Stripe(env.STRIPE_API_KEY, {
+ *   httpClient: Stripe.createFetchHttpClient(),
+ * });
+ * app.post('/webhook', honoAdapter(router, {
+ *   verifier: createStripeVerifier(stripe, env.STRIPE_WEBHOOK_SECRET),
+ * }));
  * ```
  */
 export function createStripeVerifier(
   stripe: Stripe,
   webhookSecret: string
 ): Verifier<Stripe.Event> {
-  return (
+  return async (
     payload: string | Buffer,
     headers: Record<string, string | undefined>
-  ): VerifyResult<Stripe.Event> => {
+  ): Promise<VerifyResult<Stripe.Event>> => {
     const signature = headers['stripe-signature'];
 
     if (!signature) {
       throw new Error('Missing stripe-signature header');
     }
 
-    const event = stripe.webhooks.constructEvent(
+    const event = await stripe.webhooks.constructEventAsync(
       payload,
       signature,
       webhookSecret
