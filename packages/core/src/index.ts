@@ -13,6 +13,23 @@ export interface WebhookEvent {
 export type DefaultEventMap = Record<string, WebhookEvent>;
 
 /**
+ * Extracts the valid event suffixes for a given prefix from an event map.
+ *
+ * For example, given a map with keys `customer.subscription.created` and
+ * `customer.subscription.deleted`, `EventSuffix<Map, 'customer.subscription'>`
+ * resolves to `'created' | 'deleted'`.
+ *
+ * For the default (open) event map this resolves to `string`, preserving the
+ * previous loosely-typed behaviour.
+ */
+export type EventSuffix<
+  TEventMap,
+  TPrefix extends string,
+> = Extract<keyof TEventMap, `${TPrefix}.${string}`> extends `${TPrefix}.${infer TSuffix}`
+  ? TSuffix
+  : never;
+
+/**
  * Event handler function type
  */
 export type EventHandler<T extends WebhookEvent> = (event: T) => Promise<void>;
@@ -182,16 +199,16 @@ export class WebhookRouter<
    * @param callback - Function that receives a prefixed router
    * @returns this for chaining
    */
-  group(prefix: string, callback: (router: PrefixedRouter) => void): this {
+  group<TPrefix extends string>(
+    prefix: TPrefix,
+    callback: (router: PrefixedRouter<TEventMap, TPrefix>) => void
+  ): this {
     // Reject empty prefix
     if (prefix.trim() === '') {
       throw new Error('Group prefix cannot be an empty string or whitespace');
     }
 
-    const prefixedRouter = new PrefixedRouter(
-      prefix,
-      this as unknown as WebhookRouter<Record<string, WebhookEvent>>
-    );
+    const prefixedRouter = new PrefixedRouter<TEventMap, TPrefix>(prefix, this);
     callback(prefixedRouter);
     return this;
   }
@@ -279,26 +296,38 @@ export class WebhookRouter<
 
 /**
  * Helper class for group() syntax that adds prefix to event types
+ *
+ * @typeParam TEventMap - The parent router's event map
+ * @typeParam TPrefix - The event type prefix this group is scoped to
  */
-class PrefixedRouter {
+class PrefixedRouter<
+  TEventMap extends Record<string, WebhookEvent> = DefaultEventMap,
+  TPrefix extends string = string,
+> {
   constructor(
-    private prefix: string,
-    private parent: WebhookRouter<Record<string, WebhookEvent>>
+    private prefix: TPrefix,
+    private parent: WebhookRouter<TEventMap>
   ) {}
 
   /**
    * Register a handler for a single event type (with prefix)
    */
-  on(event: string, handler: EventHandler<WebhookEvent>): this;
+  on<TSuffix extends EventSuffix<TEventMap, TPrefix>>(
+    event: TSuffix,
+    handler: EventHandler<TEventMap[`${TPrefix}.${TSuffix}` & keyof TEventMap]>
+  ): this;
 
   /**
    * Register a handler for multiple event types (with prefix)
    */
-  on(events: string[], handler: EventHandler<WebhookEvent>): this;
+  on<TSuffix extends EventSuffix<TEventMap, TPrefix>>(
+    events: TSuffix[],
+    handler: EventHandler<TEventMap[`${TPrefix}.${TSuffix}` & keyof TEventMap]>
+  ): this;
 
   on(
     eventOrEvents: string | string[],
-    handler: EventHandler<WebhookEvent>
+    handler: EventHandler<never>
   ): this {
     const events = Array.isArray(eventOrEvents) ? eventOrEvents : [eventOrEvents];
 
@@ -308,13 +337,18 @@ class PrefixedRouter {
       return this;
     }
 
+    // The parent is strongly typed, but the prefixed event name is only known
+    // to be a valid key at the call site, so dispatch through the open-typed
+    // router signature.
+    const parent = this.parent as unknown as WebhookRouter;
+
     for (const event of events) {
       // Reject empty string event types
       if (typeof event === 'string' && event.trim() === '') {
         throw new Error('Event type cannot be an empty string or whitespace');
       }
       const fullEventType = `${this.prefix}.${event}`;
-      this.parent.on(fullEventType, handler);
+      parent.on(fullEventType, handler as EventHandler<WebhookEvent>);
     }
     return this;
   }
@@ -325,7 +359,7 @@ class PrefixedRouter {
   use(middleware: Middleware): this {
     // For simplicity, middleware in groups is applied to the parent router
     // A more advanced implementation could scope middleware to the group
-    this.parent.use(middleware);
+    (this.parent as unknown as WebhookRouter).use(middleware);
     return this;
   }
 }

@@ -34,9 +34,12 @@ export interface LambdaAdapterOptions<T extends WebhookEvent = WebhookEvent> {
  * @param options - Adapter options including a verifier function
  * @returns Lambda handler function
  */
-export function lambdaAdapter<TEventMap extends Record<string, WebhookEvent>>(
+export function lambdaAdapter<
+  TEventMap extends Record<string, WebhookEvent>,
+  TEvent extends WebhookEvent = TEventMap[keyof TEventMap],
+>(
   router: WebhookRouter<TEventMap>,
-  options: LambdaAdapterOptions<TEventMap[keyof TEventMap]>
+  options: LambdaAdapterOptions<TEvent>
 ): (event: APIGatewayProxyEvent, context: Context) => Promise<APIGatewayProxyResult> {
   const { verifier, onError } = options;
 
@@ -75,12 +78,12 @@ export function lambdaAdapter<TEventMap extends Record<string, WebhookEvent>>(
       }
     }
 
-    let webhookEvent: TEventMap[keyof TEventMap];
+    let webhookEvent: TEvent;
 
     // Verify signature and parse event
     try {
       const result = await verifier(rawBody, headers);
-      webhookEvent = result.event as TEventMap[keyof TEventMap];
+      webhookEvent = result.event;
     } catch (err) {
       console.error('Webhook verification failed:', err);
       return {

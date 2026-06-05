@@ -38,9 +38,12 @@ export interface ExpressAdapterOptions<T extends WebhookEvent = WebhookEvent> {
  * @param options - Adapter options including a verifier function
  * @returns Express middleware function
  */
-export function expressAdapter<TEventMap extends Record<string, WebhookEvent>>(
+export function expressAdapter<
+  TEventMap extends Record<string, WebhookEvent>,
+  TEvent extends WebhookEvent = TEventMap[keyof TEventMap],
+>(
   router: WebhookRouter<TEventMap>,
-  options: ExpressAdapterOptions<TEventMap[keyof TEventMap]>
+  options: ExpressAdapterOptions<TEvent>
 ): (req: Request, res: Response, next: NextFunction) => Promise<void> {
   const { verifier, onError } = options;
 
@@ -77,12 +80,12 @@ export function expressAdapter<TEventMap extends Record<string, WebhookEvent>>(
       headers[key.toLowerCase()] = Array.isArray(value) ? value[0] : value;
     }
 
-    let event: TEventMap[keyof TEventMap];
+    let event: TEvent;
 
     // Verify signature and parse event
     try {
       const result = await verifier(rawBody, headers);
-      event = result.event as TEventMap[keyof TEventMap];
+      event = result.event;
     } catch (err) {
       console.error('Webhook verification failed:', err);
       res.status(400).json({ error: 'Verification failed' });
