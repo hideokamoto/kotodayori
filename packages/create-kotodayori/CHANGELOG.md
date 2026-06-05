@@ -1,5 +1,14 @@
 # create-kotodayori
 
+## 1.0.1
+
+### Patch Changes
+
+- Fix scaffolded project generation:
+
+  - Generate `.gitignore` correctly in new projects (rename `_gitignore` template file)
+  - Bump template `@kotodayori/*` dependencies from `^0.1.0` to `^1.0.0`
+
 ## 1.0.0
 
 ### Major Changes

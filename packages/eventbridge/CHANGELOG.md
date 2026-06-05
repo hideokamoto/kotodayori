@@ -1,5 +1,12 @@
 # @kotodayori/eventbridge
 
+## 1.0.1
+
+### Patch Changes
+
+- Updated dependencies [486a755]
+  - @kotodayori/core@1.1.0
+
 ## 1.0.0
 
 ### Major Changes

@@ -1,6 +1,6 @@
 {
   "name": "@kotodayori/core",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Type-safe webhook routing framework for any event source",
   "type": "module",
   "main": "./dist/index.cjs",

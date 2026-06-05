@@ -1,6 +1,6 @@
 {
   "name": "@kotodayori/zod",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Zod schema validation helpers for @kotodayori/core",
   "type": "module",
   "main": "./dist/index.cjs",
