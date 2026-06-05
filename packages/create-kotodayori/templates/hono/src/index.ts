@@ -21,6 +21,18 @@ const stripe = new Stripe(process.env.STRIPE_API_KEY, {
   apiVersion: '2026-01-28.clover',
 });
 
+// --- Cloudflare Workers / Edge runtimes ---
+// On Workers there is no `process.env`; read secrets from the `env` bindings
+// inside the request handler instead, and use the fetch-based HTTP client:
+//
+//   const stripe = new Stripe(c.env.STRIPE_API_KEY, {
+//     apiVersion: '2026-01-28.clover',
+//     httpClient: Stripe.createFetchHttpClient(),
+//   });
+//
+// `createStripeVerifier` already uses `constructEventAsync()` internally, so
+// signature verification works on Workers without any extra configuration.
+
 // Create webhook router
 const webhookRouter = new StripeWebhookRouter();
 

@@ -335,7 +335,7 @@ describe('createStripeVerifier', () => {
   it('should create a verifier function', () => {
     const mockStripe = {
       webhooks: {
-        constructEvent: vi.fn().mockReturnValue(testEvent),
+        constructEventAsync: vi.fn().mockResolvedValue(testEvent),
       },
     } as unknown as Stripe;
 
@@ -343,10 +343,10 @@ describe('createStripeVerifier', () => {
     expect(typeof verifier).toBe('function');
   });
 
-  it('should call stripe.webhooks.constructEvent with correct params', () => {
+  it('should call stripe.webhooks.constructEventAsync with correct params', async () => {
     const mockStripe = {
       webhooks: {
-        constructEvent: vi.fn().mockReturnValue(testEvent),
+        constructEventAsync: vi.fn().mockResolvedValue(testEvent),
       },
     } as unknown as Stripe;
 
@@ -354,9 +354,9 @@ describe('createStripeVerifier', () => {
     const payload = JSON.stringify(testEvent);
     const headers = { 'stripe-signature': 'test_sig' };
 
-    const result = verifier(payload, headers);
+    const result = await verifier(payload, headers);
 
-    expect(mockStripe.webhooks.constructEvent).toHaveBeenCalledWith(
+    expect(mockStripe.webhooks.constructEventAsync).toHaveBeenCalledWith(
       payload,
       'test_sig',
       'whsec_test'
@@ -364,10 +364,10 @@ describe('createStripeVerifier', () => {
     expect(result.event).toBe(testEvent);
   });
 
-  it('should work with Buffer payload', () => {
+  it('should work with Buffer payload', async () => {
     const mockStripe = {
       webhooks: {
-        constructEvent: vi.fn().mockReturnValue(testEvent),
+        constructEventAsync: vi.fn().mockResolvedValue(testEvent),
       },
     } as unknown as Stripe;
 
@@ -375,9 +375,9 @@ describe('createStripeVerifier', () => {
     const payload = Buffer.from(JSON.stringify(testEvent));
     const headers = { 'stripe-signature': 'test_sig' };
 
-    const result = verifier(payload, headers);
+    const result = await verifier(payload, headers);
 
-    expect(mockStripe.webhooks.constructEvent).toHaveBeenCalledWith(
+    expect(mockStripe.webhooks.constructEventAsync).toHaveBeenCalledWith(
       payload,
       'test_sig',
       'whsec_test'
@@ -385,50 +385,52 @@ describe('createStripeVerifier', () => {
     expect(result.event).toBe(testEvent);
   });
 
-  it('should throw when stripe-signature header is missing', () => {
+  it('should throw when stripe-signature header is missing', async () => {
     const mockStripe = {
       webhooks: {
-        constructEvent: vi.fn().mockReturnValue(testEvent),
+        constructEventAsync: vi.fn().mockResolvedValue(testEvent),
       },
     } as unknown as Stripe;
 
     const verifier = createStripeVerifier(mockStripe, 'whsec_test');
 
-    expect(() => verifier('{}', {})).toThrow('Missing stripe-signature header');
-    expect(() => verifier('{}', { 'stripe-signature': undefined })).toThrow(
+    await expect(verifier('{}', {})).rejects.toThrow(
       'Missing stripe-signature header'
     );
+    await expect(
+      verifier('{}', { 'stripe-signature': undefined })
+    ).rejects.toThrow('Missing stripe-signature header');
   });
 
-  it('should propagate errors from constructEvent', () => {
+  it('should propagate errors from constructEventAsync', async () => {
     const mockStripe = {
       webhooks: {
-        constructEvent: vi.fn().mockImplementation(() => {
-          throw new Error('Invalid signature');
-        }),
+        constructEventAsync: vi
+          .fn()
+          .mockRejectedValue(new Error('Invalid signature')),
       },
     } as unknown as Stripe;
 
     const verifier = createStripeVerifier(mockStripe, 'whsec_test');
     const headers = { 'stripe-signature': 'invalid_sig' };
 
-    expect(() => verifier('{}', headers)).toThrow('Invalid signature');
+    await expect(verifier('{}', headers)).rejects.toThrow('Invalid signature');
   });
 
   describe('edge cases', () => {
-    it('should handle empty string payload', () => {
+    it('should handle empty string payload', async () => {
       const mockStripe = {
         webhooks: {
-          constructEvent: vi.fn().mockReturnValue(testEvent),
+          constructEventAsync: vi.fn().mockResolvedValue(testEvent),
         },
       } as unknown as Stripe;
 
       const verifier = createStripeVerifier(mockStripe, 'whsec_test');
       const headers = { 'stripe-signature': 'test_sig' };
 
-      const result = verifier('', headers);
+      const result = await verifier('', headers);
 
-      expect(mockStripe.webhooks.constructEvent).toHaveBeenCalledWith(
+      expect(mockStripe.webhooks.constructEventAsync).toHaveBeenCalledWith(
         '',
         'test_sig',
         'whsec_test'
@@ -436,10 +438,10 @@ describe('createStripeVerifier', () => {
       expect(result.event).toBe(testEvent);
     });
 
-    it('should treat empty string signature as missing', () => {
+    it('should treat empty string signature as missing', async () => {
       const mockStripe = {
         webhooks: {
-          constructEvent: vi.fn().mockReturnValue(testEvent),
+          constructEventAsync: vi.fn().mockResolvedValue(testEvent),
         },
       } as unknown as Stripe;
 
@@ -448,31 +450,33 @@ describe('createStripeVerifier', () => {
       const headers = { 'stripe-signature': '' };
 
       // Empty signature is treated as missing
-      expect(() => verifier('{}', headers)).toThrow('Missing stripe-signature header');
-      // constructEvent should not be called
-      expect(mockStripe.webhooks.constructEvent).not.toHaveBeenCalled();
+      await expect(verifier('{}', headers)).rejects.toThrow(
+        'Missing stripe-signature header'
+      );
+      // constructEventAsync should not be called
+      expect(mockStripe.webhooks.constructEventAsync).not.toHaveBeenCalled();
     });
 
-    it('should handle signature with whitespace', () => {
+    it('should handle signature with whitespace', async () => {
       const mockStripe = {
         webhooks: {
-          constructEvent: vi.fn().mockReturnValue(testEvent),
+          constructEventAsync: vi.fn().mockResolvedValue(testEvent),
         },
       } as unknown as Stripe;
 
       const verifier = createStripeVerifier(mockStripe, 'whsec_test');
       const headers = { 'stripe-signature': '  t=123,v1=abc  ' };
 
-      verifier('{}', headers);
+      await verifier('{}', headers);
 
-      expect(mockStripe.webhooks.constructEvent).toHaveBeenCalledWith(
+      expect(mockStripe.webhooks.constructEventAsync).toHaveBeenCalledWith(
         '{}',
         '  t=123,v1=abc  ',
         'whsec_test'
       );
     });
 
-    it('should return VerifyResult with correct event type', () => {
+    it('should return VerifyResult with correct event type', async () => {
       const typedEvent: Stripe.PaymentIntentSucceededEvent = {
         id: 'evt_typed',
         type: 'payment_intent.succeeded',
@@ -487,23 +491,23 @@ describe('createStripeVerifier', () => {
 
       const mockStripe = {
         webhooks: {
-          constructEvent: vi.fn().mockReturnValue(typedEvent),
+          constructEventAsync: vi.fn().mockResolvedValue(typedEvent),
         },
       } as unknown as Stripe;
 
       const verifier = createStripeVerifier(mockStripe, 'whsec_test');
       const headers = { 'stripe-signature': 'test_sig' };
 
-      const result = verifier('{}', headers);
+      const result = await verifier('{}', headers);
 
       expect(result.event).toBe(typedEvent);
       expect(result.event.type).toBe('payment_intent.succeeded');
     });
 
-    it('should handle Stripe webhook secret with special characters', () => {
+    it('should handle Stripe webhook secret with special characters', async () => {
       const mockStripe = {
         webhooks: {
-          constructEvent: vi.fn().mockReturnValue(testEvent),
+          constructEventAsync: vi.fn().mockResolvedValue(testEvent),
         },
       } as unknown as Stripe;
 
@@ -511,19 +515,19 @@ describe('createStripeVerifier', () => {
       const verifier = createStripeVerifier(mockStripe, specialSecret);
       const headers = { 'stripe-signature': 'test_sig' };
 
-      verifier('{}', headers);
+      await verifier('{}', headers);
 
-      expect(mockStripe.webhooks.constructEvent).toHaveBeenCalledWith(
+      expect(mockStripe.webhooks.constructEventAsync).toHaveBeenCalledWith(
         '{}',
         'test_sig',
         specialSecret
       );
     });
 
-    it('should handle large payload', () => {
+    it('should handle large payload', async () => {
       const mockStripe = {
         webhooks: {
-          constructEvent: vi.fn().mockReturnValue(testEvent),
+          constructEventAsync: vi.fn().mockResolvedValue(testEvent),
         },
       } as unknown as Stripe;
 
@@ -531,9 +535,9 @@ describe('createStripeVerifier', () => {
       const largePayload = JSON.stringify({ data: 'x'.repeat(10000) });
       const headers = { 'stripe-signature': 'test_sig' };
 
-      const result = verifier(largePayload, headers);
+      const result = await verifier(largePayload, headers);
 
-      expect(mockStripe.webhooks.constructEvent).toHaveBeenCalledWith(
+      expect(mockStripe.webhooks.constructEventAsync).toHaveBeenCalledWith(
         largePayload,
         'test_sig',
         'whsec_test'
@@ -541,10 +545,10 @@ describe('createStripeVerifier', () => {
       expect(result.event).toBe(testEvent);
     });
 
-    it('should handle JSON payload with unicode characters', () => {
+    it('should handle JSON payload with unicode characters', async () => {
       const mockStripe = {
         webhooks: {
-          constructEvent: vi.fn().mockReturnValue(testEvent),
+          constructEventAsync: vi.fn().mockResolvedValue(testEvent),
         },
       } as unknown as Stripe;
 
@@ -552,9 +556,9 @@ describe('createStripeVerifier', () => {
       const unicodePayload = JSON.stringify({ name: '日本語テスト 🎉' });
       const headers = { 'stripe-signature': 'test_sig' };
 
-      const result = verifier(unicodePayload, headers);
+      const result = await verifier(unicodePayload, headers);
 
-      expect(mockStripe.webhooks.constructEvent).toHaveBeenCalledWith(
+      expect(mockStripe.webhooks.constructEventAsync).toHaveBeenCalledWith(
         unicodePayload,
         'test_sig',
         'whsec_test'
@@ -562,10 +566,10 @@ describe('createStripeVerifier', () => {
       expect(result.event).toBe(testEvent);
     });
 
-    it('should handle additional headers without affecting verification', () => {
+    it('should handle additional headers without affecting verification', async () => {
       const mockStripe = {
         webhooks: {
-          constructEvent: vi.fn().mockReturnValue(testEvent),
+          constructEventAsync: vi.fn().mockResolvedValue(testEvent),
         },
       } as unknown as Stripe;
 
@@ -576,9 +580,9 @@ describe('createStripeVerifier', () => {
         'x-custom-header': 'custom-value',
       };
 
-      const result = verifier('{}', headers);
+      const result = await verifier('{}', headers);
 
-      expect(mockStripe.webhooks.constructEvent).toHaveBeenCalledWith(
+      expect(mockStripe.webhooks.constructEventAsync).toHaveBeenCalledWith(
         '{}',
         'test_sig',
         'whsec_test'
@@ -586,7 +590,7 @@ describe('createStripeVerifier', () => {
       expect(result.event).toBe(testEvent);
     });
 
-    it('should distinguish timestamp tolerance errors from signature errors', () => {
+    it('should distinguish timestamp tolerance errors from signature errors', async () => {
       const timestampError = new Error(
         'Webhook Error: Timestamp outside the tolerance zone'
       );
@@ -596,13 +600,13 @@ describe('createStripeVerifier', () => {
 
       const mockStripeTimestamp = {
         webhooks: {
-          constructEvent: vi.fn().mockImplementation(() => { throw timestampError; }),
+          constructEventAsync: vi.fn().mockRejectedValue(timestampError),
         },
       } as unknown as Stripe;
 
       const mockStripeSignature = {
         webhooks: {
-          constructEvent: vi.fn().mockImplementation(() => { throw signatureError; }),
+          constructEventAsync: vi.fn().mockRejectedValue(signatureError),
         },
       } as unknown as Stripe;
 
@@ -612,17 +616,21 @@ describe('createStripeVerifier', () => {
       const headers = { 'stripe-signature': 't=0,v1=abc123' };
 
       // Timestamp error: expired webhook replay
-      expect(() => verifierTimestamp('{}', headers)).toThrow('Timestamp outside the tolerance zone');
+      await expect(verifierTimestamp('{}', headers)).rejects.toThrow(
+        'Timestamp outside the tolerance zone'
+      );
       // Signature error: tampered payload or wrong secret
-      expect(() => verifierSignature('{}', headers)).toThrow('No signatures found matching');
+      await expect(verifierSignature('{}', headers)).rejects.toThrow(
+        'No signatures found matching'
+      );
     });
 
-    it('should propagate timestamp-expired errors from Stripe SDK', () => {
+    it('should propagate timestamp-expired errors from Stripe SDK', async () => {
       const expiredError = new Error('Webhook Error: Timestamp outside the tolerance zone');
 
       const mockStripe = {
         webhooks: {
-          constructEvent: vi.fn().mockImplementation(() => { throw expiredError; }),
+          constructEventAsync: vi.fn().mockRejectedValue(expiredError),
         },
       } as unknown as Stripe;
 
@@ -630,24 +638,24 @@ describe('createStripeVerifier', () => {
       const headers = { 'stripe-signature': 't=0,v1=abc123' };
 
       // Should propagate the full original error from Stripe
-      expect(() => verifier('{}', headers)).toThrow(expiredError.message);
+      await expect(verifier('{}', headers)).rejects.toThrow(expiredError.message);
     });
 
-    it('should propagate invalid-format signature errors from Stripe SDK', () => {
+    it('should propagate invalid-format signature errors from Stripe SDK', async () => {
       const formatError = new Error(
         'Webhook Error: No v1 signature found in the `Stripe-Signature` header'
       );
 
       const mockStripe = {
         webhooks: {
-          constructEvent: vi.fn().mockImplementation(() => { throw formatError; }),
+          constructEventAsync: vi.fn().mockRejectedValue(formatError),
         },
       } as unknown as Stripe;
 
       const verifier = createStripeVerifier(mockStripe, 'whsec_test');
       const headers = { 'stripe-signature': 'malformed-header' };
 
-      expect(() => verifier('{}', headers)).toThrow('No v1 signature found');
+      await expect(verifier('{}', headers)).rejects.toThrow('No v1 signature found');
     });
   });
 });
