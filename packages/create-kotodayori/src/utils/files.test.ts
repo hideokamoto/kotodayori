@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { pathExists, isEmpty, writeJson } from './files.js';
+import { pathExists, isEmpty, writeJson, copyDir } from './files.js';
 
 describe('File Utilities', () => {
   const testDir = path.join(process.cwd(), 'test-temp');
@@ -80,6 +80,46 @@ describe('File Utilities', () => {
       const nonExistentDir = path.join(testDir, 'does-not-exist');
       const empty = await isEmpty(nonExistentDir);
       expect(empty).toBe(true);
+    });
+  });
+
+  describe('copyDir', () => {
+    it('should copy files from src to dest', async () => {
+      const srcDir = path.join(testDir, 'src');
+      const destDir = path.join(testDir, 'dest');
+      await fs.mkdir(srcDir);
+      await fs.writeFile(path.join(srcDir, 'hello.txt'), 'world');
+
+      await copyDir(srcDir, destDir, {});
+
+      const content = await fs.readFile(path.join(destDir, 'hello.txt'), 'utf-8');
+      expect(content).toBe('world');
+    });
+
+    it('should rename _gitignore to .gitignore', async () => {
+      const srcDir = path.join(testDir, 'src');
+      const destDir = path.join(testDir, 'dest');
+      await fs.mkdir(srcDir);
+      await fs.writeFile(path.join(srcDir, '_gitignore'), 'node_modules\ndist\n');
+
+      await copyDir(srcDir, destDir, {});
+
+      const exists = await pathExists(path.join(destDir, '.gitignore'));
+      expect(exists).toBe(true);
+      const notExists = await pathExists(path.join(destDir, '_gitignore'));
+      expect(notExists).toBe(false);
+    });
+
+    it('should replace template variables in file content', async () => {
+      const srcDir = path.join(testDir, 'src');
+      const destDir = path.join(testDir, 'dest');
+      await fs.mkdir(srcDir);
+      await fs.writeFile(path.join(srcDir, 'package.json'), '{"name":"{{PROJECT_NAME}}"}');
+
+      await copyDir(srcDir, destDir, { PROJECT_NAME: 'my-app' });
+
+      const content = await fs.readFile(path.join(destDir, 'package.json'), 'utf-8');
+      expect(content).toBe('{"name":"my-app"}');
     });
   });
 

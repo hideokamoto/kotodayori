@@ -37,7 +37,7 @@ export async function copyTemplate(
   await copyDir(templateDir, targetDir, replacements);
 }
 
-async function copyDir(
+export async function copyDir(
   src: string,
   dest: string,
   replacements: Record<string, string>
