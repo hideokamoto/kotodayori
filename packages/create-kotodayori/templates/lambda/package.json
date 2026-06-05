@@ -6,8 +6,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@kotodayori/lambda": "^0.1.0",
-    "@kotodayori/stripe": "^0.1.0",
+    "@kotodayori/lambda": "^1.0.0",
+    "@kotodayori/stripe": "^1.0.0",
     "stripe": "^18.5.0"
   },
   "devDependencies": {
