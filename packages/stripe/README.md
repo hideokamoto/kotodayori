@@ -249,15 +249,16 @@ type Bindings = {
 
 const app = new Hono<{ Bindings: Bindings }>();
 
+// Define the router and register handlers once, at module scope
+const router = new StripeWebhookRouter();
+router.on('payment_intent.succeeded', async (event) => {
+  console.log('Payment:', event.data.object.id);
+});
+
 app.post('/webhook', (c) => {
   // On Workers, secrets come from the `env` bindings, not process.env
   const stripe = new Stripe(c.env.STRIPE_API_KEY, {
     httpClient: Stripe.createFetchHttpClient(),
-  });
-
-  const router = new StripeWebhookRouter();
-  router.on('payment_intent.succeeded', async (event) => {
-    console.log('Payment:', event.data.object.id);
   });
 
   return honoAdapter(router, {
