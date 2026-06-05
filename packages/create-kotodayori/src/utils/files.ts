@@ -48,7 +48,8 @@ async function copyDir(
 
   for (const entry of entries) {
     const srcPath = path.join(src, entry.name);
-    const destPath = path.join(dest, entry.name);
+    const destName = entry.name === '_gitignore' ? '.gitignore' : entry.name;
+    const destPath = path.join(dest, destName);
 
     if (entry.isDirectory()) {
       await copyDir(srcPath, destPath, replacements);
