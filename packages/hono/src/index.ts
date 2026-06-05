@@ -35,9 +35,12 @@ export interface HonoAdapterOptions<T extends WebhookEvent = WebhookEvent> {
  * @param options - Adapter options including a verifier function
  * @returns Hono handler function
  */
-export function honoAdapter<TEventMap extends Record<string, WebhookEvent>>(
+export function honoAdapter<
+  TEventMap extends Record<string, WebhookEvent>,
+  TEvent extends WebhookEvent = TEventMap[keyof TEventMap],
+>(
   router: WebhookRouter<TEventMap>,
-  options: HonoAdapterOptions<TEventMap[keyof TEventMap]>
+  options: HonoAdapterOptions<TEvent>
 ): (c: Context) => Promise<Response> {
   const { verifier, onError } = options;
 
@@ -55,12 +58,12 @@ export function honoAdapter<TEventMap extends Record<string, WebhookEvent>>(
       headers[key.toLowerCase()] = value;
     });
 
-    let webhookEvent: TEventMap[keyof TEventMap];
+    let webhookEvent: TEvent;
 
     // Verify signature and parse event
     try {
       const result = await verifier(rawBody, headers);
-      webhookEvent = result.event as TEventMap[keyof TEventMap];
+      webhookEvent = result.event;
     } catch (err) {
       console.error('Webhook verification failed:', err);
       return c.json({ error: 'Verification failed' }, 400);

@@ -3,7 +3,6 @@ import Stripe from 'stripe';
 import {
   StripeWebhookRouter,
   createStripeVerifier,
-  type StripeEventMap,
 } from '@kotodayori/stripe';
 import { honoAdapter } from '@kotodayori/hono';
 import { paymentHandlers } from './handlers/payment.js';
@@ -52,7 +51,7 @@ app.get('/', (c) => {
 
 app.post(
   '/webhook',
-  honoAdapter<StripeEventMap>(webhookRouter, {
+  honoAdapter(webhookRouter, {
     verifier: createStripeVerifier(stripe, process.env.STRIPE_WEBHOOK_SECRET),
     onError: async (error, event) => {
       console.error(`Failed to process ${event?.type}:`, error);
