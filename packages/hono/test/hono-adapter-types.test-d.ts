@@ -40,7 +40,9 @@ describe('honoAdapter nominal decoupling', () => {
   it('accepts any structurally-compatible dispatcher (no nominal coupling to WebhookRouter)', () => {
     class ExternalRouter {
       private secret = 1; // makes it nominally distinct from WebhookRouter
-      async dispatch(_event: WebhookEvent): Promise<void> {}
+      async dispatch(event: WebhookEvent): Promise<void> {
+        void event;
+      }
     }
     const verifier: Verifier<CreatedEvent> = () => ({ event: { id: 'e', type: 'thing.created', data: { object: { id: 'x' } } } });
     const handler = honoAdapter(new ExternalRouter(), { verifier });
@@ -52,7 +54,9 @@ describe('honoAdapter nominal decoupling', () => {
     // WebhookEvent. The router param is `WebhookDispatcher<TEvent>` so this is
     // accepted; it would be rejected by a hardcoded `WebhookDispatcher<WebhookEvent>`.
     const narrowDispatcher: WebhookDispatcher<CreatedEvent> = {
-      async dispatch(_event: CreatedEvent): Promise<void> {},
+      async dispatch(event: CreatedEvent): Promise<void> {
+        void event;
+      },
     };
     const verifier: Verifier<CreatedEvent> = () => ({ event: { id: 'e', type: 'thing.created', data: { object: { id: 'x' } } } });
     const handler = honoAdapter(narrowDispatcher, { verifier });

@@ -5,6 +5,7 @@
 "@kotodayori/lambda": patch
 "@kotodayori/eventbridge": patch
 "@kotodayori/stripe": patch
+"@kotodayori/zod": patch
 ---
 
 Add `WebhookDispatcher` structural interface; adapters no longer require `as unknown as WebhookRouter` casts.

@@ -30,7 +30,7 @@ export interface LambdaAdapterOptions<T extends WebhookEvent = WebhookEvent> {
  * });
  * ```
  *
- * @param router - The WebhookRouter instance
+ * @param router - A WebhookDispatcher (any object with a `dispatch(event)` method, e.g. WebhookRouter)
  * @param options - Adapter options including a verifier function
  * @returns Lambda handler function
  */

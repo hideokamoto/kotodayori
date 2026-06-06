@@ -15,7 +15,7 @@ export interface EventBridgeAdapterOptions {
  * Note: EventBridge events don't require signature verification as AWS
  * guarantees the authenticity of events delivered through EventBridge.
  *
- * @param router - The WebhookRouter instance
+ * @param router - A WebhookDispatcher (any object with a `dispatch(event)` method, e.g. WebhookRouter)
  * @param options - Adapter options
  * @returns Lambda handler function
  */
