@@ -1,3 +1,5 @@
+**English** | [日本語](./README.ja.md)
+
 # @kotodayori/stripe
 
 Stripe-specific type definitions, router, and webhook verifier for Kotodayori.

@@ -1,39 +1,39 @@
-**English** | [日本語](./README.ja.md)
+[English](./README.md) | **日本語**
 
 # @kotodayori/core
 
-Type-safe webhook routing framework for any event source.
+あらゆるイベントソースに対応する型安全な Webhook ルーティングフレームワーク。
 
-## Overview
+## 概要
 
-`@kotodayori/core` provides the foundational routing logic for building type-safe webhook handlers. It offers a flexible, framework-agnostic API for routing webhook events with full TypeScript support, middleware capabilities, and flexible routing patterns.
+`@kotodayori/core` は、型安全な Webhook ハンドラーを構築するための基盤となるルーティングロジックを提供します。完全な TypeScript サポート、ミドルウェア機能、柔軟なルーティングパターンを備えた、フレームワーク非依存の柔軟な API を提供します。
 
-## Installation
+## インストール
 
 ```bash
 npm install @kotodayori/core
-# or
+# または
 pnpm add @kotodayori/core
-# or
+# または
 yarn add @kotodayori/core
 ```
 
-## Features
+## 特長
 
-- **Type-Safe Event Routing**: Generic event type definitions for full IDE autocomplete
-- **Middleware Support**: Add logging, error handling, and other cross-cutting concerns
-- **Flexible Routing**: Group handlers, mount nested routers, and fanout patterns
-- **Pluggable Verification**: Bring your own verifier for any webhook provider
-- **Framework Agnostic**: Works with any HTTP framework via adapters
+- **型安全なイベントルーティング**: ジェネリックなイベント型定義により、IDE の補完が完全に機能します
+- **ミドルウェアサポート**: ロギングやエラーハンドリングなど、横断的な関心事を追加できます
+- **柔軟なルーティング**: ハンドラーのグループ化、ネストしたルーターのマウント、ファンアウトパターンに対応します
+- **プラガブルな検証**: 任意の Webhook プロバイダー向けに独自の Verifier を持ち込めます
+- **フレームワーク非依存**: アダプターを介して任意の HTTP フレームワークと連携できます
 
-## Quick Start
+## クイックスタート
 
-### Basic Usage
+### 基本的な使い方
 
 ```typescript
 import { WebhookRouter, type WebhookEvent, type Verifier } from '@kotodayori/core';
 
-// Define your event types
+// イベント型を定義する
 interface MyEvent extends WebhookEvent {
   type: 'my.event';
   data: { object: { id: string; name: string } };
@@ -43,15 +43,15 @@ type MyEventMap = {
   'my.event': MyEvent;
 };
 
-// Create a router
+// ルーターを作成する
 const router = new WebhookRouter<MyEventMap>();
 
-// Register event handlers
+// イベントハンドラーを登録する
 router.on('my.event', async (event) => {
   console.log('Event received:', event.data.object);
 });
 
-// Dispatch events
+// イベントをディスパッチする
 await router.dispatch({
   id: '123',
   type: 'my.event',
@@ -59,12 +59,12 @@ await router.dispatch({
 });
 ```
 
-### With a Custom Verifier
+### カスタム Verifier を使う
 
 ```typescript
 import crypto from 'crypto';
 
-// Create a verifier for GitHub webhooks
+// GitHub Webhook 用の Verifier を作成する
 function createGitHubVerifier(secret: string): Verifier {
   return (payload, headers) => {
     const signature = headers['x-hub-signature-256'];
@@ -91,30 +91,30 @@ function createGitHubVerifier(secret: string): Verifier {
 }
 ```
 
-## API Reference
+## API リファレンス
 
 ### WebhookRouter
 
-The main router class for handling webhook events.
+Webhook イベントを処理するためのメインのルータークラスです。
 
 #### `on(event, handler)`
 
-Register a handler for a specific event type.
+特定のイベント型に対するハンドラーを登録します。
 
 ```typescript
 router.on('payment.succeeded', async (event) => {
-  // Handle payment success
+  // 支払い成功を処理する
 });
 
-// Multiple events with the same handler
+// 複数のイベントを同じハンドラーで処理する
 router.on(['order.created', 'order.updated'], async (event) => {
-  // Handle order events
+  // 注文イベントを処理する
 });
 ```
 
 #### `use(middleware)`
 
-Register middleware that runs before event handlers.
+イベントハンドラーの前に実行されるミドルウェアを登録します。
 
 ```typescript
 router.use(async (event, next) => {
@@ -125,23 +125,23 @@ router.use(async (event, next) => {
 
 #### `group(prefix, callback)`
 
-Group related event handlers with a common prefix.
+共通のプレフィックスで関連するイベントハンドラーをグループ化します。
 
 ```typescript
 router.group('payment', (r) => {
   r.on('succeeded', async (event) => {
-    // Handles 'payment.succeeded'
+    // 'payment.succeeded' を処理する
   });
 
   r.on('failed', async (event) => {
-    // Handles 'payment.failed'
+    // 'payment.failed' を処理する
   });
 });
 ```
 
 #### `route(prefix, router)`
 
-Mount a nested router under a prefix.
+ネストしたルーターをプレフィックスの下にマウントします。
 
 ```typescript
 const paymentRouter = new WebhookRouter();
@@ -150,12 +150,12 @@ paymentRouter.on('failed', async (event) => { /* ... */ });
 
 const mainRouter = new WebhookRouter();
 mainRouter.route('payment', paymentRouter);
-// paymentRouter handlers are now available as 'payment.succeeded', 'payment.failed'
+// paymentRouter のハンドラーは 'payment.succeeded'、'payment.failed' として利用可能になります
 ```
 
 #### `fanout(event, handlers, options)`
 
-Execute multiple handlers in parallel for the same event.
+同じイベントに対して複数のハンドラーを並列に実行します。
 
 ```typescript
 router.fanout('user.created', [
@@ -163,18 +163,18 @@ router.fanout('user.created', [
   async (event) => await createAnalyticsProfile(event),
   async (event) => await notifySlack(event),
 ], {
-  strategy: 'best-effort', // Continue even if some handlers fail
+  strategy: 'best-effort', // 一部のハンドラーが失敗しても続行する
   onError: (error) => console.error('Handler failed:', error),
 });
 ```
 
-**Strategies:**
-- `all-or-nothing` (default): All handlers must succeed or the entire operation fails
-- `best-effort`: Continue executing handlers even if some fail
+**戦略:**
+- `all-or-nothing`（デフォルト）: すべてのハンドラーが成功する必要があり、失敗すると操作全体が失敗します
+- `best-effort`: 一部のハンドラーが失敗してもハンドラーの実行を続行します
 
 #### `dispatch(event)`
 
-Dispatch an event to registered handlers.
+イベントを登録済みのハンドラーにディスパッチします。
 
 ```typescript
 await router.dispatch({
@@ -184,11 +184,11 @@ await router.dispatch({
 });
 ```
 
-### Types
+### 型
 
 #### WebhookEvent
 
-Base interface for all webhook events.
+すべての Webhook イベントの基底インターフェースです。
 
 ```typescript
 interface WebhookEvent {
@@ -200,7 +200,7 @@ interface WebhookEvent {
 
 #### EventHandler<T>
 
-Handler function type for processing events.
+イベントを処理するためのハンドラー関数の型です。
 
 ```typescript
 type EventHandler<T extends WebhookEvent> = (event: T) => Promise<void>;
@@ -208,7 +208,7 @@ type EventHandler<T extends WebhookEvent> = (event: T) => Promise<void>;
 
 #### Middleware<T>
 
-Middleware function type for cross-cutting concerns.
+横断的な関心事を扱うためのミドルウェア関数の型です。
 
 ```typescript
 type Middleware<T extends WebhookEvent> = (
@@ -219,7 +219,7 @@ type Middleware<T extends WebhookEvent> = (
 
 #### Verifier<T>
 
-Function type for verifying webhook signatures and parsing payloads.
+Webhook 署名を検証し、ペイロードを解析するための関数型です。
 
 ```typescript
 type Verifier<T extends WebhookEvent> = (
@@ -228,11 +228,11 @@ type Verifier<T extends WebhookEvent> = (
 ) => VerifyResult<T> | Promise<VerifyResult<T>>;
 ```
 
-## Advanced Usage
+## 応用的な使い方
 
-### Multiple Handlers per Event
+### 1 つのイベントに対する複数のハンドラー
 
-Register multiple handlers for the same event type:
+同じイベント型に対して複数のハンドラーを登録できます。
 
 ```typescript
 router.on('user.created', async (event) => {
@@ -246,12 +246,12 @@ router.on('user.created', async (event) => {
 router.on('user.created', async (event) => {
   await trackSignup(event);
 });
-// All three handlers will execute sequentially
+// 3 つのハンドラーすべてが順番に実行されます
 ```
 
-### Middleware Examples
+### ミドルウェアの例
 
-#### Logging Middleware
+#### ロギングミドルウェア
 
 ```typescript
 router.use(async (event, next) => {
@@ -265,7 +265,7 @@ router.use(async (event, next) => {
 });
 ```
 
-#### Error Handling Middleware
+#### エラーハンドリングミドルウェア
 
 ```typescript
 router.use(async (event, next) => {
@@ -273,7 +273,7 @@ router.use(async (event, next) => {
     await next();
   } catch (error) {
     console.error(`Error processing ${event.type}:`, error);
-    // Send to error tracking service
+    // エラートラッキングサービスに送信する
     await Sentry.captureException(error, {
       tags: { eventType: event.type, eventId: event.id },
     });
@@ -282,13 +282,13 @@ router.use(async (event, next) => {
 });
 ```
 
-## Known Limitations
+## 既知の制限事項
 
-### Group Middleware Scope
+### グループミドルウェアのスコープ
 
-There is a known limitation with the `group().use()` method that differs from expected behavior:
+`group().use()` メソッドには、期待される挙動とは異なる既知の制限があります。
 
-**Current Behavior**: Middleware registered within a `group()` using `.use()` applies to the **entire router**, not just handlers within that group.
+**現在の挙動**: `group()` 内で `.use()` を使って登録されたミドルウェアは、そのグループ内のハンドラーだけでなく、**ルーター全体**に適用されます。
 
 ```typescript
 const router = new WebhookRouter();
@@ -299,7 +299,7 @@ router.use(async (event, next) => {
 });
 
 router.group('payment', (group) => {
-  // ⚠️ This middleware runs for ALL events, not just 'payment.*'
+  // ⚠️ このミドルウェアは 'payment.*' だけでなく、すべてのイベントに対して実行されます
   group.use(async (event, next) => {
     console.log('Group middleware - runs for ALL events');
     await next();
@@ -310,14 +310,14 @@ router.group('payment', (group) => {
   });
 });
 
-// Both middlewares run for 'payment.succeeded' AND 'user.created'
+// どちらのミドルウェアも 'payment.succeeded' と 'user.created' の両方に対して実行されます
 await router.dispatch({ type: 'payment.succeeded', ... });
 await router.dispatch({ type: 'user.created', ... });
 ```
 
-**Workaround**: To apply middleware only to specific events within a group, use one of these alternatives:
+**回避策**: グループ内の特定のイベントにのみミドルウェアを適用するには、次のいずれかの方法を使用してください。
 
-1. **Event-level filtering in router middleware**:
+1. **ルーターミドルウェアでのイベントレベルのフィルタリング**:
 ```typescript
 router.use(async (event, next) => {
   if (event.type.startsWith('payment.')) {
@@ -327,12 +327,12 @@ router.use(async (event, next) => {
 });
 ```
 
-2. **Handler-level error handling**:
+2. **ハンドラーレベルのエラーハンドリング**:
 ```typescript
 router.group('payment', (group) => {
   group.on('succeeded', async (event) => {
     try {
-      // Your handler logic
+      // ハンドラーのロジック
     } catch (error) {
       console.error('Error in payment handler:', error);
       throw error;
@@ -341,7 +341,7 @@ router.group('payment', (group) => {
 });
 ```
 
-3. **Separate routers for different concerns**:
+3. **関心事ごとに別々のルーターを使う**:
 ```typescript
 const paymentRouter = new WebhookRouter();
 paymentRouter.use(async (event, next) => {
@@ -350,23 +350,23 @@ paymentRouter.use(async (event, next) => {
 });
 
 paymentRouter.on('succeeded', async (event) => {
-  // Handle payment success
+  // 支払い成功を処理する
 });
 
 const mainRouter = new WebhookRouter();
 mainRouter.route('payment', paymentRouter);
 ```
 
-## Using with Framework Adapters
+## フレームワークアダプターとの併用
 
-`@kotodayori/core` is framework-agnostic. Use it with framework-specific adapters:
+`@kotodayori/core` はフレームワーク非依存です。フレームワーク固有のアダプターと組み合わせて使用します。
 
-- [`@kotodayori/hono`](../hono) - Hono framework
-- [`@kotodayori/express`](../express) - Express framework
+- [`@kotodayori/hono`](../hono) - Hono フレームワーク
+- [`@kotodayori/express`](../express) - Express フレームワーク
 - [`@kotodayori/lambda`](../lambda) - AWS Lambda
 - [`@kotodayori/eventbridge`](../eventbridge) - AWS EventBridge
 
-Example with Hono:
+Hono を使った例:
 
 ```typescript
 import { Hono } from 'hono';
@@ -384,14 +384,14 @@ app.post('/webhook', honoAdapter(router, {
 }));
 ```
 
-## TypeScript Tips
+## TypeScript のヒント
 
-### Strict Event Typing
+### 厳密なイベント型付け
 
 ```typescript
 import type { WebhookEvent } from '@kotodayori/core';
 
-// Define your events
+// イベントを定義する
 interface PaymentSucceededEvent extends WebhookEvent {
   type: 'payment.succeeded';
   data: {
@@ -413,34 +413,34 @@ interface PaymentFailedEvent extends WebhookEvent {
   };
 }
 
-// Create event map
+// イベントマップを作成する
 type EventMap = {
   'payment.succeeded': PaymentSucceededEvent;
   'payment.failed': PaymentFailedEvent;
 };
 
-// Router has full type safety
+// ルーターは完全な型安全性を備えています
 const router = new WebhookRouter<EventMap>();
 
 router.on('payment.succeeded', async (event) => {
-  // TypeScript knows event.data.object has amount, currency, etc.
+  // TypeScript は event.data.object に amount や currency などがあることを認識します
   const amount = event.data.object.amount;
 });
 ```
 
-## Related Packages
+## 関連パッケージ
 
-- [`@kotodayori/stripe`](../stripe) - Stripe-specific type definitions and verifier
-- [`@kotodayori/hono`](../hono) - Hono framework adapter
-- [`@kotodayori/express`](../express) - Express framework adapter
-- [`@kotodayori/lambda`](../lambda) - AWS Lambda adapter
-- [`@kotodayori/eventbridge`](../eventbridge) - AWS EventBridge adapter
-- [`@kotodayori/zod`](../zod) - Zod schema validation helpers
+- [`@kotodayori/stripe`](../stripe) - Stripe 固有の型定義と Verifier
+- [`@kotodayori/hono`](../hono) - Hono フレームワークアダプター
+- [`@kotodayori/express`](../express) - Express フレームワークアダプター
+- [`@kotodayori/lambda`](../lambda) - AWS Lambda アダプター
+- [`@kotodayori/eventbridge`](../eventbridge) - AWS EventBridge アダプター
+- [`@kotodayori/zod`](../zod) - Zod スキーマ検証ヘルパー
 
-## Documentation
+## ドキュメント
 
-For more examples and guides, see the [main documentation](../../README.md).
+その他の例やガイドについては、[メインドキュメント](../../README.md)を参照してください。
 
-## License
+## ライセンス
 
 MIT
