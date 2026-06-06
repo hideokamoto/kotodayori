@@ -12,14 +12,17 @@ import { lambdaAdapter } from '@kotodayori/lambda';
 import { PACKAGE_NAME } from '@kotodayori/idempotency';
 import { paymentHandlers } from './handlers/payment.js';
 
-if (!process.env.STRIPE_API_KEY) {
+const apiKey = process.env.STRIPE_API_KEY;
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+if (!apiKey) {
   throw new Error('STRIPE_API_KEY environment variable is required');
 }
-if (!process.env.STRIPE_WEBHOOK_SECRET) {
+if (!webhookSecret) {
   throw new Error('STRIPE_WEBHOOK_SECRET environment variable is required');
 }
 
-const stripe = new Stripe(process.env.STRIPE_API_KEY, {
+const stripe = new Stripe(apiKey, {
   apiVersion: '2026-05-27.dahlia',
 });
 
@@ -48,7 +51,7 @@ console.log(`[example] idempotency package: ${PACKAGE_NAME} (preview)`);
 paymentHandlers(webhookRouter);
 
 export const handler = lambdaAdapter(webhookRouter, {
-  verifier: createStripeVerifier(stripe, process.env.STRIPE_WEBHOOK_SECRET),
+  verifier: createStripeVerifier(stripe, webhookSecret),
   onError: async (error, event) => {
     console.error(`Failed to process ${event?.type}:`, error);
   },
