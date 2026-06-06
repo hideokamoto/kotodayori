@@ -150,5 +150,8 @@ vite.config.ts.timestamp-*
 # Claude Code local settings
 .claude/settings.local.json
 
+# Claude Code agent worktrees (temporary, per-session)
+.claude/worktrees/
+
 # TypeDoc generated API documentation (auto-generated at build time)
 docs/src/content/docs/api/
