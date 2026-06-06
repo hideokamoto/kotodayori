@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { pathExists, isEmpty, writeJson, copyDir, copyAgentSkill } from './files.js';
@@ -159,6 +159,20 @@ describe('File Utilities', () => {
         path.join('.claude', 'skills', 'kotodayori-webhooks', 'SKILL.md'),
         path.join('.cursor', 'skills', 'kotodayori-webhooks', 'SKILL.md'),
       ]);
+    });
+
+    it('should throw a path-specific error when the skill template is missing', async () => {
+      const spy = vi
+        .spyOn(fs, 'readFile')
+        .mockRejectedValueOnce(
+          Object.assign(new Error('ENOENT: no such file or directory'), { code: 'ENOENT' })
+        );
+
+      await expect(copyAgentSkill(testDir, ['claude-code'])).rejects.toThrow(
+        /Agent skill template not found at .*SKILL\.md/
+      );
+
+      spy.mockRestore();
     });
   });
 

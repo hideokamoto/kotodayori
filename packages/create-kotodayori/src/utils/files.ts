@@ -91,7 +91,16 @@ export async function copyAgentSkill(
 
   const packageRoot = getPackageRoot();
   const skillSource = path.join(packageRoot, 'templates', 'skill', 'SKILL.md');
-  const content = await fs.readFile(skillSource, 'utf-8');
+  let content: string;
+  try {
+    content = await fs.readFile(skillSource, 'utf-8');
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Agent skill template not found at ${skillSource}. ` +
+        `Run "node scripts/sync-skill.mjs" (or rebuild) to regenerate it. (${reason})`
+    );
+  }
 
   const written: string[] = [];
   for (const agent of agents) {
