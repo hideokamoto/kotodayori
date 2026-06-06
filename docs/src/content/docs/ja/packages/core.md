@@ -3,6 +3,10 @@ title: "@kotodayori/core"
 description: フレームワーク非依存の Webhook ルーティングエンジン
 ---
 
+[![npm version](https://img.shields.io/npm/v/%40kotodayori%2Fcore.svg?logo=npm&label=npm)](https://www.npmjs.com/package/@kotodayori/core)
+[![npm downloads](https://img.shields.io/npm/dm/%40kotodayori%2Fcore.svg)](https://www.npmjs.com/package/@kotodayori/core)
+[![license](https://img.shields.io/npm/l/%40kotodayori%2Fcore.svg)](https://www.npmjs.com/package/@kotodayori/core)
+
 コアパッケージは、フレームワーク依存ゼロの Webhook ルーティングエンジンを提供します。すべてのアダプター（Hono・Express・Lambda・EventBridge）はこのパッケージの上に構築されています。
 
 ## インストール

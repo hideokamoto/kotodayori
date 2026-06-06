@@ -3,6 +3,10 @@ title: "@kotodayori/zod"
 description: Zod schema validation helpers for runtime validation
 ---
 
+[![npm version](https://img.shields.io/npm/v/%40kotodayori%2Fzod.svg?logo=npm&label=npm)](https://www.npmjs.com/package/@kotodayori/zod)
+[![npm downloads](https://img.shields.io/npm/dm/%40kotodayori%2Fzod.svg)](https://www.npmjs.com/package/@kotodayori/zod)
+[![license](https://img.shields.io/npm/l/%40kotodayori%2Fzod.svg)](https://www.npmjs.com/package/@kotodayori/zod)
+
 The Zod package adds runtime schema validation on top of Kotodayori’s type-safe routing. Use it when you need to validate webhook payloads at runtime (e.g. for external or less trusted sources).
 
 ## Installation

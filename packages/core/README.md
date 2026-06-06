@@ -1,5 +1,9 @@
 # @kotodayori/core
 
+[![npm version](https://img.shields.io/npm/v/%40kotodayori%2Fcore.svg?logo=npm&label=npm)](https://www.npmjs.com/package/@kotodayori/core)
+[![npm downloads](https://img.shields.io/npm/dm/%40kotodayori%2Fcore.svg)](https://www.npmjs.com/package/@kotodayori/core)
+[![license](https://img.shields.io/npm/l/%40kotodayori%2Fcore.svg)](https://www.npmjs.com/package/@kotodayori/core)
+
 Type-safe webhook routing framework for any event source.
 
 ## Overview

@@ -3,6 +3,10 @@ title: "@kotodayori/express"
 description: Kotodayori の Express フレームワークアダプター
 ---
 
+[![npm version](https://img.shields.io/npm/v/%40kotodayori%2Fexpress.svg?logo=npm&label=npm)](https://www.npmjs.com/package/@kotodayori/express)
+[![npm downloads](https://img.shields.io/npm/dm/%40kotodayori%2Fexpress.svg)](https://www.npmjs.com/package/@kotodayori/express)
+[![license](https://img.shields.io/npm/l/%40kotodayori%2Fexpress.svg)](https://www.npmjs.com/package/@kotodayori/express)
+
 Express アダプターは、Kotodayori ルーターを Express アプリに接続します。署名検証のために生のリクエストボディを提供する必要があります。
 
 ## インストール

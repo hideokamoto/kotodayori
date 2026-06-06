@@ -3,6 +3,10 @@ title: "@kotodayori/core"
 description: Framework-agnostic webhook routing engine
 ---
 
+[![npm version](https://img.shields.io/npm/v/%40kotodayori%2Fcore.svg?logo=npm&label=npm)](https://www.npmjs.com/package/@kotodayori/core)
+[![npm downloads](https://img.shields.io/npm/dm/%40kotodayori%2Fcore.svg)](https://www.npmjs.com/package/@kotodayori/core)
+[![license](https://img.shields.io/npm/l/%40kotodayori%2Fcore.svg)](https://www.npmjs.com/package/@kotodayori/core)
+
 The core package provides the webhook routing engine with no framework dependencies. All adapters (Hono, Express, Lambda, EventBridge) build on top of it.
 
 ## Installation

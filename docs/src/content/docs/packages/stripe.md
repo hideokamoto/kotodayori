@@ -3,6 +3,10 @@ title: "@kotodayori/stripe"
 description: Stripe-specific types, router, and verifier
 ---
 
+[![npm version](https://img.shields.io/npm/v/%40kotodayori%2Fstripe.svg?logo=npm&label=npm)](https://www.npmjs.com/package/@kotodayori/stripe)
+[![npm downloads](https://img.shields.io/npm/dm/%40kotodayori%2Fstripe.svg)](https://www.npmjs.com/package/@kotodayori/stripe)
+[![license](https://img.shields.io/npm/l/%40kotodayori%2Fstripe.svg)](https://www.npmjs.com/package/@kotodayori/stripe)
+
 The Stripe package extends the core router with Stripe-specific types and provides a signature verifier for Stripe webhooks.
 
 ## Installation

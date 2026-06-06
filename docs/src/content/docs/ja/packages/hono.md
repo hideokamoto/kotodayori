@@ -3,6 +3,10 @@ title: "@kotodayori/hono"
 description: Kotodayori の Hono フレームワークアダプター
 ---
 
+[![npm version](https://img.shields.io/npm/v/%40kotodayori%2Fhono.svg?logo=npm&label=npm)](https://www.npmjs.com/package/@kotodayori/hono)
+[![npm downloads](https://img.shields.io/npm/dm/%40kotodayori%2Fhono.svg)](https://www.npmjs.com/package/@kotodayori/hono)
+[![license](https://img.shields.io/npm/l/%40kotodayori%2Fhono.svg)](https://www.npmjs.com/package/@kotodayori/hono)
+
 Hono アダプターは、Kotodayori ルーターを Hono アプリに接続し、生のリクエストボディの取得・署名検証・レスポンス生成を処理します。
 
 ## インストール

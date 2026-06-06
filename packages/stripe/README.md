@@ -1,5 +1,9 @@
 # @kotodayori/stripe
 
+[![npm version](https://img.shields.io/npm/v/%40kotodayori%2Fstripe.svg?logo=npm&label=npm)](https://www.npmjs.com/package/@kotodayori/stripe)
+[![npm downloads](https://img.shields.io/npm/dm/%40kotodayori%2Fstripe.svg)](https://www.npmjs.com/package/@kotodayori/stripe)
+[![license](https://img.shields.io/npm/l/%40kotodayori%2Fstripe.svg)](https://www.npmjs.com/package/@kotodayori/stripe)
+
 Stripe-specific type definitions, router, and webhook verifier for Kotodayori.
 
 ## Overview
