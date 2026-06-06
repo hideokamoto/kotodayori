@@ -3,13 +3,20 @@ import starlight from '@astrojs/starlight';
 import starlightChangelogs, { makeChangelogsSidebarLinks } from 'starlight-changelogs';
 import starlightLlmsTxt from 'starlight-llms-txt';
 import starlightTypeDoc, { typeDocSidebarGroup } from 'starlight-typedoc';
+import { remarkMermaid } from './src/lib/remark-mermaid.mjs';
 
 export default defineConfig({
   site: 'https://tayori-docs.workers.dev',
+  markdown: {
+    remarkPlugins: [remarkMermaid],
+  },
   integrations: [
     starlight({
       title: 'Kotodayori',
       description: 'A Hono-inspired, type-safe webhook routing library for TypeScript.',
+      components: {
+        Head: './src/components/Head.astro',
+      },
       defaultLocale: 'root',
       locales: {
         root: { label: 'English', lang: 'en' },
