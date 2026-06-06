@@ -1,6 +1,6 @@
 import { describe, it, expectTypeOf } from 'vitest';
 import { honoAdapter } from '../src/index.js';
-import { WebhookRouter, type Verifier, type WebhookEvent } from '@kotodayori/core';
+import { WebhookRouter, type Verifier, type WebhookEvent, type WebhookDispatcher } from '@kotodayori/core';
 
 /**
  * Type-level regression tests for `honoAdapter` generic inference.
@@ -44,6 +44,18 @@ describe('honoAdapter nominal decoupling', () => {
     }
     const verifier: Verifier<CreatedEvent> = () => ({ event: { id: 'e', type: 'thing.created', data: { object: { id: 'x' } } } });
     const handler = honoAdapter(new ExternalRouter(), { verifier });
+    expectTypeOf(handler).toBeFunction();
+  });
+
+  it('accepts a dispatcher narrowly typed to only the verified event (WebhookDispatcher<TEvent>)', () => {
+    // A consumer dispatcher typed to handle ONLY their verified event, not any
+    // WebhookEvent. The router param is `WebhookDispatcher<TEvent>` so this is
+    // accepted; it would be rejected by a hardcoded `WebhookDispatcher<WebhookEvent>`.
+    const narrowDispatcher: WebhookDispatcher<CreatedEvent> = {
+      async dispatch(_event: CreatedEvent): Promise<void> {},
+    };
+    const verifier: Verifier<CreatedEvent> = () => ({ event: { id: 'e', type: 'thing.created', data: { object: { id: 'x' } } } });
+    const handler = honoAdapter(narrowDispatcher, { verifier });
     expectTypeOf(handler).toBeFunction();
   });
 });

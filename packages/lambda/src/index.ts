@@ -37,7 +37,7 @@ export interface LambdaAdapterOptions<T extends WebhookEvent = WebhookEvent> {
 export function lambdaAdapter<
   TEvent extends WebhookEvent = WebhookEvent,
 >(
-  router: WebhookDispatcher,
+  router: WebhookDispatcher<TEvent>,
   options: LambdaAdapterOptions<TEvent>
 ): (event: APIGatewayProxyEvent, context: Context) => Promise<APIGatewayProxyResult> {
   const { verifier, onError } = options;
