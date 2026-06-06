@@ -10,18 +10,18 @@
     "deploy:workers": "astro build && wrangler deploy"
   },
   "dependencies": {
-    "@astrojs/starlight": "^0.37.6",
-    "astro": "^5.6.1",
+    "@astrojs/starlight": "^0.37.7",
+    "astro": "^5.18.2",
     "starlight-changelogs": "^0.4.0",
     "starlight-llms-txt": "^0.7.0",
     "starlight-typedoc": "^0.21.5",
-    "typedoc": "^0.28.17",
-    "typedoc-plugin-markdown": "^4.10.0"
+    "typedoc": "^0.28.19",
+    "typedoc-plugin-markdown": "^4.12.0"
   },
   "devDependencies": {
-    "@types/node": "^25.0.3",
-    "typescript": "^5.3.0",
-    "wrangler": "^4.90.0"
+    "@types/node": "^25.9.2",
+    "typescript": "^6.0.0",
+    "wrangler": "^4.98.0"
   },
   "engines": {
     "node": ">=18"
