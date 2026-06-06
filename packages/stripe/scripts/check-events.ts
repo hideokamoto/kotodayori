@@ -51,24 +51,46 @@ while ((lineMatch = eventLineRegex.exec(match[1])) !== null) {
 }
 
 // Read Stripe SDK types to find all event types
-// The EventTypes.d.ts file contains the union type of all event types
-const stripeTypesPath = path.join(__dirname, '../node_modules/stripe/types/EventTypes.d.ts');
+// Stripe v22+ uses cjs/resources/Events.d.ts with a union type
+// Stripe v20 used types/EventTypes.d.ts with per-interface type properties
+const stripeTypesPathNew = path.join(__dirname, '../node_modules/stripe/cjs/resources/Events.d.ts');
+const stripeTypesPathLegacy = path.join(__dirname, '../node_modules/stripe/types/EventTypes.d.ts');
 
-if (!fs.existsSync(stripeTypesPath)) {
+let stripeTypesPath: string;
+let isNewFormat: boolean;
+
+if (fs.existsSync(stripeTypesPathNew)) {
+  stripeTypesPath = stripeTypesPathNew;
+  isNewFormat = true;
+} else if (fs.existsSync(stripeTypesPathLegacy)) {
+  stripeTypesPath = stripeTypesPathLegacy;
+  isNewFormat = false;
+} else {
   console.error('Stripe EventTypes not found. Run pnpm install first.');
   process.exit(1);
 }
 
 const stripeTypes = fs.readFileSync(stripeTypesPath, 'utf-8');
 
-// Find all event type definitions by looking for the type property pattern
-// Each event interface has: type: 'event.name';
 const sdkEvents = new Set<string>();
-const eventNameRegex = /type:\s*'([^']+)';/g;
-let eventMatch;
-while ((eventMatch = eventNameRegex.exec(stripeTypes)) !== null) {
-  const eventName = eventMatch[1];
-  sdkEvents.add(eventName);
+if (isNewFormat) {
+  // Stripe v22+: type Type = 'event.name' | 'event.name' | ...;
+  const typeUnionRegex = /type Type = ([^;]+);/s;
+  const typeUnionMatch = stripeTypes.match(typeUnionRegex);
+  if (typeUnionMatch) {
+    const quotedNameRegex = /'([^']+)'/g;
+    let m;
+    while ((m = quotedNameRegex.exec(typeUnionMatch[1])) !== null) {
+      sdkEvents.add(m[1]);
+    }
+  }
+} else {
+  // Stripe v20: each event interface has: type: 'event.name';
+  const eventNameRegex = /type:\s*'([^']+)';/g;
+  let eventMatch;
+  while ((eventMatch = eventNameRegex.exec(stripeTypes)) !== null) {
+    sdkEvents.add(eventMatch[1]);
+  }
 }
 
 // Compare

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { detectPackageManager } from './install.js';
-import type { ExecaReturnValue } from 'execa';
+import type { Result } from 'execa';
 
 // Mock execa
 vi.mock('execa', () => ({
@@ -25,10 +25,10 @@ describe('Install Utilities', () => {
     it('should return pnpm when pnpm is available', async () => {
       const { execa } = await import('execa');
       vi.mocked(execa).mockResolvedValue({
-        stdout: '8.15.0' as unknown as Buffer,
-        stderr: '' as unknown as Buffer,
+        stdout: '8.15.0',
+        stderr: '',
         exitCode: 0,
-      } as ExecaReturnValue<Buffer>);
+      } as unknown as Result);
 
       const pm = await detectPackageManager();
       expect(pm).toBe('pnpm');

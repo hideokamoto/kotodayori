@@ -30,10 +30,10 @@
     "@kotodayori/core": "workspace:^"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.159",
-    "tsup": "^8.0.0",
-    "vitest": "^4.0.0",
-    "typescript": "^5.3.0"
+    "@types/aws-lambda": "^8.10.162",
+    "tsup": "^8.5.1",
+    "typescript": "^6.0.0",
+    "vitest": "^4.1.8"
   },
   "keywords": [
     "webhook",
