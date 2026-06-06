@@ -36,5 +36,6 @@
 - [ ] `pnpm lint` passes
 - [ ] `pnpm test` passes
 - [ ] `pnpm typecheck` passes
+- [ ] `pnpm build` passes
 - [ ] A changeset has been added (`pnpm changeset`) if this change affects published packages
 - [ ] Documentation has been updated if needed
