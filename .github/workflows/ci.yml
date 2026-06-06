@@ -90,8 +90,20 @@ jobs:
       - name: Build packages for tests
         run: pnpm --filter "./packages/*" build
 
-      - name: Run tests
-        run: pnpm test
+      # Run tests with coverage so the 80% thresholds in each package's
+      # vitest.config.ts are enforced (the job fails if coverage drops below them).
+      - name: Run tests with coverage
+        run: pnpm test:coverage
+
+      # Upload per-package lcov reports to Codecov. codecov-action auto-discovers
+      # packages/*/coverage/lcov.info. Kept non-blocking so a Codecov outage
+      # does not fail CI.
+      - name: Upload coverage to Codecov
+        if: matrix.node-version == 22
+        uses: codecov/codecov-action@v4
+        with:
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   build:
     name: Build

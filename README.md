@@ -1,5 +1,7 @@
 # Kotodayori
 
+[![codecov](https://codecov.io/gh/hideokamoto/kotodayori/branch/main/graph/badge.svg)](https://codecov.io/gh/hideokamoto/kotodayori)
+
 A Hono-inspired, type-safe webhook routing library for TypeScript.
 
 ## Overview
