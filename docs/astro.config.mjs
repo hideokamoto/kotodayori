@@ -74,8 +74,9 @@ export default defineConfig({
           label: 'Guides',
           translations: { ja: 'ガイド' },
           items: [
-            { label: 'Stripe Webhooks',  translations: { ja: 'Stripe Webhooks' },    slug: 'guides/stripe-webhooks' },
-            { label: 'Custom Webhooks',  translations: { ja: 'カスタム Webhook' },  slug: 'guides/custom-webhooks' },
+            { label: 'Stripe Webhooks',      translations: { ja: 'Stripe Webhooks' },      slug: 'guides/stripe-webhooks' },
+            { label: 'Cloudflare Workers',   translations: { ja: 'Cloudflare Workers' },   slug: 'guides/cloudflare-workers' },
+            { label: 'Custom Webhooks',      translations: { ja: 'カスタム Webhook' },      slug: 'guides/custom-webhooks' },
             { label: 'Middleware',       translations: { ja: 'ミドルウェア' },       slug: 'guides/middleware' },
             { label: 'Routing',          translations: { ja: 'ルーティング' },       slug: 'guides/routing' },
           ],
