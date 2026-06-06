@@ -256,6 +256,15 @@ export type StripeEventMap = {
   'reporting.report_run.succeeded': Stripe.ReportingReportRunSucceededEvent;
   'reporting.report_type.updated': Stripe.ReportingReportTypeUpdatedEvent;
 
+  // Reserve events
+  'reserve.hold.created': Stripe.ReserveHoldCreatedEvent;
+  'reserve.hold.updated': Stripe.ReserveHoldUpdatedEvent;
+  'reserve.plan.created': Stripe.ReservePlanCreatedEvent;
+  'reserve.plan.disabled': Stripe.ReservePlanDisabledEvent;
+  'reserve.plan.expired': Stripe.ReservePlanExpiredEvent;
+  'reserve.plan.updated': Stripe.ReservePlanUpdatedEvent;
+  'reserve.release.created': Stripe.ReserveReleaseCreatedEvent;
+
   // Review events
   'review.closed': Stripe.ReviewClosedEvent;
   'review.opened': Stripe.ReviewOpenedEvent;

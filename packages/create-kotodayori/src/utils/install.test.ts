@@ -25,8 +25,8 @@ describe('Install Utilities', () => {
     it('should return pnpm when pnpm is available', async () => {
       const { execa } = await import('execa');
       vi.mocked(execa).mockResolvedValue({
-        stdout: '8.15.0' as unknown as Buffer,
-        stderr: '' as unknown as Buffer,
+        stdout: '8.15.0',
+        stderr: '',
         exitCode: 0,
       } as unknown as Result);
 
