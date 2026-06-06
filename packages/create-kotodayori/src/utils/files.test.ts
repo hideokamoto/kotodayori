@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { pathExists, isEmpty, writeJson, copyDir } from './files.js';
+import { pathExists, isEmpty, writeJson, copyDir, copyAgentSkill } from './files.js';
 
 describe('File Utilities', () => {
   const testDir = path.join(process.cwd(), 'test-temp');
@@ -120,6 +120,59 @@ describe('File Utilities', () => {
 
       const content = await fs.readFile(path.join(destDir, 'package.json'), 'utf-8');
       expect(content).toBe('{"name":"my-app"}');
+    });
+  });
+
+  describe('copyAgentSkill', () => {
+    it('should return an empty list and write nothing when no agents are given', async () => {
+      const written = await copyAgentSkill(testDir, []);
+      expect(written).toEqual([]);
+
+      const entries = await fs.readdir(testDir);
+      expect(entries).toEqual([]);
+    });
+
+    it('should write SKILL.md into the Claude Code skills directory', async () => {
+      const written = await copyAgentSkill(testDir, ['claude-code']);
+
+      const expectedPath = path.join('.claude', 'skills', 'kotodayori-webhooks', 'SKILL.md');
+      expect(written).toEqual([expectedPath]);
+
+      const content = await fs.readFile(path.join(testDir, expectedPath), 'utf-8');
+      expect(content).toContain('name: kotodayori-webhooks');
+    });
+
+    it('should write SKILL.md into the Cursor skills directory', async () => {
+      const written = await copyAgentSkill(testDir, ['cursor']);
+
+      const expectedPath = path.join('.cursor', 'skills', 'kotodayori-webhooks', 'SKILL.md');
+      expect(written).toEqual([expectedPath]);
+
+      const exists = await pathExists(path.join(testDir, expectedPath));
+      expect(exists).toBe(true);
+    });
+
+    it('should write to multiple agent directories at once', async () => {
+      const written = await copyAgentSkill(testDir, ['claude-code', 'cursor']);
+
+      expect(written).toEqual([
+        path.join('.claude', 'skills', 'kotodayori-webhooks', 'SKILL.md'),
+        path.join('.cursor', 'skills', 'kotodayori-webhooks', 'SKILL.md'),
+      ]);
+    });
+
+    it('should throw a path-specific error when the skill template is missing', async () => {
+      const spy = vi
+        .spyOn(fs, 'readFile')
+        .mockRejectedValueOnce(
+          Object.assign(new Error('ENOENT: no such file or directory'), { code: 'ENOENT' })
+        );
+
+      await expect(copyAgentSkill(testDir, ['claude-code'])).rejects.toThrow(
+        /Agent skill template not found at .*SKILL\.md/
+      );
+
+      spy.mockRestore();
     });
   });
 

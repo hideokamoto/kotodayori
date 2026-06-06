@@ -1,12 +1,14 @@
 import prompts from 'prompts';
 import type { Framework } from './cli.js';
 import type { PackageManager } from './utils/install.js';
+import type { SkillAgent } from './utils/files.js';
 
 export interface ProjectConfig {
   projectName: string;
   framework: Framework;
   packageManager: PackageManager;
   shouldInstall: boolean;
+  agentSkills: SkillAgent[];
 }
 
 export async function promptForConfig(
@@ -64,6 +66,20 @@ export async function promptForConfig(
     });
   }
 
+  if (initialConfig.agentSkills === undefined) {
+    questions.push({
+      type: 'multiselect',
+      name: 'agentSkills',
+      message: 'Add the kotodayori-webhooks agent skill?',
+      choices: [
+        { title: 'Claude Code (.claude/skills)', value: 'claude-code' },
+        { title: 'Cursor (.cursor/skills)', value: 'cursor' },
+      ],
+      hint: '- Space to select, Enter to confirm. Leave empty to skip.',
+      instructions: false,
+    });
+  }
+
   const answers = await prompts(questions, {
     onCancel: () => {
       console.log('\nCancelled.');
@@ -79,5 +95,9 @@ export async function promptForConfig(
       initialConfig.shouldInstall !== undefined
         ? initialConfig.shouldInstall
         : answers['shouldInstall'],
+    agentSkills:
+      initialConfig.agentSkills !== undefined
+        ? initialConfig.agentSkills
+        : (answers['agentSkills'] ?? []),
   };
 }

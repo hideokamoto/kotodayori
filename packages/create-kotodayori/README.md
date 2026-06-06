@@ -36,6 +36,20 @@ Skip dependency installation:
 npx create-kotodayori --fw=hono --skip-install
 ```
 
+Add the `kotodayori-webhooks` agent skill for AI coding agents:
+
+```bash
+# One agent
+npx create-kotodayori --fw=hono --skill=claude-code
+
+# Multiple agents (comma-separated) or "all"
+npx create-kotodayori --fw=hono --skill=claude-code,cursor
+npx create-kotodayori --fw=hono --skill=all
+
+# Skip the skill (also skips the prompt)
+npx create-kotodayori --fw=hono --no-skill
+```
+
 ### All Options
 
 ```bash
@@ -45,9 +59,25 @@ Options:
   --fw, --framework <framework>     Framework to use (hono, express, lambda, eventbridge)
   --pm, --package-manager <pm>      Package manager to use (pnpm, npm, yarn, bun)
   --skip-install                    Skip installing dependencies
+  --skill <agents>                  Add the kotodayori-webhooks agent skill
+                                    (claude-code, cursor, all, none; comma-separated)
+  --no-skill                        Skip adding the agent skill
   -h, --help                        Display help message
   -v, --version                     Display version number
 ```
+
+## Agent skill
+
+When run interactively, `create-kotodayori` asks whether to drop the
+[`kotodayori-webhooks`](https://github.com/hideokamoto/kotodayori/tree/main/skills/kotodayori-webhooks)
+agent skill into your new project so AI coding agents (Claude Code, Cursor)
+understand the Kotodayori APIs out of the box. The `SKILL.md` is written to the
+agent's project-local skills directory:
+
+| Agent | Location |
+| --- | --- |
+| Claude Code | `.claude/skills/kotodayori-webhooks/SKILL.md` |
+| Cursor | `.cursor/skills/kotodayori-webhooks/SKILL.md` |
 
 ## Supported Frameworks
 
@@ -76,12 +106,14 @@ $ npx create-kotodayori
 ? Select framework: Hono
 ? Select package manager: pnpm
 ? Install dependencies? Yes
+? Add the kotodayori-webhooks agent skill? Claude Code
 
 Creating Kotodayori + Hono project...
 
 ✔ Template files created
 ✔ Dependencies installed successfully
 ✔ Project created successfully! 🎉
+✔ Added agent skill: .claude/skills/kotodayori-webhooks/SKILL.md
 
 Next steps:
 

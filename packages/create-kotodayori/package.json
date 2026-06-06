@@ -11,6 +11,8 @@
     "templates"
   ],
   "scripts": {
+    "sync:skill": "node scripts/sync-skill.mjs",
+    "prebuild": "node scripts/sync-skill.mjs",
     "build": "tsup",
     "dev": "tsup --watch",
     "test": "vitest run",
