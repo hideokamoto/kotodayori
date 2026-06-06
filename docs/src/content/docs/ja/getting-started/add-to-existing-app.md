@@ -56,7 +56,6 @@ pnpm add @kotodayori/stripe @kotodayori/zod @kotodayori/hono stripe zod
 ルーターを追加し、既存の Hono アプリのルートに結線します：
 
 ```typescript
-import { Hono } from 'hono';
 import Stripe from 'stripe';
 import { StripeWebhookRouter, createStripeVerifier } from '@kotodayori/stripe';
 import { honoAdapter } from '@kotodayori/hono';

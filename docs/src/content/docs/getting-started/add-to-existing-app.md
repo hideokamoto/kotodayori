@@ -56,7 +56,6 @@ pnpm add @kotodayori/stripe @kotodayori/zod @kotodayori/hono stripe zod
 Add a router and wire it onto a route in your existing Hono app:
 
 ```typescript
-import { Hono } from 'hono';
 import Stripe from 'stripe';
 import { StripeWebhookRouter, createStripeVerifier } from '@kotodayori/stripe';
 import { honoAdapter } from '@kotodayori/hono';
