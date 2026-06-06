@@ -1,5 +1,9 @@
 # @kotodayori/eventbridge
 
+[![npm version](https://img.shields.io/npm/v/%40kotodayori%2Feventbridge.svg?logo=npm&label=npm)](https://www.npmjs.com/package/@kotodayori/eventbridge)
+[![npm downloads](https://img.shields.io/npm/dm/%40kotodayori%2Feventbridge.svg)](https://www.npmjs.com/package/@kotodayori/eventbridge)
+[![license](https://img.shields.io/npm/l/%40kotodayori%2Feventbridge.svg)](https://www.npmjs.com/package/@kotodayori/eventbridge)
+
 AWS EventBridge adapter for Kotodayori webhook router.
 
 ## Overview

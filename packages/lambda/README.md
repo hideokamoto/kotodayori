@@ -1,5 +1,9 @@
 # @kotodayori/lambda
 
+[![npm version](https://img.shields.io/npm/v/%40kotodayori%2Flambda.svg?logo=npm&label=npm)](https://www.npmjs.com/package/@kotodayori/lambda)
+[![npm downloads](https://img.shields.io/npm/dm/%40kotodayori%2Flambda.svg)](https://www.npmjs.com/package/@kotodayori/lambda)
+[![license](https://img.shields.io/npm/l/%40kotodayori%2Flambda.svg)](https://www.npmjs.com/package/@kotodayori/lambda)
+
 AWS Lambda adapter for Kotodayori webhook router.
 
 ## Overview

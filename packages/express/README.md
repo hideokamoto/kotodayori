@@ -1,5 +1,9 @@
 # @kotodayori/express
 
+[![npm version](https://img.shields.io/npm/v/%40kotodayori%2Fexpress.svg?logo=npm&label=npm)](https://www.npmjs.com/package/@kotodayori/express)
+[![npm downloads](https://img.shields.io/npm/dm/%40kotodayori%2Fexpress.svg)](https://www.npmjs.com/package/@kotodayori/express)
+[![license](https://img.shields.io/npm/l/%40kotodayori%2Fexpress.svg)](https://www.npmjs.com/package/@kotodayori/express)
+
 Express framework adapter for Kotodayori webhook router.
 
 ## Overview

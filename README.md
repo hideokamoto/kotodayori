@@ -1,5 +1,10 @@
 # Kotodayori
 
+[![npm version](https://img.shields.io/npm/v/@kotodayori%2Fcore.svg?logo=npm&label=core)](https://www.npmjs.com/package/@kotodayori/core)
+[![npm version](https://img.shields.io/npm/v/@kotodayori%2Fstripe.svg?logo=npm&label=stripe)](https://www.npmjs.com/package/@kotodayori/stripe)
+[![npm downloads](https://img.shields.io/npm/dm/@kotodayori%2Fcore.svg)](https://www.npmjs.com/package/@kotodayori/core)
+[![license](https://img.shields.io/npm/l/@kotodayori%2Fcore.svg)](./LICENSE)
+
 A Hono-inspired, type-safe webhook routing library for TypeScript.
 
 ## Overview
@@ -17,13 +22,16 @@ Kotodayori provides a clean, type-safe API for handling webhooks from any event 
 
 ## Packages
 
-- `@kotodayori/core` - Core webhook routing logic and Verifier type
-- `@kotodayori/stripe` - Stripe-specific type definitions, router, and verifier
-- `@kotodayori/hono` - Hono framework adapter
-- `@kotodayori/express` - Express framework adapter
-- `@kotodayori/lambda` - AWS Lambda adapter
-- `@kotodayori/eventbridge` - AWS EventBridge adapter
-- `create-kotodayori` - Scaffolding tool for creating new projects
+| Package | npm | Description |
+|---------|-----|-------------|
+| [`@kotodayori/core`](./packages/core) | [![npm](https://img.shields.io/npm/v/@kotodayori%2Fcore.svg)](https://www.npmjs.com/package/@kotodayori/core) | Core webhook routing logic and Verifier type |
+| [`@kotodayori/stripe`](./packages/stripe) | [![npm](https://img.shields.io/npm/v/@kotodayori%2Fstripe.svg)](https://www.npmjs.com/package/@kotodayori/stripe) | Stripe-specific type definitions, router, and verifier |
+| [`@kotodayori/zod`](./packages/zod) | [![npm](https://img.shields.io/npm/v/@kotodayori%2Fzod.svg)](https://www.npmjs.com/package/@kotodayori/zod) | Zod schema validation helpers |
+| [`@kotodayori/hono`](./packages/hono) | [![npm](https://img.shields.io/npm/v/@kotodayori%2Fhono.svg)](https://www.npmjs.com/package/@kotodayori/hono) | Hono framework adapter |
+| [`@kotodayori/express`](./packages/express) | [![npm](https://img.shields.io/npm/v/@kotodayori%2Fexpress.svg)](https://www.npmjs.com/package/@kotodayori/express) | Express framework adapter |
+| [`@kotodayori/lambda`](./packages/lambda) | [![npm](https://img.shields.io/npm/v/@kotodayori%2Flambda.svg)](https://www.npmjs.com/package/@kotodayori/lambda) | AWS Lambda adapter |
+| [`@kotodayori/eventbridge`](./packages/eventbridge) | [![npm](https://img.shields.io/npm/v/@kotodayori%2Feventbridge.svg)](https://www.npmjs.com/package/@kotodayori/eventbridge) | AWS EventBridge adapter |
+| [`create-kotodayori`](./packages/create-kotodayori) | [![npm](https://img.shields.io/npm/v/create-kotodayori.svg)](https://www.npmjs.com/package/create-kotodayori) | Scaffolding tool for creating new projects |
 
 ## Examples (monorepo)
 

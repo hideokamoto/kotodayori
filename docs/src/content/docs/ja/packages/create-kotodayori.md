@@ -3,6 +3,10 @@ title: create-kotodayori
 description: 新規 Kotodayori プロジェクト用スキャフォールディングツール
 ---
 
+[![npm version](https://img.shields.io/npm/v/create-kotodayori.svg?logo=npm&label=npm)](https://www.npmjs.com/package/create-kotodayori)
+[![npm downloads](https://img.shields.io/npm/dm/create-kotodayori.svg)](https://www.npmjs.com/package/create-kotodayori)
+[![license](https://img.shields.io/npm/l/create-kotodayori.svg)](https://www.npmjs.com/package/create-kotodayori)
+
 `create-kotodayori` は、選択したフレームワークとパッケージマネージャーで新規 Kotodayori プロジェクトをスキャフォールドする CLI ツールです。
 
 ## 使い方

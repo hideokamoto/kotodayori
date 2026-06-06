@@ -3,6 +3,10 @@ title: "@kotodayori/stripe"
 description: Stripe 固有の型・ルーター・Verifier
 ---
 
+[![npm version](https://img.shields.io/npm/v/%40kotodayori%2Fstripe.svg?logo=npm&label=npm)](https://www.npmjs.com/package/@kotodayori/stripe)
+[![npm downloads](https://img.shields.io/npm/dm/%40kotodayori%2Fstripe.svg)](https://www.npmjs.com/package/@kotodayori/stripe)
+[![license](https://img.shields.io/npm/l/%40kotodayori%2Fstripe.svg)](https://www.npmjs.com/package/@kotodayori/stripe)
+
 Stripe パッケージは、コアルーターを Stripe 固有の型で拡張し、Stripe Webhook の署名検証機能を提供します。
 
 ## インストール

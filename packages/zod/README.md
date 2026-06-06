@@ -1,5 +1,9 @@
 # @kotodayori/zod
 
+[![npm version](https://img.shields.io/npm/v/%40kotodayori%2Fzod.svg?logo=npm&label=npm)](https://www.npmjs.com/package/@kotodayori/zod)
+[![npm downloads](https://img.shields.io/npm/dm/%40kotodayori%2Fzod.svg)](https://www.npmjs.com/package/@kotodayori/zod)
+[![license](https://img.shields.io/npm/l/%40kotodayori%2Fzod.svg)](https://www.npmjs.com/package/@kotodayori/zod)
+
 Zod schema validation helpers for Kotodayori webhook router.
 
 ## Overview

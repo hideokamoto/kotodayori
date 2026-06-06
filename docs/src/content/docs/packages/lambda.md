@@ -3,6 +3,10 @@ title: "@kotodayori/lambda"
 description: AWS Lambda (API Gateway) adapter for Kotodayori
 ---
 
+[![npm version](https://img.shields.io/npm/v/%40kotodayori%2Flambda.svg?logo=npm&label=npm)](https://www.npmjs.com/package/@kotodayori/lambda)
+[![npm downloads](https://img.shields.io/npm/dm/%40kotodayori%2Flambda.svg)](https://www.npmjs.com/package/@kotodayori/lambda)
+[![license](https://img.shields.io/npm/l/%40kotodayori%2Flambda.svg)](https://www.npmjs.com/package/@kotodayori/lambda)
+
 The Lambda adapter runs a Kotodayori router in response to API Gateway HTTP events (e.g. webhook endpoints behind API Gateway).
 
 ## Installation

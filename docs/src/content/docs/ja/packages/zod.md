@@ -3,6 +3,10 @@ title: "@kotodayori/zod"
 description: ランタイムバリデーション用の Zod スキーマヘルパー
 ---
 
+[![npm version](https://img.shields.io/npm/v/%40kotodayori%2Fzod.svg?logo=npm&label=npm)](https://www.npmjs.com/package/@kotodayori/zod)
+[![npm downloads](https://img.shields.io/npm/dm/%40kotodayori%2Fzod.svg)](https://www.npmjs.com/package/@kotodayori/zod)
+[![license](https://img.shields.io/npm/l/%40kotodayori%2Fzod.svg)](https://www.npmjs.com/package/@kotodayori/zod)
+
 Zod パッケージは、Kotodayori の型安全なルーティングにランタイムスキーマ検証を追加します。外部または信頼性の低いソースからの Webhook ペイロードをランタイムで検証する必要がある場合に使用してください。
 
 ## インストール

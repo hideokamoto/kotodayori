@@ -3,6 +3,10 @@ title: "@kotodayori/eventbridge"
 description: AWS EventBridge adapter for Kotodayori
 ---
 
+[![npm version](https://img.shields.io/npm/v/%40kotodayori%2Feventbridge.svg?logo=npm&label=npm)](https://www.npmjs.com/package/@kotodayori/eventbridge)
+[![npm downloads](https://img.shields.io/npm/dm/%40kotodayori%2Feventbridge.svg)](https://www.npmjs.com/package/@kotodayori/eventbridge)
+[![license](https://img.shields.io/npm/l/%40kotodayori%2Feventbridge.svg)](https://www.npmjs.com/package/@kotodayori/eventbridge)
+
 The EventBridge adapter runs a Kotodayori router when invoked by an AWS EventBridge event. Because EventBridge delivers events from within your AWS account, no signature verification is required.
 
 ## Installation

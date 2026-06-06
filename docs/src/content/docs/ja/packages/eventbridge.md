@@ -3,6 +3,10 @@ title: "@kotodayori/eventbridge"
 description: Kotodayori の AWS EventBridge アダプター
 ---
 
+[![npm version](https://img.shields.io/npm/v/%40kotodayori%2Feventbridge.svg?logo=npm&label=npm)](https://www.npmjs.com/package/@kotodayori/eventbridge)
+[![npm downloads](https://img.shields.io/npm/dm/%40kotodayori%2Feventbridge.svg)](https://www.npmjs.com/package/@kotodayori/eventbridge)
+[![license](https://img.shields.io/npm/l/%40kotodayori%2Feventbridge.svg)](https://www.npmjs.com/package/@kotodayori/eventbridge)
+
 EventBridge アダプターは、AWS EventBridge イベントによって呼び出されたときに Kotodayori ルーターを実行します。EventBridge はお客様の AWS アカウント内からイベントを配信するため、署名検証は不要です。
 
 ## インストール

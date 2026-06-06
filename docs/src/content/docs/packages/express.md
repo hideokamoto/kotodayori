@@ -3,6 +3,10 @@ title: "@kotodayori/express"
 description: Express framework adapter for Kotodayori
 ---
 
+[![npm version](https://img.shields.io/npm/v/%40kotodayori%2Fexpress.svg?logo=npm&label=npm)](https://www.npmjs.com/package/@kotodayori/express)
+[![npm downloads](https://img.shields.io/npm/dm/%40kotodayori%2Fexpress.svg)](https://www.npmjs.com/package/@kotodayori/express)
+[![license](https://img.shields.io/npm/l/%40kotodayori%2Fexpress.svg)](https://www.npmjs.com/package/@kotodayori/express)
+
 The Express adapter connects a Kotodayori router to an Express app. You must provide the raw request body for signature verification.
 
 ## Installation
