@@ -11,6 +11,8 @@ A Hono-inspired, type-safe webhook routing library for TypeScript.
 
 Kotodayori provides a clean, type-safe API for handling webhooks from any event source. It features a modular architecture with adapters for popular frameworks and platforms, and a pluggable verifier system for signature validation.
 
+> **Languages / 日本語**: Japanese package READMEs are available for [`@kotodayori/core`](./packages/core/README.ja.md) and [`@kotodayori/stripe`](./packages/stripe/README.ja.md).
+
 ## Features
 
 - **Type-Safe**: Full TypeScript support with generic event type definitions

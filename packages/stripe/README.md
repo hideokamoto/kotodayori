@@ -1,3 +1,5 @@
+**English** | [日本語](./README.ja.md)
+
 # @kotodayori/stripe
 
 [![npm version](https://img.shields.io/npm/v/%40kotodayori%2Fstripe.svg?logo=npm&label=npm)](https://www.npmjs.com/package/@kotodayori/stripe)
