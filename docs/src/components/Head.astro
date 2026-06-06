@@ -5,8 +5,6 @@ import Default from '@astrojs/starlight/components/Head.astro';
 <Default><slot /></Default>
 
 <script>
-  import mermaid from 'mermaid';
-
   const getTheme = () => {
     const theme = document.documentElement.dataset.theme;
     const isDark =
@@ -17,23 +15,36 @@ import Default from '@astrojs/starlight/components/Head.astro';
   };
 
   async function renderMermaid() {
-    const blocks = document.querySelectorAll<HTMLElement>('pre.mermaid');
+    const theme = getTheme();
+    // Only (re)render blocks that haven't been rendered for the current theme.
+    // This keeps the initial render idempotent even if both the direct call
+    // below and an `astro:page-load` event fire, while still re-rendering on
+    // theme toggle or client-side navigation to a new set of diagrams.
+    const blocks = Array.from(
+      document.querySelectorAll<HTMLElement>('pre.mermaid'),
+    ).filter((block) => block.dataset.renderedTheme !== theme);
     if (blocks.length === 0) return;
 
-    // Preserve the original diagram source so we can re-render on theme change.
     blocks.forEach((block) => {
+      // Preserve the original source so we can re-render on theme change.
       if (!block.dataset.source) {
         block.dataset.source = block.textContent ?? '';
       }
       block.removeAttribute('data-processed');
-      block.innerHTML = block.dataset.source;
+      block.textContent = block.dataset.source;
+      block.dataset.renderedTheme = theme;
     });
 
-    mermaid.initialize({ startOnLoad: false, theme: getTheme() });
+    // Lazy-load Mermaid so the ~1MB library is only fetched on pages that
+    // actually contain a diagram.
+    const { default: mermaid } = await import('mermaid');
+    mermaid.initialize({ startOnLoad: false, theme });
     await mermaid.run({ nodes: blocks });
   }
 
-  // Initial render and re-render after client-side navigation.
+  // Render on initial load (Starlight does not enable Astro's ClientRouter by
+  // default, so `astro:page-load` would not otherwise fire) and again after
+  // client-side navigation when view transitions are enabled.
   document.addEventListener('astro:page-load', renderMermaid);
   renderMermaid();
 
