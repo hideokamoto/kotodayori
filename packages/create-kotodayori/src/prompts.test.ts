@@ -22,6 +22,7 @@ describe('Prompts', () => {
         framework: 'hono',
         packageManager: 'pnpm',
         shouldInstall: true,
+        agentSkills: [],
       });
 
       expect(config).toEqual({
@@ -29,6 +30,7 @@ describe('Prompts', () => {
         framework: 'hono',
         packageManager: 'pnpm',
         shouldInstall: true,
+        agentSkills: [],
       });
 
       // Should not prompt for anything since all values are provided
@@ -126,6 +128,7 @@ describe('Prompts', () => {
         framework: 'lambda',
         packageManager: 'bun',
         shouldInstall: true,
+        agentSkills: ['claude-code'],
       });
 
       const config = await promptForConfig({});
@@ -135,12 +138,69 @@ describe('Prompts', () => {
         framework: 'lambda',
         packageManager: 'bun',
         shouldInstall: true,
+        agentSkills: ['claude-code'],
       });
 
       const calls = vi.mocked(prompts).mock.calls[0];
       expect(calls).toBeDefined();
       const questions = calls?.[0] as prompts.PromptObject[];
-      expect(questions.length).toBe(4);
+      expect(questions.length).toBe(5);
+    });
+
+    it('should prompt for missing agentSkills', async () => {
+      const prompts = (await import('prompts')).default;
+      vi.mocked(prompts).mockResolvedValue({
+        agentSkills: ['claude-code', 'cursor'],
+      });
+
+      const config = await promptForConfig({
+        projectName: 'my-project',
+        framework: 'hono',
+        packageManager: 'pnpm',
+        shouldInstall: true,
+      });
+
+      expect(config.agentSkills).toEqual(['claude-code', 'cursor']);
+
+      const calls = vi.mocked(prompts).mock.calls[0];
+      expect(calls).toBeDefined();
+      const questions = calls?.[0] as prompts.PromptObject[];
+      expect(questions.some((q: prompts.PromptObject) => q.name === 'agentSkills')).toBe(true);
+    });
+
+    it('should not prompt for agentSkills when provided (including empty)', async () => {
+      const prompts = (await import('prompts')).default;
+      vi.mocked(prompts).mockResolvedValue({});
+
+      const config = await promptForConfig({
+        projectName: 'my-project',
+        framework: 'hono',
+        packageManager: 'pnpm',
+        shouldInstall: true,
+        agentSkills: [],
+      });
+
+      expect(config.agentSkills).toEqual([]);
+
+      const calls = vi.mocked(prompts).mock.calls[0];
+      expect(calls).toBeDefined();
+      const questions = calls?.[0] as prompts.PromptObject[];
+      expect(questions.some((q: prompts.PromptObject) => q.name === 'agentSkills')).toBe(false);
+    });
+
+    it('should default agentSkills to empty array when none selected', async () => {
+      const prompts = (await import('prompts')).default;
+      // multiselect returns undefined / nothing when the user selects nothing
+      vi.mocked(prompts).mockResolvedValue({});
+
+      const config = await promptForConfig({
+        projectName: 'my-project',
+        framework: 'hono',
+        packageManager: 'pnpm',
+        shouldInstall: true,
+      });
+
+      expect(config.agentSkills).toEqual([]);
     });
 
     it('should handle shouldInstall=false correctly', async () => {

@@ -10,7 +10,7 @@ import { generateExpressProject } from './generators/express.js';
 import { generateLambdaProject } from './generators/lambda.js';
 import { generateEventBridgeProject } from './generators/eventbridge.js';
 import { logger } from './utils/logger.js';
-import { pathExists, isEmpty } from './utils/files.js';
+import { pathExists, isEmpty, copyAgentSkill } from './utils/files.js';
 
 async function main() {
   console.log();
@@ -28,6 +28,7 @@ async function main() {
     if (cliOptions.framework) configInput.framework = cliOptions.framework;
     if (cliOptions.packageManager) configInput.packageManager = cliOptions.packageManager;
     if (cliOptions.skipInstall !== undefined) configInput.shouldInstall = !cliOptions.skipInstall;
+    if (cliOptions.agentSkills !== undefined) configInput.agentSkills = cliOptions.agentSkills;
 
     const config = await promptForConfig(configInput);
 
@@ -87,6 +88,14 @@ async function main() {
           `Framework "${config.framework}" is not supported.`
         );
         process.exit(1);
+    }
+
+    // Optionally add the kotodayori-webhooks agent skill for AI coding agents.
+    if (config.agentSkills.length > 0) {
+      const written = await copyAgentSkill(targetDir, config.agentSkills);
+      for (const file of written) {
+        logger.success(`Added agent skill: ${file}`);
+      }
     }
   } catch (error) {
     console.log();

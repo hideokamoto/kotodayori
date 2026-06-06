@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseCli } from './cli.js';
+import { parseCli, parseSkillOption } from './cli.js';
 
 describe('CLI Parser', () => {
   describe('Project Name', () => {
@@ -72,6 +72,64 @@ describe('CLI Parser', () => {
     it('should default to undefined when flag is not provided', () => {
       const options = parseCli(['node', 'create-kotodayori']);
       expect(options.skipInstall).toBeUndefined();
+    });
+  });
+
+  describe('Agent Skill Option', () => {
+    it('should parse a single agent', () => {
+      const options = parseCli(['node', 'create-kotodayori', '--skill', 'claude-code']);
+      expect(options.agentSkills).toEqual(['claude-code']);
+    });
+
+    it('should parse a comma-separated list of agents', () => {
+      const options = parseCli(['node', 'create-kotodayori', '--skill', 'claude-code,cursor']);
+      expect(options.agentSkills).toEqual(['claude-code', 'cursor']);
+    });
+
+    it('should expand "all" to every supported agent', () => {
+      const options = parseCli(['node', 'create-kotodayori', '--skill', 'all']);
+      expect(options.agentSkills).toEqual(['claude-code', 'cursor']);
+    });
+
+    it('should treat "none" as an explicit empty selection', () => {
+      const options = parseCli(['node', 'create-kotodayori', '--skill', 'none']);
+      expect(options.agentSkills).toEqual([]);
+    });
+
+    it('should treat --no-skill as an explicit empty selection', () => {
+      const options = parseCli(['node', 'create-kotodayori', '--no-skill']);
+      expect(options.agentSkills).toEqual([]);
+    });
+
+    it('should be undefined when no skill flag is provided', () => {
+      const options = parseCli(['node', 'create-kotodayori']);
+      expect(options.agentSkills).toBeUndefined();
+    });
+  });
+
+  describe('parseSkillOption', () => {
+    it('returns undefined when the flag is absent', () => {
+      expect(parseSkillOption(undefined)).toBeUndefined();
+    });
+
+    it('returns [] for --no-skill (false)', () => {
+      expect(parseSkillOption(false)).toEqual([]);
+    });
+
+    it('accepts the "claude" alias', () => {
+      expect(parseSkillOption('claude')).toEqual(['claude-code']);
+    });
+
+    it('deduplicates repeated agents', () => {
+      expect(parseSkillOption('cursor,cursor')).toEqual(['cursor']);
+    });
+
+    it('ignores unknown tokens', () => {
+      expect(parseSkillOption('cursor,bogus')).toEqual(['cursor']);
+    });
+
+    it('is case and whitespace insensitive', () => {
+      expect(parseSkillOption(' Claude-Code , CURSOR ')).toEqual(['claude-code', 'cursor']);
     });
   });
 

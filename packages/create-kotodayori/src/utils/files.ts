@@ -66,6 +66,45 @@ export async function copyDir(
   }
 }
 
+export type SkillAgent = 'claude-code' | 'cursor';
+
+const SKILL_NAME = 'kotodayori-webhooks';
+
+// Where each agent expects project-local skills to live.
+const AGENT_SKILL_DIRS: Record<SkillAgent, string> = {
+  'claude-code': '.claude/skills',
+  cursor: '.cursor/skills',
+};
+
+/**
+ * Copy the bundled kotodayori-webhooks agent skill into the generated project
+ * for each requested agent. Returns the list of written paths (relative to
+ * targetDir) so the caller can report them.
+ */
+export async function copyAgentSkill(
+  targetDir: string,
+  agents: SkillAgent[]
+): Promise<string[]> {
+  if (agents.length === 0) {
+    return [];
+  }
+
+  const packageRoot = getPackageRoot();
+  const skillSource = path.join(packageRoot, 'templates', 'skill', 'SKILL.md');
+  const content = await fs.readFile(skillSource, 'utf-8');
+
+  const written: string[] = [];
+  for (const agent of agents) {
+    const destDir = path.join(targetDir, AGENT_SKILL_DIRS[agent], SKILL_NAME);
+    await fs.mkdir(destDir, { recursive: true });
+    const destPath = path.join(destDir, 'SKILL.md');
+    await fs.writeFile(destPath, content);
+    written.push(path.relative(targetDir, destPath));
+  }
+
+  return written;
+}
+
 export async function writeJson(
   filePath: string,
   data: Record<string, unknown>
