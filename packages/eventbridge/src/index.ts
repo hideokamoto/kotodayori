@@ -1,5 +1,5 @@
 import type { EventBridgeEvent, Context } from 'aws-lambda';
-import type { WebhookRouter, WebhookEvent } from '@kotodayori/core';
+import type { WebhookDispatcher, WebhookEvent } from '@kotodayori/core';
 
 /**
  * Options for the EventBridge adapter
@@ -19,8 +19,8 @@ export interface EventBridgeAdapterOptions {
  * @param options - Adapter options
  * @returns Lambda handler function
  */
-export function eventBridgeAdapter<TEventMap extends Record<string, WebhookEvent>>(
-  router: WebhookRouter<TEventMap>,
+export function eventBridgeAdapter(
+  router: WebhookDispatcher,
   options: EventBridgeAdapterOptions = {}
 ): (event: EventBridgeEvent<string, unknown>, context: Context) => Promise<void> {
   return async (
@@ -67,4 +67,4 @@ export function eventBridgeAdapter<TEventMap extends Record<string, WebhookEvent
 }
 
 // Re-export core types
-export { WebhookRouter, type WebhookEvent, type EventHandler, type Middleware, type Verifier, type VerifyResult } from '@kotodayori/core';
+export { WebhookRouter, type WebhookDispatcher, type WebhookEvent, type EventHandler, type Middleware, type Verifier, type VerifyResult } from '@kotodayori/core';

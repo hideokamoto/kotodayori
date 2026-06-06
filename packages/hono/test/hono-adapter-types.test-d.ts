@@ -36,6 +36,18 @@ interface DriftEvent extends WebhookEvent {
   data: { object: unknown };
 }
 
+describe('honoAdapter nominal decoupling', () => {
+  it('accepts any structurally-compatible dispatcher (no nominal coupling to WebhookRouter)', () => {
+    class ExternalRouter {
+      private secret = 1; // makes it nominally distinct from WebhookRouter
+      async dispatch(_event: WebhookEvent): Promise<void> {}
+    }
+    const verifier: Verifier<CreatedEvent> = () => ({ event: { id: 'e', type: 'thing.created', data: { object: { id: 'x' } } } });
+    const handler = honoAdapter(new ExternalRouter(), { verifier });
+    expectTypeOf(handler).toBeFunction();
+  });
+});
+
 describe('honoAdapter generic inference', () => {
   it('accepts a typed router with a verifier whose event union matches the map', () => {
     const router = new WebhookRouter<EventMap>();
