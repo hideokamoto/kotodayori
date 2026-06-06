@@ -26,13 +26,18 @@ Kotodayori は、あらゆるイベントソースからの Webhook を処理す
 
 ## クイックスタート
 
-最も手軽に始めるには、スキャフォールディングツールを使用します：
+始め方は2通りあります：
+
+- **[クイックスタート](/ja/getting-started/quick-start/)** — `create-kotodayori` でゼロから新規プロジェクトを生成。
+- **[既存アプリへの追加](/ja/getting-started/add-to-existing-app/)** — お持ちのアプリにパッケージを組み込む。
+
+新規プロジェクトを生成する場合：
 
 ```bash
 npx create-kotodayori
 ```
 
-または、Stripe と Hono をインストールして直接使用する場合：
+または、既存アプリで Stripe と Hono をインストールして使用する場合：
 
 ```bash
 pnpm add @kotodayori/stripe @kotodayori/hono stripe
