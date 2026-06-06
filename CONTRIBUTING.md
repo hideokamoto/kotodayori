@@ -12,6 +12,7 @@ Thank you for your interest in contributing to Kotodayori! This document provide
 - [Testing](#testing)
 - [Code Style](#code-style)
 - [Commit Guidelines](#commit-guidelines)
+- [Creating a Changeset](#creating-a-changeset)
 - [Pull Request Process](#pull-request-process)
 - [Adding New Packages](#adding-new-packages)
 
@@ -23,7 +24,7 @@ Please be respectful and constructive in all interactions with the community. We
 
 Before contributing, please:
 
-1. Check existing [issues](https://github.com/hideokamoto/stripe-webhook-router/issues) to see if your concern is already being addressed
+1. Check existing [issues](https://github.com/hideokamoto/kotodayori/issues) to see if your concern is already being addressed
 2. For new features, open an issue first to discuss the proposed changes
 3. For bug fixes, feel free to submit a PR directly with a clear description
 
@@ -40,8 +41,8 @@ Before contributing, please:
 1. Fork and clone the repository:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/stripe-webhook-router.git
-cd stripe-webhook-router
+git clone https://github.com/YOUR_USERNAME/kotodayori.git
+cd kotodayori
 ```
 
 2. Install dependencies:
@@ -278,6 +279,47 @@ test(core): improve middleware test coverage
 chore(repo): update dependencies
 ```
 
+## Creating a Changeset
+
+We use [Changesets](https://github.com/changesets/changesets) to manage versioning and changelogs. If your change affects the published behavior of one or more packages, add a changeset to your PR.
+
+### When is a changeset needed?
+
+Add a changeset when your PR:
+
+- Adds a new feature (`minor`)
+- Fixes a bug (`patch`)
+- Introduces a breaking change (`major`)
+- Makes any other change that should appear in a package's `CHANGELOG.md`
+
+You do **not** need a changeset for changes that don't affect published packages, such as documentation, CI config, tests, or internal tooling.
+
+### How to add one
+
+From the root of the repository, run:
+
+```bash
+pnpm changeset
+```
+
+The interactive prompt will ask you to:
+
+1. **Select the affected package(s)** - choose every package your change touches.
+2. **Choose the semver bump** for each package:
+   - `patch` - bug fixes and other backwards-compatible changes
+   - `minor` - new, backwards-compatible features
+   - `major` - breaking changes
+3. **Write a summary** - this text is added to the package `CHANGELOG.md`, so write it for consumers.
+
+This creates a `.changeset/*.md` file. Commit it together with your code changes so it is included in the PR:
+
+```bash
+git add .changeset
+git commit -m "feat(core): add custom error handlers"
+```
+
+Once your PR is merged into `main`, the Changesets GitHub Action opens a "Version Packages" PR that consumes the changeset, bumps versions, and updates changelogs. See [RELEASE.md](RELEASE.md) for the full release flow.
+
 ## Pull Request Process
 
 ### Before Submitting
@@ -425,7 +467,7 @@ pnpm build
 
 If you have questions or need help:
 
-- Open a [GitHub issue](https://github.com/hideokamoto/stripe-webhook-router/issues)
+- Open a [GitHub issue](https://github.com/hideokamoto/kotodayori/issues)
 - Check existing documentation in the [README](README.md)
 - Look at existing packages for examples
 
