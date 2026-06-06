@@ -1,5 +1,21 @@
 # @kotodayori/stripe
 
+## 1.2.0
+
+### Minor Changes
+
+- 23dbfa0: Add Stripe v22 `reserve.*` event types to `StripeEventMap`
+
+  Seven new event types introduced in Stripe v22 are now covered:
+  `reserve.hold.created`, `reserve.hold.updated`, `reserve.plan.created`,
+  `reserve.plan.disabled`, `reserve.plan.expired`, `reserve.plan.updated`,
+  `reserve.release.created`.
+
+### Patch Changes
+
+- Updated dependencies [23dbfa0]
+  - @kotodayori/core@1.2.1
+
 ## 1.1.1
 
 ### Patch Changes

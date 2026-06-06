@@ -1,5 +1,18 @@
 # @kotodayori/lambda
 
+## 1.1.2
+
+### Patch Changes
+
+- 23dbfa0: Update dev dependencies for TypeScript 6 compatibility
+
+  Bumped `typescript` to v6, `@types/node` to v25, `vitest` to v4.1, and other
+  dev tooling to their latest versions. No changes to public API or runtime
+  behaviour.
+
+- Updated dependencies [23dbfa0]
+  - @kotodayori/core@1.2.1
+
 ## 1.1.1
 
 ### Patch Changes

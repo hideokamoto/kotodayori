@@ -1,6 +1,6 @@
 {
   "name": "@kotodayori/eventbridge",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "AWS EventBridge adapter for Kotodayori Webhook Router",
   "type": "module",
   "main": "./dist/index.cjs",
