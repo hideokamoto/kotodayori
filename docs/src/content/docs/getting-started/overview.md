@@ -44,6 +44,7 @@ flowchart LR
 
 ## Next steps
 
-- [Installation](/getting-started/installation/) — Install Kotodayori and choose your adapter
+- [Quick Start](/getting-started/quick-start/) — Scaffold a new project with `create-kotodayori`
+- [Add to an Existing App](/getting-started/add-to-existing-app/) — Add Kotodayori to an app you already have
 - [Stripe Webhooks](/guides/stripe-webhooks/) — Set up Stripe webhooks with type safety
 - [Custom Webhooks](/guides/custom-webhooks/) — Use Kotodayori with any webhook provider

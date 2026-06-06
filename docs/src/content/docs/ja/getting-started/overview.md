@@ -44,6 +44,7 @@ flowchart LR
 
 ## 次のステップ
 
-- [インストール](/ja/getting-started/installation/) — Kotodayori をインストールしてアダプターを選択
+- [クイックスタート](/ja/getting-started/quick-start/) — `create-kotodayori` で新規プロジェクトを生成
+- [既存アプリへの追加](/ja/getting-started/add-to-existing-app/) — お持ちのアプリに Kotodayori を組み込む
 - [Stripe Webhooks](/ja/guides/stripe-webhooks/) — 型安全な Stripe Webhook のセットアップ
 - [カスタム Webhook](/ja/guides/custom-webhooks/) — Kotodayori をあらゆる Webhook プロバイダーで使用

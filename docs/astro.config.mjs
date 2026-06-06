@@ -52,8 +52,9 @@ export default defineConfig({
           label: 'Getting Started',
           translations: { ja: 'はじめに' },
           items: [
-            { label: 'Overview',     translations: { ja: '概要' },         slug: 'getting-started/overview' },
-            { label: 'Installation', translations: { ja: 'インストール' }, slug: 'getting-started/installation' },
+            { label: 'Overview',             translations: { ja: '概要' },                 slug: 'getting-started/overview' },
+            { label: 'Quick Start',          translations: { ja: 'クイックスタート' },     slug: 'getting-started/quick-start' },
+            { label: 'Add to an Existing App', translations: { ja: '既存アプリへの追加' }, slug: 'getting-started/add-to-existing-app' },
           ],
         },
         {
