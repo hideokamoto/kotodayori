@@ -1,0 +1,26 @@
+{
+  "name": "@kotodayori-examples/idempotency-express",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsup",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@kotodayori/express": "workspace:*",
+    "@kotodayori/idempotency": "workspace:*",
+    "@kotodayori/stripe": "workspace:*",
+    "express": "^5.0.0",
+    "stripe": "^22.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^25.0.0",
+    "tsup": "^8.5.1",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.0"
+  }
+}

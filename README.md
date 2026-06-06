@@ -23,6 +23,7 @@ Kotodayori provides a clean, type-safe API for handling webhooks from any event 
 - `@kotodayori/express` - Express framework adapter
 - `@kotodayori/lambda` - AWS Lambda adapter
 - `@kotodayori/eventbridge` - AWS EventBridge adapter
+- `@kotodayori/idempotency` - Idempotency middleware and stores for safe duplicate-delivery handling (🚧 preview / upcoming)
 - `create-kotodayori` - Scaffolding tool for creating new projects
 
 ## Examples (monorepo)

@@ -8,6 +8,9 @@
 | --- | --- |
 | `sample-hono-stripe` | Hono + Stripe 署名検証 + `StripeWebhookRouter` |
 | `sample-express-stripe` | Express + `express.raw` + `expressAdapter` |
+| `idempotency-express` | Express + `@kotodayori/idempotency` ミドルウェア（🚧 プレビュー） |
+| `idempotency-lambda` | AWS Lambda + `DynamoDBStore`（🚧 プレビュー） |
+| `idempotency-hono` | Hono + `@kotodayori/idempotency` ミドルウェア（🚧 プレビュー） |
 
 ## 再生成する場合
 

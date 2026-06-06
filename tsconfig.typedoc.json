@@ -9,7 +9,8 @@
       "@kotodayori/hono": ["./packages/hono/src/index.ts"],
       "@kotodayori/express": ["./packages/express/src/index.ts"],
       "@kotodayori/lambda": ["./packages/lambda/src/index.ts"],
-      "@kotodayori/eventbridge": ["./packages/eventbridge/src/index.ts"]
+      "@kotodayori/eventbridge": ["./packages/eventbridge/src/index.ts"],
+      "@kotodayori/idempotency": ["./packages/idempotency/src/index.ts"]
     }
   },
   "include": [
@@ -19,7 +20,8 @@
     "packages/hono/src/**/*",
     "packages/express/src/**/*",
     "packages/lambda/src/**/*",
-    "packages/eventbridge/src/**/*"
+    "packages/eventbridge/src/**/*",
+    "packages/idempotency/src/**/*"
   ],
   "exclude": [
     "node_modules",

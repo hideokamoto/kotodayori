@@ -82,6 +82,99 @@ importers:
         specifier: ^4.98.0
         version: 4.98.0
 
+  examples/idempotency-express:
+    dependencies:
+      '@kotodayori/express':
+        specifier: workspace:*
+        version: link:../../packages/express
+      '@kotodayori/idempotency':
+        specifier: workspace:*
+        version: link:../../packages/idempotency
+      '@kotodayori/stripe':
+        specifier: workspace:*
+        version: link:../../packages/stripe
+      express:
+        specifier: ^5.0.0
+        version: 5.2.1
+      stripe:
+        specifier: ^22.0.0
+        version: 22.2.0(@types/node@25.9.2)
+    devDependencies:
+      '@types/express':
+        specifier: ^5.0.0
+        version: 5.0.6
+      '@types/node':
+        specifier: ^25.0.0
+        version: 25.9.2
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(postcss@8.5.15)(tsx@4.22.4)(typescript@6.0.3)(yaml@2.9.0)
+      tsx:
+        specifier: ^4.22.4
+        version: 4.22.4
+      typescript:
+        specifier: ^6.0.0
+        version: 6.0.3
+
+  examples/idempotency-hono:
+    dependencies:
+      '@kotodayori/hono':
+        specifier: workspace:*
+        version: link:../../packages/hono
+      '@kotodayori/idempotency':
+        specifier: workspace:*
+        version: link:../../packages/idempotency
+      '@kotodayori/stripe':
+        specifier: workspace:*
+        version: link:../../packages/stripe
+      hono:
+        specifier: ^4.12.23
+        version: 4.12.23
+      stripe:
+        specifier: ^22.0.0
+        version: 22.2.0(@types/node@25.9.2)
+    devDependencies:
+      '@types/node':
+        specifier: ^25.0.0
+        version: 25.9.2
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(postcss@8.5.15)(tsx@4.22.4)(typescript@6.0.3)(yaml@2.9.0)
+      tsx:
+        specifier: ^4.22.4
+        version: 4.22.4
+      typescript:
+        specifier: ^6.0.0
+        version: 6.0.3
+
+  examples/idempotency-lambda:
+    dependencies:
+      '@kotodayori/idempotency':
+        specifier: workspace:*
+        version: link:../../packages/idempotency
+      '@kotodayori/lambda':
+        specifier: workspace:*
+        version: link:../../packages/lambda
+      '@kotodayori/stripe':
+        specifier: workspace:*
+        version: link:../../packages/stripe
+      stripe:
+        specifier: ^22.0.0
+        version: 22.2.0(@types/node@25.9.2)
+    devDependencies:
+      '@types/aws-lambda':
+        specifier: ^8.10.145
+        version: 8.10.162
+      '@types/node':
+        specifier: ^25.0.0
+        version: 25.9.2
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(postcss@8.5.15)(tsx@4.22.4)(typescript@6.0.3)(yaml@2.9.0)
+      typescript:
+        specifier: ^6.0.0
+        version: 6.0.3
+
   examples/sample-express-stripe:
     dependencies:
       '@kotodayori/express':

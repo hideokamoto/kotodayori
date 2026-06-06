@@ -1,0 +1,22 @@
+{
+  "name": "@kotodayori-examples/idempotency-lambda",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@kotodayori/idempotency": "workspace:*",
+    "@kotodayori/lambda": "workspace:*",
+    "@kotodayori/stripe": "workspace:*",
+    "stripe": "^22.0.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.145",
+    "@types/node": "^25.0.0",
+    "tsup": "^8.5.1",
+    "typescript": "^6.0.0"
+  }
+}

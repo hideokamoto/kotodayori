@@ -1,0 +1,25 @@
+{
+  "name": "@kotodayori-examples/idempotency-hono",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsup",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@kotodayori/hono": "workspace:*",
+    "@kotodayori/idempotency": "workspace:*",
+    "@kotodayori/stripe": "workspace:*",
+    "hono": "^4.12.23",
+    "stripe": "^22.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.0",
+    "tsup": "^8.5.1",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.0"
+  }
+}
