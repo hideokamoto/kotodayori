@@ -100,13 +100,25 @@ export interface FanoutOptions {
 }
 
 /**
+ * Structural contract an adapter needs from a router: just the ability to
+ * dispatch a verified event. Adapters accept this interface instead of the
+ * concrete `WebhookRouter` class so that a router from a *different installed
+ * copy* of `@kotodayori/core` (duplicate install) is still accepted without a
+ * cast — interfaces are matched structurally, whereas `WebhookRouter` is
+ * nominal because of its private fields.
+ */
+export interface WebhookDispatcher<TEvent extends WebhookEvent = WebhookEvent> {
+  dispatch(event: TEvent): Promise<void>;
+}
+
+/**
  * WebhookRouter - A type-safe event router for webhook events
  *
  * @typeParam TEventMap - A mapping of event type strings to their event types
  */
 export class WebhookRouter<
   TEventMap extends Record<string, WebhookEvent> = DefaultEventMap,
-> {
+> implements WebhookDispatcher<TEventMap[keyof TEventMap] | WebhookEvent> {
   private handlers: Map<string, EventHandler<WebhookEvent>[]> = new Map();
   private middlewares: Middleware[] = [];
 

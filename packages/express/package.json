@@ -27,7 +27,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@kotodayori/core": "workspace:*"
+    "@kotodayori/core": "workspace:^"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",

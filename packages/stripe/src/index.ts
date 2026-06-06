@@ -366,8 +366,8 @@ export type StripeEventType<T extends StripeEventName> = StripeEventMap[T];
 export type { Stripe };
 
 // Re-export core types and classes
-import { WebhookRouter, type WebhookEvent, type EventHandler, type Verifier, type VerifyResult } from '@kotodayori/core';
-export { WebhookRouter, type WebhookEvent, type EventHandler, type Verifier, type VerifyResult };
+import { WebhookRouter, type WebhookDispatcher, type WebhookEvent, type EventHandler, type Verifier, type VerifyResult } from '@kotodayori/core';
+export { WebhookRouter, type WebhookDispatcher, type WebhookEvent, type EventHandler, type Verifier, type VerifyResult };
 
 /**
  * Type-safe Stripe Webhook Router

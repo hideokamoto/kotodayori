@@ -1,5 +1,5 @@
 import type { Context } from 'hono';
-import type { WebhookRouter, WebhookEvent, Verifier } from '@kotodayori/core';
+import type { WebhookDispatcher, WebhookEvent, Verifier } from '@kotodayori/core';
 
 /**
  * Options for the Hono adapter
@@ -31,15 +31,14 @@ export interface HonoAdapterOptions<T extends WebhookEvent = WebhookEvent> {
  * }));
  * ```
  *
- * @param router - The WebhookRouter instance
+ * @param router - A WebhookDispatcher (any object with a `dispatch(event)` method, e.g. WebhookRouter)
  * @param options - Adapter options including a verifier function
  * @returns Hono handler function
  */
 export function honoAdapter<
-  TEventMap extends Record<string, WebhookEvent>,
-  TEvent extends WebhookEvent = TEventMap[keyof TEventMap],
+  TEvent extends WebhookEvent = WebhookEvent,
 >(
-  router: WebhookRouter<TEventMap>,
+  router: WebhookDispatcher<TEvent>,
   options: HonoAdapterOptions<TEvent>
 ): (c: Context) => Promise<Response> {
   const { verifier, onError } = options;
@@ -90,4 +89,4 @@ export function honoAdapter<
 }
 
 // Re-export core types
-export { WebhookRouter, type WebhookEvent, type EventHandler, type Middleware, type Verifier, type VerifyResult } from '@kotodayori/core';
+export { WebhookRouter, type WebhookDispatcher, type WebhookEvent, type EventHandler, type Middleware, type Verifier, type VerifyResult } from '@kotodayori/core';

@@ -1,5 +1,5 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
-import type { WebhookRouter, WebhookEvent, Verifier } from '@kotodayori/core';
+import type { WebhookDispatcher, WebhookEvent, Verifier } from '@kotodayori/core';
 
 /**
  * Options for the Lambda adapter
@@ -30,15 +30,14 @@ export interface LambdaAdapterOptions<T extends WebhookEvent = WebhookEvent> {
  * });
  * ```
  *
- * @param router - The WebhookRouter instance
+ * @param router - A WebhookDispatcher (any object with a `dispatch(event)` method, e.g. WebhookRouter)
  * @param options - Adapter options including a verifier function
  * @returns Lambda handler function
  */
 export function lambdaAdapter<
-  TEventMap extends Record<string, WebhookEvent>,
-  TEvent extends WebhookEvent = TEventMap[keyof TEventMap],
+  TEvent extends WebhookEvent = WebhookEvent,
 >(
-  router: WebhookRouter<TEventMap>,
+  router: WebhookDispatcher<TEvent>,
   options: LambdaAdapterOptions<TEvent>
 ): (event: APIGatewayProxyEvent, context: Context) => Promise<APIGatewayProxyResult> {
   const { verifier, onError } = options;
@@ -122,4 +121,4 @@ export function lambdaAdapter<
 }
 
 // Re-export core types
-export { WebhookRouter, type WebhookEvent, type EventHandler, type Middleware, type Verifier, type VerifyResult } from '@kotodayori/core';
+export { WebhookRouter, type WebhookDispatcher, type WebhookEvent, type EventHandler, type Middleware, type Verifier, type VerifyResult } from '@kotodayori/core';

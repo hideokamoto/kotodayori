@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import type { WebhookRouter, WebhookEvent, Verifier } from '@kotodayori/core';
+import type { WebhookDispatcher, WebhookEvent, Verifier } from '@kotodayori/core';
 
 /**
  * Options for the Express adapter
@@ -34,15 +34,14 @@ export interface ExpressAdapterOptions<T extends WebhookEvent = WebhookEvent> {
  * );
  * ```
  *
- * @param router - The WebhookRouter instance
+ * @param router - A WebhookDispatcher (any object with a `dispatch(event)` method, e.g. WebhookRouter)
  * @param options - Adapter options including a verifier function
  * @returns Express middleware function
  */
 export function expressAdapter<
-  TEventMap extends Record<string, WebhookEvent>,
-  TEvent extends WebhookEvent = TEventMap[keyof TEventMap],
+  TEvent extends WebhookEvent = WebhookEvent,
 >(
-  router: WebhookRouter<TEventMap>,
+  router: WebhookDispatcher<TEvent>,
   options: ExpressAdapterOptions<TEvent>
 ): (req: Request, res: Response, next: NextFunction) => Promise<void> {
   const { verifier, onError } = options;
@@ -113,4 +112,4 @@ export function expressAdapter<
 }
 
 // Re-export core types
-export { WebhookRouter, type WebhookEvent, type EventHandler, type Middleware, type Verifier, type VerifyResult } from '@kotodayori/core';
+export { WebhookRouter, type WebhookDispatcher, type WebhookEvent, type EventHandler, type Middleware, type Verifier, type VerifyResult } from '@kotodayori/core';

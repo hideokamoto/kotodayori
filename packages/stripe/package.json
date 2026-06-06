@@ -28,7 +28,7 @@
     "check-events": "tsx scripts/check-events.ts"
   },
   "dependencies": {
-    "@kotodayori/core": "workspace:*"
+    "@kotodayori/core": "workspace:^"
   },
   "devDependencies": {
     "stripe": "^20.3.1",

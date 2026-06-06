@@ -28,7 +28,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@kotodayori/core": "workspace:*"
+    "@kotodayori/core": "workspace:^"
   },
   "peerDependencies": {
     "zod": "^4.0.0"

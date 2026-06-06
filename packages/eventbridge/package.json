@@ -27,7 +27,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@kotodayori/core": "workspace:*"
+    "@kotodayori/core": "workspace:^"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.159",

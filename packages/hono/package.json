@@ -27,7 +27,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@kotodayori/core": "workspace:*"
+    "@kotodayori/core": "workspace:^"
   },
   "devDependencies": {
     "hono": "^4.11.9",

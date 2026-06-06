@@ -196,7 +196,7 @@ importers:
   packages/eventbridge:
     dependencies:
       '@kotodayori/core':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../core
     devDependencies:
       '@types/aws-lambda':
@@ -215,7 +215,7 @@ importers:
   packages/express:
     dependencies:
       '@kotodayori/core':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../core
     devDependencies:
       '@types/express':
@@ -237,7 +237,7 @@ importers:
   packages/hono:
     dependencies:
       '@kotodayori/core':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../core
     devDependencies:
       hono:
@@ -256,7 +256,7 @@ importers:
   packages/lambda:
     dependencies:
       '@kotodayori/core':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../core
     devDependencies:
       '@types/aws-lambda':
@@ -275,7 +275,7 @@ importers:
   packages/stripe:
     dependencies:
       '@kotodayori/core':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../core
     devDependencies:
       stripe:
@@ -297,7 +297,7 @@ importers:
   packages/zod:
     dependencies:
       '@kotodayori/core':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../core
     devDependencies:
       tsup:
