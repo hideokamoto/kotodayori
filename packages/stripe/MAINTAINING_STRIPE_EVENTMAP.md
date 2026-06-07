@@ -39,7 +39,7 @@ export type StripeEventMap = {
 4. Run `pnpm run check-events` to verify
 5. Run `pnpm test` to ensure types compile correctly
 
-## stripe SDK Version Policy
+## Stripe SDK Version Policy
 
 - **devDependency**: `^22.0.0` — the pinned range used for local development and CI builds
 - **peerDependency**: `>=17.0.0` — the minimum version consumers must provide
