@@ -44,7 +44,7 @@ export type StripeEventMap = {
 The event map is only ever derived from the **installed** `stripe` SDK. The
 check script (`scripts/check-events.ts`) reads
 `node_modules/stripe/cjs/resources/Events.d.ts` from the pinned SDK and diffs
-it against `StripeEventMap`. The version is fixed in two places:
+it against `StripeEventMap`. The version is specified in two places:
 
 - **devDependency `stripe: ^22.0.0`** — the version actually installed and used
   to generate/verify the event map. It is locked in `pnpm-lock.yaml`, so a
