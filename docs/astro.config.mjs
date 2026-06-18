@@ -31,7 +31,7 @@ export default defineConfig({
       ],
       plugins: [
         starlightBlog({
-          title: 'Blog',
+          title: { en: 'Blog', ja: 'ブログ' },
           authors: {
             hideokamoto: {
               name: 'Hidetaka Okamoto',

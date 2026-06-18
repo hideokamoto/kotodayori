@@ -1,11 +1,41 @@
-import { defineCollection } from 'astro:content';
-import { docsLoader } from '@astrojs/starlight/loaders';
-import { docsSchema } from '@astrojs/starlight/schema';
+import { defineCollection, z } from 'astro:content';
+import { docsLoader, i18nLoader } from '@astrojs/starlight/loaders';
+import { docsSchema, i18nSchema } from '@astrojs/starlight/schema';
 import { changelogsLoader } from 'starlight-changelogs/loader';
 import { blogSchema } from 'starlight-blog/schema';
 
 export const collections = {
   docs: defineCollection({ loader: docsLoader(), schema: docsSchema({ extend: (context) => blogSchema(context) }) }),
+  i18n: defineCollection({
+    loader: i18nLoader(),
+    // Extend Starlight's i18n schema with starlight-blog's UI string keys so we can
+    // provide Japanese translations (the plugin only bundles de/en/fr/it).
+    schema: i18nSchema({
+      extend: z
+        .object({
+          'starlightBlog.authors.count_one': z.string(),
+          'starlightBlog.authors.count_other': z.string(),
+          'starlightBlog.metrics.readingTime.minutes': z.string(),
+          'starlightBlog.metrics.words_one': z.string(),
+          'starlightBlog.metrics.words_other': z.string(),
+          'starlightBlog.pagination.prev': z.string(),
+          'starlightBlog.pagination.next': z.string(),
+          'starlightBlog.post.lastUpdate': z.string(),
+          'starlightBlog.post.draft': z.string(),
+          'starlightBlog.post.featured': z.string(),
+          'starlightBlog.post.tags': z.string(),
+          'starlightBlog.sidebar.all': z.string(),
+          'starlightBlog.sidebar.featured': z.string(),
+          'starlightBlog.sidebar.recent': z.string(),
+          'starlightBlog.sidebar.tags': z.string(),
+          'starlightBlog.sidebar.authors': z.string(),
+          'starlightBlog.sidebar.rss': z.string(),
+          'starlightBlog.tags.count_one': z.string(),
+          'starlightBlog.tags.count_other': z.string(),
+        })
+        .partial(),
+    }),
+  }),
   changelogs: defineCollection({
     loader: changelogsLoader([
       {
