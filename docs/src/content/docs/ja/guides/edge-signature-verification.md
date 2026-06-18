@@ -90,7 +90,7 @@ export function createStripeVerifier(
 }
 ```
 
-Kotodayori のすべてのアダプターは、ディスパッチ前に verifier を既に `await` しています。たとえば Hono アダプターは `packages/hono/src/index.ts` で `verifier(rawBody, headers)` を await します。そのため非同期 verifier は Node でもそのまま使えます。`constructEventAsync` は Node でも正しく動きます。Node の crypto プロバイダーが同期・非同期の両方のメソッドを実装しているためです。結果として、ランタイム固有の分岐なしに Node と Edge の両方をカバーする単一の verifier になります。この設計意図は関数自身のドキュメントに記録されており（`packages/stripe/src/index.ts:393-398`）、変更はコミット `55a69c4`（"feat(stripe): support Cloudflare Workers / Edge via async verifier"、`@kotodayori/stripe` 1.1.0 としてリリース）で入りました。
+Kotodayori のすべてのアダプターは、ディスパッチ前に verifier を既に `await` しています。たとえば Hono アダプターは `packages/hono/src/index.ts:64` で `verifier(rawBody, headers)` を await します。そのため非同期 verifier は Node でもそのまま使えます。`constructEventAsync` は Node でも正しく動きます。Node の crypto プロバイダーが同期・非同期の両方のメソッドを実装しているためです。結果として、ランタイム固有の分岐なしに Node と Edge の両方をカバーする単一の verifier になります。この設計意図は関数自身のドキュメントに記録されており（`packages/stripe/src/index.ts:393-398`）、変更はコミット `55a69c4`（"feat(stripe): support Cloudflare Workers / Edge via async verifier"、`@kotodayori/stripe` 1.1.0 としてリリース）で入りました。
 
 残る 2 つの要件は、検証ロジックではなく構築時の関心事であるため、引き続き呼び出し側の責務です。Stripe クライアントを構築して HTTP トランスポートを選ぶこと、生ボディが verifier に届くようルートを組むことです。verifier が持つのは検証呼び出しだけです。3 つすべてを満たす完全な Workers の構成は [Cloudflare Workers ガイド](/ja/guides/cloudflare-workers)に掲載しています。
 
