@@ -1,5 +1,6 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import starlightBlog from 'starlight-blog';
 import starlightChangelogs, { makeChangelogsSidebarLinks } from 'starlight-changelogs';
 import starlightLlmsTxt from 'starlight-llms-txt';
 import starlightTypeDoc, { typeDocSidebarGroup } from 'starlight-typedoc';
@@ -29,6 +30,16 @@ export default defineConfig({
         },
       ],
       plugins: [
+        starlightBlog({
+          title: 'Blog',
+          authors: {
+            hideokamoto: {
+              name: 'Hideoki Amamoto',
+              url: 'https://github.com/hideokamoto',
+              picture: 'https://avatars.githubusercontent.com/u/1578452?v=4',
+            },
+          },
+        }),
         starlightChangelogs(),
         starlightLlmsTxt(),
         starlightTypeDoc({
