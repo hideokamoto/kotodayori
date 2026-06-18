@@ -5,17 +5,17 @@ authors:
   - hideokamoto
 tags:
   - announcement
-excerpt: Kotodayori のブログを開設しました。ライブラリのアップデートや使い方のヒントを発信していきます。
+excerpt: We've launched the Kotodayori blog! Stay tuned for library updates, tips, and behind-the-scenes posts.
 ---
 
-Kotodayori のブログへようこそ！
+Welcome to the Kotodayori blog!
 
-このブログでは、ライブラリのリリース情報・使い方のヒント・開発の裏側などを発信していきます。
+This blog covers library release notes, usage tips, and development insights.
 
-## Kotodayori とは
+## What is Kotodayori?
 
-Kotodayori は、Hono にインスパイアされた TypeScript 向けの型安全な Webhook ルーティングライブラリです。
-Stripe・AWS EventBridge など、さまざまなプロバイダーの Webhook を統一的なインターフェースで処理できます。
+Kotodayori is a Hono-inspired, type-safe webhook routing library for TypeScript.
+It lets you handle webhooks from Stripe, AWS EventBridge, and more through a unified interface.
 
 ```ts
 import { KotodayoriApp } from '@kotodayori/stripe';
@@ -27,4 +27,4 @@ app.on('customer.subscription.created', async (event) => {
 });
 ```
 
-これから定期的に情報を発信していきますので、よろしくお願いします！
+We'll be posting regularly — stay tuned!

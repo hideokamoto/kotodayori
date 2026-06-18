@@ -34,7 +34,7 @@ export default defineConfig({
           title: 'Blog',
           authors: {
             hideokamoto: {
-              name: 'Hideoki Amamoto',
+              name: 'Hidetaka Okamoto',
               url: 'https://github.com/hideokamoto',
               picture: 'https://avatars.githubusercontent.com/u/1578452?v=4',
             },
