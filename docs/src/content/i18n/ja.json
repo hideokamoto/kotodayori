@@ -1,0 +1,21 @@
+{
+  "starlightBlog.authors.count_one": "{{author}} の投稿 {{count}} 件",
+  "starlightBlog.authors.count_other": "{{author}} の投稿 {{count}} 件",
+  "starlightBlog.metrics.readingTime.minutes": " - 約 {{count}} 分で読めます",
+  "starlightBlog.metrics.words_one": " - {{count}} 語",
+  "starlightBlog.metrics.words_other": " - {{count}} 語",
+  "starlightBlog.pagination.prev": "新しい投稿",
+  "starlightBlog.pagination.next": "過去の投稿",
+  "starlightBlog.post.lastUpdate": " - 最終更新: <time datetime=\"{{isoDate}}\">{{date, datetime(dateStyle: medium)}}</time>",
+  "starlightBlog.post.draft": "下書き",
+  "starlightBlog.post.featured": "注目",
+  "starlightBlog.post.tags": "タグ:",
+  "starlightBlog.sidebar.all": "すべての投稿",
+  "starlightBlog.sidebar.featured": "注目の投稿",
+  "starlightBlog.sidebar.recent": "最近の投稿",
+  "starlightBlog.sidebar.tags": "タグ",
+  "starlightBlog.sidebar.authors": "投稿者",
+  "starlightBlog.sidebar.rss": "RSS",
+  "starlightBlog.tags.count_one": "タグ「{{tag}}」が付いた投稿 {{count}} 件",
+  "starlightBlog.tags.count_other": "タグ「{{tag}}」が付いた投稿 {{count}} 件"
+}
