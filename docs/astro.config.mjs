@@ -98,6 +98,8 @@ export default defineConfig({
             { label: 'Custom Webhooks',      translations: { ja: 'カスタム Webhook' },      slug: 'guides/custom-webhooks' },
             { label: 'Middleware',       translations: { ja: 'ミドルウェア' },       slug: 'guides/middleware' },
             { label: 'Routing',          translations: { ja: 'ルーティング' },       slug: 'guides/routing' },
+            { label: 'Edge Signature Verification', translations: { ja: 'Edge での署名検証' }, slug: 'guides/edge-signature-verification' },
+            { label: 'Router Type Compatibility',   translations: { ja: 'ルーターの型互換性' }, slug: 'guides/router-type-compatibility' },
           ],
         },
         {
