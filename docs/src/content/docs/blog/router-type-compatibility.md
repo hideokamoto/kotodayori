@@ -1,6 +1,12 @@
 ---
 title: "Nominal vs Structural Types: WebhookDispatcher and Duplicate Installs"
-description: Why adapters once required `as unknown as WebhookRouter`, and how a single-method structural interface removed the cast without weakening type inference
+date: 2026-06-18
+authors:
+  - hideokamoto
+tags:
+  - typescript
+  - internals
+excerpt: "Why adapters once required `as unknown as WebhookRouter`, and how a single-method structural interface removed the cast without weakening type inference."
 ---
 
 Before `@kotodayori/core` 1.2.0, wiring a router into an adapter sometimes required a cast that looked out of place — both values come from the same library, yet the type checker rejected the call without it:

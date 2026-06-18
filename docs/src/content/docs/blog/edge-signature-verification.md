@@ -1,6 +1,12 @@
 ---
 title: Stripe Signature Verification on Edge Runtimes
-description: Why synchronous constructEvent fails on Cloudflare Workers and Deno Deploy, and how the async Web Crypto path makes one verifier work everywhere
+date: 2026-06-18
+authors:
+  - hideokamoto
+tags:
+  - stripe
+  - edge-runtime
+excerpt: Why synchronous constructEvent fails on Cloudflare Workers and Deno Deploy, and how createStripeVerifier's async Web Crypto path makes a single verifier work on both Node and Edge.
 ---
 
 Deploying a Stripe webhook handler to an Edge runtime such as [Cloudflare Workers](https://developers.cloudflare.com/workers/) or [Deno Deploy](https://deno.com/deploy) with verification code that works on Node.js produces an immediate failure. With stripe-node 22.2.0 (the version resolved in this repository's `pnpm-lock.yaml`), the SDK throws:

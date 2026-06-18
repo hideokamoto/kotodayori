@@ -1,6 +1,12 @@
 ---
 title: Edge ランタイムでの Stripe Webhook 署名検証
-description: 同期版 constructEvent が Cloudflare Workers や Deno Deploy で失敗する理由と、非同期 Web Crypto によって単一の verifier がすべてのランタイムで動く仕組み
+date: 2026-06-18
+authors:
+  - hideokamoto
+tags:
+  - stripe
+  - edge-runtime
+excerpt: 同期版 constructEvent が Cloudflare Workers や Deno Deploy で失敗する理由と、createStripeVerifier の非同期 Web Crypto によって単一の verifier が Node と Edge の両方で動く仕組み。
 ---
 
 [Cloudflare Workers](https://developers.cloudflare.com/workers/) や [Deno Deploy](https://deno.com/deploy) のような Edge ランタイムへ、Node.js で動いていた検証コードのまま Stripe Webhook ハンドラーをデプロイすると、即座に失敗します。このリポジトリの `pnpm-lock.yaml` で解決されている stripe-node 22.2.0 では、SDK が次の例外を throw します。

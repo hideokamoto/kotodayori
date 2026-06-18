@@ -1,6 +1,12 @@
 ---
 title: nominal 型 vs structural 型 — 重複インストールと WebhookDispatcher
-description: アダプターがかつて `as unknown as WebhookRouter` キャストを必要とした理由と、単一メソッドの structural なインターフェースが型推論を弱めずにそのキャストを取り除いた仕組み
+date: 2026-06-18
+authors:
+  - hideokamoto
+tags:
+  - typescript
+  - internals
+excerpt: アダプターがかつて `as unknown as WebhookRouter` キャストを必要とした理由と、単一メソッドの structural なインターフェースが型推論を弱めずにそのキャストを取り除いた仕組み。
 ---
 
 `@kotodayori/core` 1.2.0 より前は、ルーターをアダプターに渡す際に、場違いに見えるキャストが必要になることがありました。どちらの値も同じライブラリ由来であるにもかかわらず、これが無いと型チェッカーが呼び出しを拒否したのです。
