@@ -79,6 +79,59 @@ git push
 
 ---
 
+## `next` ブランチでの先行リリース（`beta` ではなく `next` タグ）
+
+本リリース前に、マージ済みの変更をまとめて先行配布したい場合は `next` ブランチを使います。
+
+```
+機能 PR
+  ↓
+next ブランチへ merge
+  ↓
+CircleCI (npm-monorepo.yaml) が自動実行:
+  changeset version（pre-release モード。x.y.z-next.N を採番）
+    → next へコミット & push（[skip ci]）
+    → changeset publish --tag next（npm 公開・OIDC）
+    → タグ push
+```
+
+**`main` の正式リリースとは公開経路が別**です。`npm publish` は `--tag` を指定しなければ `latest` を更新してしまうため、`next` 向けの publish には必ず `pnpm changeset:publish:next`（`changeset publish --tag next`）を使います。`main` 向けの `pnpm changeset:publish` を `next` ブランチで使うと `latest` が壊れるので絶対に使わないでください。
+
+### セットアップ（初回のみ）
+
+`next` ブランチで Changesets の pre-release モードに入り、`.changeset/pre.json` をコミットします。
+
+```bash
+git checkout -b next origin/main
+pnpm changeset pre enter next
+git add .changeset/pre.json
+git commit -m "chore: enter next pre-release mode"
+git push -u origin next
+```
+
+以降、`next` へのマージのたびに CI が `x.y.z-next.0`, `x.y.z-next.1`, ... を採番して `next` タグで公開します。
+
+`next` の内容を `main` へ取り込んで正式リリースする場合は、`next` ブランチ側で pre-release モードを抜けてから通常の changeset フローに戻します。
+
+```bash
+git checkout next
+pnpm changeset pre exit
+git add .changeset
+git commit -m "chore: exit next pre-release mode"
+git push
+# その後 main へ PR を作成してマージする
+```
+
+### 利用者向け案内
+
+```bash
+npm install @kotodayori/core@next
+```
+
+`next` は先行機能を含む可能性があり、`main` の正式リリースほど安定性を保証しません。
+
+---
+
 ## ローカルでの手動リリース
 
 CI 環境以外でリリースしたい場合（テスト目的など）：

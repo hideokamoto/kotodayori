@@ -13,7 +13,8 @@
     "prepare": "husky",
     "changeset": "changeset",
     "changeset:version": "changeset version",
-    "changeset:publish": "pnpm build && changeset publish"
+    "changeset:publish": "pnpm build && changeset publish",
+    "changeset:publish:next": "pnpm build && changeset publish --tag next"
   },
   "devDependencies": {
     "@changesets/cli": "^2.31.0",
