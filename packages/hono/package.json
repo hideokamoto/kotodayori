@@ -44,14 +44,19 @@
     "hono",
     "typescript"
   ],
+  "author": {
+    "name": "Hidetaka Okamoto",
+    "url": "https://github.com/hideokamoto"
+  },
   "license": "MIT",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/hideokamoto/stripe-webhook-router"
+    "url": "git+https://github.com/hideokamoto/kotodayori.git",
+    "directory": "packages/hono"
   },
-  "homepage": "https://github.com/hideokamoto/stripe-webhook-router#readme",
-  "bugs": "https://github.com/hideokamoto/stripe-webhook-router/issues"
+  "homepage": "https://github.com/hideokamoto/kotodayori#readme",
+  "bugs": "https://github.com/hideokamoto/kotodayori/issues"
 }
