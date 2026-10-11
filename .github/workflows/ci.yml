@@ -1,5 +1,12 @@
 name: CI
 
+# lint / typecheck / build / test on Node 24 run on CircleCI
+# (pipeline "validate" -> workflows/validation/npm.yaml in
+# hideokamoto/circleci-configurations, via multiple config files).
+# This workflow only keeps the checks the shared CircleCI template
+# does not cover: the oldest supported Node line and the Stripe
+# event-map sync check.
+
 on:
   push:
     branches:
@@ -11,8 +18,8 @@ on:
       - develop
 
 jobs:
-  lint:
-    name: Lint
+  test-node22:
+    name: Test (Node 22)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -27,61 +34,6 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: '22'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Run linting
-        run: pnpm lint
-
-  typecheck:
-    name: Type Check
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '22'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      # examples/* typecheck imports workspace packages via dist/*.d.ts — build all libraries first (excludes docs).
-      - name: Build packages for type resolution
-        run: pnpm --filter "./packages/*" build
-
-      - name: Run type checking
-        run: pnpm typecheck
-
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [22, 24]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
 
       - name: Install dependencies
@@ -92,31 +44,6 @@ jobs:
 
       - name: Run tests
         run: pnpm test
-
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    needs: [lint, typecheck, test]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '22'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build packages
-        run: pnpm build
 
   check-stripe-events:
     name: Check Stripe Events Sync
