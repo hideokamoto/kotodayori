@@ -32,7 +32,7 @@ Before contributing, please:
 ### Prerequisites
 
 - **Node.js**: >= 18.0.0
-- **pnpm**: 8.15.0 (exact version enforced by `packageManager` in package.json)
+- **pnpm**: 9.15.0 (exact version enforced by `packageManager` in package.json)
 - **TypeScript**: 5.3.0 or higher
 
 ### Installation
@@ -288,6 +288,7 @@ chore(repo): update dependencies
 4. Build all packages: `pnpm build`
 5. Update documentation if needed
 6. Add tests for new features
+7. **Add a changeset** if your change affects published package code (`packages/*/src` or `packages/*/package.json`): run `pnpm changeset` and commit the generated `.changeset/*.md` file. Merging to `main` is the only release trigger — without a changeset, nothing ships (a `pre-push` hook blocks such pushes). Docs/CI/test-only changes need no changeset. See [RELEASE.md](RELEASE.md).
 
 ### PR Description
 

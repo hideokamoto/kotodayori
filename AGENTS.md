@@ -7,6 +7,8 @@ Kotodayori is a pnpm monorepo of TypeScript packages for type-safe webhook routi
 - Preserve the **Verifier** contract: raw body (`Buffer` or `string`) before signature verification; never verify a parsed JSON object.
 - **Express**: register `express.raw({ type: 'application/json' })` on the webhook route before `expressAdapter`.
 - Run checks from the repo root when changing packages: `pnpm build`, `pnpm typecheck`, `pnpm lint`, `pnpm test`.
+- **Include a changeset** in any PR that changes `packages/*/src` or `packages/*/package.json`. Merging to `main` is the only release trigger, and a PR without `.changeset/*.md` silently ships nothing (a `pre-push` hook blocks such pushes). Run `pnpm changeset`, or write the file directly — frontmatter maps each changed package to `patch`/`minor`/`major`, followed by a CHANGELOG summary. Docs/CI/test-only changes need no changeset. See `RELEASE.md`.
+- Write **Conventional Commits** commit messages (enforced by commitlint via `.husky/commit-msg`; types and scopes are listed in `CONTRIBUTING.md`).
 
 ## Where to look
 

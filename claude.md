@@ -724,6 +724,22 @@ chore: update dependencies
 - Be concise but descriptive
 - Reference issues/PRs when applicable
 
+Commit messages are enforced by commitlint (`.husky/commit-msg`, `@commitlint/config-conventional`).
+
+### Releases (Changesets)
+
+PRs that change `packages/*/src` or `packages/*/package.json` **must include a `.changeset/*.md` file** — merging to `main` is the only release trigger, and without a changeset nothing ships. A `pre-push` hook blocks pushes that lack one. Run `pnpm changeset` (interactive) or write the file directly:
+
+```markdown
+---
+"@kotodayori/core": patch
+---
+
+Short summary for the CHANGELOG
+```
+
+Docs/CI/test-only changes need no changeset. Full flow (version bump → npm publish via OIDC → tag push, all on CircleCI): see `RELEASE.md`.
+
 ### Git Operations
 
 **Push to Feature Branch**:
