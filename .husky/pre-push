@@ -1,0 +1,36 @@
+#!/bin/sh
+# Block pushes that change publishable package code without adding a changeset.
+# Releases only happen when a `.changeset/*.md` file lands on main, so a branch
+# without one would silently never ship. Bypass with `git push --no-verify`.
+
+while read -r local_ref local_sha _remote_ref _remote_sha; do
+  case "$local_ref" in
+    ""|refs/heads/main) continue ;;
+  esac
+  # Deleting a branch pushes sha 0000000...
+  [ "$local_sha" = "0000000000000000000000000000000000000000" ] && continue
+
+  git fetch origin main --quiet 2>/dev/null || true
+  base=$(git merge-base origin/main "$local_sha" 2>/dev/null) || continue
+  [ -z "$base" ] && continue
+
+  changed=$(git diff --name-only "$base" "$local_sha" -- 'packages/*/src/**' 'packages/*/package.json')
+  [ -z "$changed" ] && continue
+
+  if ! git diff --name-only --diff-filter=A "$base" "$local_sha" -- '.changeset/*.md' | grep -q .; then
+    echo "pre-push: changes under packages/*/src or packages/*/package.json" >&2
+    echo "          were detected but no .changeset/*.md file was added." >&2
+    echo >&2
+    echo "Without a changeset, merging this branch will NOT release anything." >&2
+    echo "Run 'pnpm changeset', or add a file like .changeset/my-change.md:" >&2
+    echo >&2
+    echo '  ---' >&2
+    echo '  "@kotodayori/core": patch' >&2
+    echo '  ---' >&2
+    echo >&2
+    echo '  Short summary for the CHANGELOG' >&2
+    echo >&2
+    echo "Use 'git push --no-verify' to bypass this check." >&2
+    exit 1
+  fi
+done
