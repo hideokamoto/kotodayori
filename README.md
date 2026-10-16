@@ -13,6 +13,12 @@ Kotodayori provides a clean, type-safe API for handling webhooks from any event 
 
 > **Languages / 日本語**: Japanese package READMEs are available for [`@kotodayori/core`](./packages/core/README.ja.md) and [`@kotodayori/stripe`](./packages/stripe/README.ja.md).
 
+## Try it in your browser
+
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/hideokamoto/kotodayori/tree/main/examples/stackblitz-demo?file=src/router.ts)
+
+The [StackBlitz demo](./examples/stackblitz-demo) signs fake Stripe events and sends them to a Kotodayori webhook endpoint, so you can watch routing and signature verification without a Stripe account. Edit `src/router.ts` to try your own handlers.
+
 ## Features
 
 - **Type-Safe**: Full TypeScript support with generic event type definitions

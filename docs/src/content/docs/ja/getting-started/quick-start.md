@@ -7,6 +7,8 @@ description: create-kotodayori でゼロから新規 Kotodayori プロジェク�
 
 すでにあるアプリに Kotodayori を組み込みたい場合は、[既存アプリへの追加](/ja/getting-started/add-to-existing-app/) を参照してください。
 
+インストール前に試したい場合は、[StackBlitz のデモ](https://stackblitz.com/github/hideokamoto/kotodayori/tree/main/examples/stackblitz-demo?file=src/router.ts) を開いてください。ブラウザ上で動き、署名付きの偽 Stripe イベントを送るため、Stripe アカウントは不要です。
+
 ## 前提条件
 
 - **Node.js** >= 18

@@ -7,6 +7,8 @@ The fastest way to start from scratch is the `create-kotodayori` scaffolding too
 
 If you want to add Kotodayori to an app you already have, see [Add to an Existing App](/getting-started/add-to-existing-app/) instead.
 
+To try Kotodayori before installing anything, open the [StackBlitz demo](https://stackblitz.com/github/hideokamoto/kotodayori/tree/main/examples/stackblitz-demo?file=src/router.ts). It runs in your browser and sends signed fake Stripe events, so no Stripe account is needed.
+
 ## Prerequisites
 
 - **Node.js** >= 18
