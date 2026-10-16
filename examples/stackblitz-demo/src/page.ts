@@ -5,6 +5,14 @@ export function renderPage(eventTypes: string[], modes: string[]): string {
     tampered: 'Send tampered body',
     unsigned: 'Send without signature',
   };
+  const expected: Record<string, string> = {
+    valid: '200: the middleware and the matching handler run',
+    tampered: '400 "Verification failed": the body was changed after signing',
+    unsigned: '400 "Verification failed": the stripe-signature header is missing',
+  };
+  const expectations = modes
+    .map((m) => `<li><strong>${labels[m] ?? m}</strong> → ${expected[m] ?? ''}</li>`)
+    .join('');
   const buttons = modes
     .map((m) => `<button data-mode="${m}">${labels[m] ?? m}</button>`)
     .join('');
@@ -27,6 +35,7 @@ export function renderPage(eventTypes: string[], modes: string[]): string {
   button { cursor: pointer; }
   button[data-mode="valid"] { background: var(--accent); border-color: var(--accent); color: #fff; }
   h2 { font-size: 1rem; margin: 16px 0 6px; }
+  ul { margin: 0 0 16px; padding-left: 20px; color: var(--muted); }
   pre { background: var(--panel); padding: 12px; border-radius: 6px; overflow-x: auto; margin: 0; font-size: 13px; white-space: pre-wrap; word-break: break-all; }
   .status.ok { color: var(--ok); } .status.ng { color: var(--ng); }
 </style>
@@ -40,9 +49,10 @@ export function renderPage(eventTypes: string[], modes: string[]): string {
     <select id="type">${options}</select>
     ${buttons}
   </div>
+  <ul>${expectations}</ul>
   <h2>Response from /webhook: <span id="status" class="status"></span></h2>
   <pre id="response">Pick an event and send it.</pre>
-  <h2>Router activity (middleware and handlers)</h2>
+  <h2>Activity (verification, middleware and handlers)</h2>
   <pre id="activity"></pre>
   <h2>Request sent to /webhook</h2>
   <pre id="request"></pre>

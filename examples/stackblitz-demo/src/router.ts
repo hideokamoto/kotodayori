@@ -3,7 +3,7 @@ import { StripeWebhookRouter } from '@kotodayori/stripe';
 /** Lines written by the middleware and handlers, shown in the demo page. */
 export const activity: string[] = [];
 
-function log(line: string) {
+export function log(line: string) {
   activity.push(line);
   console.log(line);
 }

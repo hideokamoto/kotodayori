@@ -14,6 +14,8 @@ A browser-runnable demo of [Kotodayori](https://github.com/hideokamoto/kotodayor
 | Send tampered body | `400 Verification failed`, the body was changed after signing |
 | Send without signature | `400 Verification failed`, the `stripe-signature` header is missing |
 
+When verification fails, the activity panel shows the reason reported by the Stripe SDK (the HTTP response itself is always the same `400 Verification failed`).
+
 Pick `invoice.paid` to see an event with no registered handler: it is acknowledged with `200` and only the middleware runs.
 
 Edit `src/router.ts` to add handlers. The file ends with a commented-out handler that shows the type error you get when you read a field the event's object does not have.

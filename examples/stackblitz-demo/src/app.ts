@@ -1,8 +1,8 @@
 import { Hono } from 'hono';
 import Stripe from 'stripe';
 import { createStripeVerifier } from '@kotodayori/stripe';
-import { honoAdapter } from '@kotodayori/hono';
-import { activity, router } from './router.js';
+import { honoAdapter, type Verifier } from '@kotodayori/hono';
+import { activity, log, router } from './router.js';
 import { buildEventPayload, eventTypes } from './events.js';
 import { renderPage } from './page.js';
 
@@ -16,11 +16,25 @@ const sendModes: SendMode[] = ['valid', 'tampered', 'unsigned'];
 
 export const app = new Hono();
 
+const stripeVerifier = createStripeVerifier(stripe, WEBHOOK_SECRET);
+
+// Demo-only wrapper: honoAdapter answers every verification failure with the same
+// 400 "Verification failed", so record the reason to show it on the demo page
+const verifier: Verifier<Stripe.Event> = async (payload, headers) => {
+  try {
+    return await stripeVerifier(payload, headers);
+  } catch (err) {
+    const message = err instanceof Error ? err.message.split('\n')[0] : String(err);
+    log(`  ⛔ verification failed: ${message}`);
+    throw err;
+  }
+};
+
 // The real webhook endpoint: verify the raw body, then dispatch to the router
 app.post(
   '/webhook',
   honoAdapter(router, {
-    verifier: createStripeVerifier(stripe, WEBHOOK_SECRET),
+    verifier,
     onError: async (error, event) => {
       console.error(`Failed to process ${event?.type}:`, error);
     },
