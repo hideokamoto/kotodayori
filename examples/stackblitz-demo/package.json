@@ -5,9 +5,9 @@
   "description": "Zero-config Kotodayori demo for StackBlitz: signed fake Stripe events, no Stripe account required",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
-    "start": "tsx src/server.ts",
-    "smoke": "tsx src/smoke.ts",
+    "dev": "tsx watch --conditions=worker src/server.ts",
+    "start": "tsx --conditions=worker src/server.ts",
+    "smoke": "tsx --conditions=worker src/smoke.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

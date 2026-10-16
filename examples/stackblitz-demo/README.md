@@ -43,4 +43,4 @@ Then open <http://localhost:3000>.
 
 ## How this differs from the other examples
 
-Unlike `sample-hono-stripe` and `sample-express-stripe`, this project is excluded from the pnpm workspace and depends on the **published** `@kotodayori/*` packages, so StackBlitz can install it with npm on its own. It also hard-codes a demo webhook secret. For a real app, read `STRIPE_API_KEY` and `STRIPE_WEBHOOK_SECRET` from the environment as in `sample-hono-stripe`.
+Unlike `sample-hono-stripe` and `sample-express-stripe`, this project is excluded from the pnpm workspace and depends on the **published** `@kotodayori/*` packages, so StackBlitz can install it with npm on its own. It also hard-codes a demo webhook secret, and its npm scripts run Node with `--conditions=worker` so that the Stripe SDK loads its web-standard build: the Node build's signature comparison (`crypto.timingSafeEqual`) throws on StackBlitz WebContainers. Regular Node.js apps do not need this flag. For a real app, read `STRIPE_API_KEY` and `STRIPE_WEBHOOK_SECRET` from the environment as in `sample-hono-stripe`.

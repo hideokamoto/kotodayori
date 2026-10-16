@@ -2,7 +2,18 @@
  * Smoke test run in CI so the demo does not silently break when dependencies change.
  * Exits non-zero if any send mode returns an unexpected status.
  */
+import Stripe from 'stripe';
 import { app, type SendMode } from './app.js';
+
+// The demo must load the Stripe SDK's web-standard build (see the comment in app.ts).
+// Only that build's default crypto provider refuses synchronous signing.
+try {
+  new Stripe('sk_test_probe').webhooks.generateTestHeaderString({ payload: '{}', secret: 'whsec_probe' });
+  console.log('FAIL the Node build of the Stripe SDK is loaded: run with --conditions=worker');
+  process.exit(1);
+} catch {
+  console.log('PASS the web-standard build of the Stripe SDK is loaded');
+}
 
 const cases: Array<{ type: string; mode: SendMode; status: number; handled: boolean }> = [
   { type: 'payment_intent.succeeded', mode: 'valid', status: 200, handled: true },

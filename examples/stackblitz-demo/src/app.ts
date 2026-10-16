@@ -6,6 +6,12 @@ import { activity, log, router } from './router.js';
 import { buildEventPayload, eventTypes } from './events.js';
 import { renderPage } from './page.js';
 
+// The npm scripts run Node with `--conditions=worker`, which loads the Stripe SDK's
+// web-standard build (Web Crypto, no `node:crypto`). Its Node build fails to compare
+// signatures on StackBlitz WebContainers: `crypto.timingSafeEqual` throws
+// 'The "buf1" argument must be an instance of ArrayBuffer, Buffer, TypedArray, or DataView'.
+// Regular Node.js apps do not need this flag.
+
 // Demo-only values. The verifier never calls the Stripe API, so no real key is needed.
 // In production, read both from environment variables.
 const WEBHOOK_SECRET = 'whsec_kotodayori_demo';
@@ -54,7 +60,7 @@ app.post('/demo/send', async (c) => {
   }
 
   const payload = buildEventPayload(type);
-  const signature = stripe.webhooks.generateTestHeaderString({ payload, secret: WEBHOOK_SECRET });
+  const signature = await stripe.webhooks.generateTestHeaderStringAsync({ payload, secret: WEBHOOK_SECRET });
 
   const headers: Record<string, string> = { 'content-type': 'application/json' };
   if (mode !== 'unsigned') {
