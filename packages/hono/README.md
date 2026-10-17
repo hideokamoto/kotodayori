@@ -151,10 +151,13 @@ interface HonoAdapterOptions {
   /**
    * Builds the per-request context passed to handlers as their second argument.
    * Required when the router's context type is not satisfied by Hono's `Context`.
+   * Annotate `c` with your app's `Context<AppEnv>` to read bindings: an unannotated
+   * `c` exposes no bindings (TypeScript cannot infer the app's env here), and the
+   * annotation is checked against the app at `app.post(...)`.
    * @optional
    * @default (c) => c
    */
-  createContext?: (c: Context) => TContext | Promise<TContext>;
+  createContext?: (c: THonoContext) => TContext | Promise<TContext>;
 
   /**
    * Custom success response
@@ -196,7 +199,9 @@ app.post('/webhook', honoAdapter(router, {
 
 The bindings are checked against the app at `app.post(...)` (or wherever you call the
 returned handler with `c`): a router whose handlers read `c.env.DB`, or a `createContext`
-annotated with `Context<AppEnv>`, is rejected on an app whose `Bindings` lack `DB`.
+annotated with `Context<AppEnv>`, is rejected on an app whose `Bindings` lack `DB`. A router
+typed with a path or validated input (e.g. `Context<AppEnv, '/w/:id'>`) is likewise rejected
+on a route that lacks the `:id` param or that validator.
 
 ## Advanced Usage
 

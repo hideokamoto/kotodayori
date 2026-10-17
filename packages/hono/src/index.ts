@@ -1,5 +1,13 @@
 import type { Context } from 'hono';
-import { consoleLogger, type Logger, type WebhookDispatcher, type WebhookEvent, type Verifier } from '@kotodayori/core';
+import type { ParamKeys } from 'hono/types';
+import {
+  consoleLogger,
+  dispatchWithContext,
+  type Logger,
+  type WebhookDispatcher,
+  type WebhookEvent,
+  type Verifier,
+} from '@kotodayori/core';
 
 /**
  * Options for the Hono adapter
@@ -39,7 +47,12 @@ type AnyContext = Context<any, any, any>;
  * so reading a binding without annotating `c: Context<AppEnv>` is a compile error
  * instead of an untyped `any` (TypeScript cannot infer the app's env here).
  */
-type UnannotatedContext = Context<{ Bindings: object; Variables: object }>;
+declare const unannotated: unique symbol;
+/** Bindings / Variables with no readable keys, marked so they demand nothing from the app */
+interface Unannotated {
+  readonly [unannotated]: true;
+}
+type UnannotatedContext = Context<{ Bindings: Unannotated; Variables: Unannotated }>;
 
 /**
  * What a required context demands from the caller's `c`. A Hono `Context<E>` is reduced
@@ -47,9 +60,32 @@ type UnannotatedContext = Context<{ Bindings: object; Variables: object }>;
  * differ in path or input also makes their `set()` signatures conflict.
  */
 type RequiredOfContext<T> = T extends Context<infer E, infer _P, infer _I>
-  ? (E extends { Bindings: infer B } ? { env: B } : unknown) &
-      (E extends { Variables: infer V } ? { var: Readonly<V> } : unknown)
+  ? (E extends { Bindings: infer B } ? (B extends Unannotated ? unknown : { env: B }) : unknown) &
+      (E extends { Variables: infer V } ? (V extends Unannotated ? unknown : { var: Readonly<V> }) : unknown)
   : T;
+
+/** Keys of a Hono input's validated `out` targets (json, form, query, ...) */
+type InputOutKeys<I> = I extends { out: infer O } ? keyof O : never;
+
+/**
+ * What a required `Context<E, Path, Input>` relies on from the route `C` it is mounted on:
+ * every path param and every validated input target. Hono's `HonoRequest<'/w'>` and
+ * `HonoRequest<'/w/:id'>` are mutually assignable, so these are compared by name.
+ */
+type RouteProvides<C, T> = T extends Context<infer _E, infer P, infer I>
+  ? C extends Context<infer _CE, infer CP, infer CI>
+    ? (0 extends 1 & P
+        ? unknown
+        : string extends P
+          ? unknown
+          : 0 extends 1 & CP
+            ? unknown
+            : [ParamKeys<P>] extends [ParamKeys<CP>]
+              ? unknown
+              : never) &
+        ([InputOutKeys<I>] extends [InputOutKeys<CI>] ? unknown : never)
+    : unknown
+  : unknown;
 
 /**
  * Creates a Hono handler for handling webhooks
@@ -95,7 +131,9 @@ export function honoAdapter<
   // next one reports the missing createContext.
   options: HonoAdapterOptions<TEvent, never> & { createContext?: never } &
     ([Context] extends [TContext] ? unknown : { createContext: never })
-): <C extends AnyContext>(c: C & RequiredOfContext<TContext>) => Promise<Response>;
+): <C extends AnyContext>(
+  c: C & RequiredOfContext<TContext> & RouteProvides<C, TContext>
+) => Promise<Response>;
 export function honoAdapter<
   TEvent extends WebhookEvent = WebhookEvent,
   TContext = unknown,
@@ -105,14 +143,14 @@ export function honoAdapter<
   options: HonoAdapterOptions<TEvent, NoInfer<TContext>, THonoContext> & {
     createContext: (c: THonoContext) => NoInfer<TContext> | Promise<NoInfer<TContext>>;
   }
-): <C extends AnyContext>(c: C & RequiredOfContext<THonoContext>) => Promise<Response>;
+): <C extends AnyContext>(
+  c: C & RequiredOfContext<THonoContext> & RouteProvides<C, THonoContext>
+) => Promise<Response>;
 export function honoAdapter<TEvent extends WebhookEvent, TContext>(
   router: WebhookDispatcher<TEvent, TContext>,
   options: HonoAdapterOptions<TEvent, TContext>
 ): (c: Context) => Promise<Response> {
   const { verifier, onError, logger = consoleLogger, createContext } = options;
-  // Without createContext, the overloads require the caller's `c` to satisfy TContext
-  const dispatcher = router as unknown as { dispatch(event: TEvent, context: TContext): Promise<void> };
 
   return async (c: Context): Promise<Response> => {
     // Get raw body text for signature verification
@@ -141,8 +179,8 @@ export function honoAdapter<TEvent extends WebhookEvent, TContext>(
 
     // Build the per-request context and dispatch the event
     try {
-      const context = createContext ? await createContext(c) : (c as TContext);
-      await dispatcher.dispatch(webhookEvent, context);
+      // Without createContext, the overloads require the caller's `c` to satisfy TContext
+      await dispatchWithContext(router, webhookEvent, createContext, [c], c);
       return c.json({ received: true }, 200);
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));

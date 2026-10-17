@@ -358,4 +358,46 @@ describe('expressAdapter', () => {
       expect(mockRes.status).toHaveBeenCalledWith(500);
     });
   });
+
+  describe('responses already sent by user code', () => {
+    const markSent = (res: Partial<Response>) => {
+      Object.defineProperty(res, 'headersSent', { value: true, configurable: true });
+    };
+
+    it('should not send a second response when createContext responded and threw', async () => {
+      const onError = vi.fn();
+      const typedRouter = new WebhookRouter<Record<string, WebhookEvent>, { user: string }>();
+      typedRouter.on('payment_intent.succeeded', vi.fn().mockResolvedValue(undefined));
+
+      const middleware = expressAdapter(typedRouter, {
+        verifier: mockVerifier,
+        onError,
+        createContext: (_req, res) => {
+          res.status(401).json({ error: 'unauthorized' });
+          markSent(res);
+          throw new Error('unauthorized');
+        },
+      });
+
+      await expect(middleware(mockReq as Request, mockRes as Response, vi.fn())).resolves.toBeUndefined();
+
+      expect(mockRes.status).toHaveBeenCalledTimes(1);
+      expect(mockRes.status).toHaveBeenCalledWith(401);
+      expect(onError).toHaveBeenCalledOnce();
+    });
+
+    it('should not send 200 when a handler already responded through req.res', async () => {
+      router.on('payment_intent.succeeded', async (_event, req) => {
+        (req as Request).res?.status(202).json({ queued: true });
+        markSent(mockRes);
+      });
+      mockReq.res = mockRes as Response;
+
+      const middleware = expressAdapter(router, { verifier: mockVerifier });
+      await middleware(mockReq as Request, mockRes as Response, vi.fn());
+
+      expect(mockRes.status).toHaveBeenCalledTimes(1);
+      expect(mockRes.status).toHaveBeenCalledWith(202);
+    });
+  });
 });

@@ -209,7 +209,7 @@ Handler function type for processing events.
 ```typescript
 type EventHandler<T extends WebhookEvent, TContext = unknown> = (
   event: T,
-  context: TContext
+  ...context: ContextArgs<TContext> // optional unless TContext excludes undefined
 ) => Promise<void>;
 ```
 
@@ -221,7 +221,7 @@ Middleware function type for cross-cutting concerns.
 type Middleware<T extends WebhookEvent, TContext = unknown> = (
   event: T,
   next: () => Promise<void>,
-  context: TContext
+  ...context: ContextArgs<TContext>
 ) => Promise<void>;
 ```
 

@@ -5,6 +5,7 @@ import {
   type WebhookDispatcher,
   type EventHandler,
   type Middleware,
+  type ContextFactoryOption,
 } from '../src/index.js';
 
 /**
@@ -157,5 +158,44 @@ describe('route() context', () => {
     const child = new WebhookRouter<Record<string, WebhookEvent>, { other: string }>();
     // @ts-expect-error -- the parent cannot provide `{ other: string }`
     parent.route('order', child);
+  });
+});
+
+describe('calling handler and middleware values directly', () => {
+  it('keeps one-argument calls valid when no context is declared', async () => {
+    const handler: EventHandler<PaidEvent> = async () => {};
+    await handler(paid);
+    const middleware: Middleware = async (_event, next) => {
+      await next();
+    };
+    await middleware(paid, async () => {});
+  });
+
+  it('requires the context when one is declared', async () => {
+    const handler: EventHandler<PaidEvent, AppContext> = async () => {};
+    await handler(paid, appContext);
+    // @ts-expect-error -- context is required
+    await handler(paid);
+    const middleware: Middleware<WebhookEvent, AppContext> = async (_event, next) => {
+      await next();
+    };
+    await middleware(paid, async () => {}, appContext);
+    // @ts-expect-error -- context is required
+    await middleware(paid, async () => {});
+  });
+});
+
+describe('ContextFactoryOption', () => {
+  type Native = { native: true; env: { DB: string } };
+
+  it('makes createContext optional when the default satisfies the router context', () => {
+    expectTypeOf<ContextFactoryOption<Native, { env: { DB: string } }, [Native]>>()
+      .toEqualTypeOf<{ createContext?: (...args: [Native]) => { env: { DB: string } } | Promise<{ env: { DB: string } }> }>();
+    expectTypeOf<ContextFactoryOption<Native, unknown, [Native]>>().toMatchTypeOf<{ createContext?: unknown }>();
+  });
+
+  it('makes createContext required otherwise', () => {
+    expectTypeOf<ContextFactoryOption<Native, AppContext, [Native]>>()
+      .toEqualTypeOf<{ createContext: (...args: [Native]) => AppContext | Promise<AppContext> }>();
   });
 });

@@ -1,5 +1,14 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
-import { consoleLogger, type Logger, type WebhookDispatcher, type WebhookEvent, type Verifier } from '@kotodayori/core';
+import {
+  consoleLogger,
+  dispatchWithContext,
+  type ContextFactory,
+  type ContextFactoryOption,
+  type Logger,
+  type WebhookDispatcher,
+  type WebhookEvent,
+  type Verifier,
+} from '@kotodayori/core';
 
 /**
  * Options for the Lambda adapter
@@ -17,7 +26,7 @@ export interface LambdaAdapterOptions<T extends WebhookEvent = WebhookEvent, TCo
    * router's context type is not satisfied by `LambdaInvocation`. Errors are handled
    * like handler errors.
    */
-  createContext?: (event: APIGatewayProxyEvent, context: Context) => TContext | Promise<TContext>;
+  createContext?: ContextFactory<[event: APIGatewayProxyEvent, context: Context], TContext>;
 }
 
 /**
@@ -32,11 +41,11 @@ export interface LambdaInvocation {
  * Lambda adapter options for a router with context `TContext`: `createContext` is
  * optional when `LambdaInvocation` already satisfies `TContext`, and required otherwise.
  */
-export type LambdaAdapterOptionsFor<T extends WebhookEvent, TContext> = LambdaInvocation extends TContext
-  ? LambdaAdapterOptions<T, TContext>
-  : LambdaAdapterOptions<T, TContext> & {
-      createContext: (event: APIGatewayProxyEvent, context: Context) => TContext | Promise<TContext>;
-    };
+export type LambdaAdapterOptionsFor<T extends WebhookEvent, TContext> = Omit<
+  LambdaAdapterOptions<T, TContext>,
+  'createContext'
+> &
+  ContextFactoryOption<LambdaInvocation, TContext, [event: APIGatewayProxyEvent, context: Context]>;
 
 /**
  * Creates an AWS Lambda handler for handling webhooks
@@ -70,8 +79,6 @@ export function lambdaAdapter<
 ): (event: APIGatewayProxyEvent, context: Context) => Promise<APIGatewayProxyResult> {
   const { verifier, onError, logger = consoleLogger, createContext } =
     options as LambdaAdapterOptions<TEvent, TContext>;
-  // Without createContext, the option types guarantee that `LambdaInvocation` satisfies TContext
-  const dispatcher = router as unknown as { dispatch(event: TEvent, context: TContext): Promise<void> };
 
   return async (
     lambdaEvent: APIGatewayProxyEvent,
@@ -125,10 +132,8 @@ export function lambdaAdapter<
 
     // Build the per-invocation context and dispatch the event
     try {
-      const context = createContext
-        ? await createContext(lambdaEvent, lambdaContext)
-        : ({ event: lambdaEvent, context: lambdaContext } satisfies LambdaInvocation as TContext);
-      await dispatcher.dispatch(webhookEvent, context);
+      const invocation: LambdaInvocation = { event: lambdaEvent, context: lambdaContext };
+      await dispatchWithContext(router, webhookEvent, createContext, [lambdaEvent, lambdaContext], invocation);
       return {
         statusCode: 200,
         body: JSON.stringify({ received: true }),

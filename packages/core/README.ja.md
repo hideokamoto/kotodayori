@@ -205,7 +205,7 @@ interface WebhookEvent {
 ```typescript
 type EventHandler<T extends WebhookEvent, TContext = unknown> = (
   event: T,
-  context: TContext
+  ...context: ContextArgs<TContext> // optional unless TContext excludes undefined
 ) => Promise<void>;
 ```
 
@@ -217,7 +217,7 @@ type EventHandler<T extends WebhookEvent, TContext = unknown> = (
 type Middleware<T extends WebhookEvent, TContext = unknown> = (
   event: T,
   next: () => Promise<void>,
-  context: TContext
+  ...context: ContextArgs<TContext>
 ) => Promise<void>;
 ```
 

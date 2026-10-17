@@ -223,3 +223,68 @@ describe('honoAdapter createContext without a Context annotation', () => {
     honoAdapter(router, { verifier, createContext: () => ({ db: 'x' }) });
   });
 });
+
+describe('honoAdapter on an app without a declared env', () => {
+  const verifier: Verifier<CreatedEvent> = () => ({
+    event: { id: 'e', type: 'thing.created', data: { object: { id: 'x' } } },
+  });
+
+  it('accepts an unannotated createContext that reads only the request', () => {
+    const router = new WebhookRouter<EventMap, { id: string }>();
+    new Hono().post('/w', honoAdapter(router, {
+      verifier,
+      createContext: (c) => ({ id: c.req.header('x') ?? '' }),
+    }));
+  });
+
+  it('accepts a createContext that ignores c', () => {
+    const router = new WebhookRouter<EventMap, { id: string }>();
+    new Hono().post('/w', honoAdapter(router, { verifier, createContext: () => ({ id: 'x' }) }));
+  });
+
+  it('accepts a router without a context', () => {
+    new Hono().post('/w', honoAdapter(new WebhookRouter<EventMap>(), { verifier }));
+  });
+});
+
+describe('honoAdapter checks the route path of a Context-typed router', () => {
+  type AppEnv = { Bindings: { DB: string } };
+  const verifier: Verifier<CreatedEvent> = () => ({
+    event: { id: 'e', type: 'thing.created', data: { object: { id: 'x' } } },
+  });
+
+  it('accepts a router typed for /w/:id on the /w/:id route', () => {
+    const router = new WebhookRouter<EventMap, Context<AppEnv, '/w/:id'>>();
+    router.on('thing.created', async (_event, c) => {
+      expectTypeOf(c.req.param('id')).toEqualTypeOf<string>();
+    });
+    new Hono<AppEnv>().post('/w/:id', honoAdapter(router, { verifier }));
+  });
+
+  it('rejects a router typed for /w/:id on a route without :id', () => {
+    const router = new WebhookRouter<EventMap, Context<AppEnv, '/w/:id'>>();
+    // @ts-expect-error -- the /w route has no :id param
+    new Hono<AppEnv>().post('/w', honoAdapter(router, { verifier }));
+  });
+});
+
+describe('honoAdapter checks the validated input of a Context-typed router', () => {
+  type AppEnv = { Bindings: { DB: string } };
+  type JsonInput = { in: { json: { a: string } }; out: { json: { a: string } } };
+  const verifier: Verifier<CreatedEvent> = () => ({
+    event: { id: 'e', type: 'thing.created', data: { object: { id: 'x' } } },
+  });
+
+  it('rejects a router that reads validated json on a route without a validator', () => {
+    const router = new WebhookRouter<EventMap, Context<AppEnv, '/w', JsonInput>>();
+    // @ts-expect-error -- the route has no json validator
+    new Hono<AppEnv>().post('/w', honoAdapter(router, { verifier }));
+  });
+
+  it('accepts it when the handler is invoked with a context that has the input', () => {
+    const router = new WebhookRouter<EventMap, Context<AppEnv, '/w', JsonInput>>();
+    const handler = honoAdapter(router, { verifier });
+    const c = null as unknown as Context<AppEnv, '/w', JsonInput>;
+    void handler(c);
+  });
+});

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { WebhookRouter, consoleLogger, silentLogger, type Logger, type WebhookEvent } from '../src/index.js';
+import { WebhookRouter, consoleLogger, silentLogger, dispatchWithContext, type Logger, type WebhookEvent } from '../src/index.js';
 
 describe('WebhookRouter', () => {
   describe('instantiation', () => {
@@ -1395,6 +1395,45 @@ describe('WebhookRouter', () => {
       expect(handler.mock.calls[0]).toEqual([event]);
       expect(fanoutHandler.mock.calls[0]).toEqual([event]);
       expect(middleware.mock.calls[0]).toEqual([event, expect.any(Function)]);
+    });
+  });
+
+  describe('dispatchWithContext()', () => {
+    const event = { id: 'evt_dwc', type: 'test.event', data: { object: {} } };
+
+    it('should dispatch with the value built by createContext from the adapter arguments', async () => {
+      const router = new WebhookRouter<Record<string, WebhookEvent>, { tenant: string }>();
+      const handler = vi.fn().mockResolvedValue(undefined);
+      router.on('test.event', handler);
+      const createContext = vi.fn(async (req: { t: string }) => ({ tenant: req.t }));
+
+      await dispatchWithContext(router, event, createContext, [{ t: 'acme' }], 'unused-default');
+
+      expect(createContext).toHaveBeenCalledWith({ t: 'acme' });
+      expect(handler).toHaveBeenCalledWith(event, { tenant: 'acme' });
+    });
+
+    it('should dispatch with the default context when createContext is omitted', async () => {
+      const router = new WebhookRouter();
+      const handler = vi.fn().mockResolvedValue(undefined);
+      router.on('test.event', handler);
+      const native = { req: true };
+
+      await dispatchWithContext(router, event, undefined, [], native);
+
+      expect(handler).toHaveBeenCalledWith(event, native);
+    });
+
+    it('should propagate createContext errors without dispatching', async () => {
+      const router = new WebhookRouter<Record<string, WebhookEvent>, { tenant: string }>();
+      const handler = vi.fn().mockResolvedValue(undefined);
+      router.on('test.event', handler);
+      const error = new Error('boom');
+
+      await expect(
+        dispatchWithContext(router, event, () => { throw error; }, [], undefined)
+      ).rejects.toBe(error);
+      expect(handler).not.toHaveBeenCalled();
     });
   });
 });

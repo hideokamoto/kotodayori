@@ -48,7 +48,7 @@ export type ContextArgs<TContext> = undefined extends TContext
  */
 export type EventHandler<T extends WebhookEvent, TContext = unknown> = (
   event: T,
-  context: TContext
+  ...context: ContextArgs<TContext>
 ) => Promise<void>;
 
 /**
@@ -59,20 +59,6 @@ export type EventHandler<T extends WebhookEvent, TContext = unknown> = (
  */
 export type Middleware<T extends WebhookEvent = WebhookEvent, TContext = unknown> = (
   event: T,
-  next: () => Promise<void>,
-  context: TContext
-) => Promise<void>;
-
-/**
- * Internal call shapes that forward the context arguments exactly as `dispatch()`
- * received them, so a context-less dispatch keeps calling handlers with the event alone.
- */
-type ForwardingHandler<TContext> = (
-  event: WebhookEvent,
-  ...context: ContextArgs<TContext>
-) => Promise<void>;
-type ForwardingMiddleware<TContext> = (
-  event: WebhookEvent,
   next: () => Promise<void>,
   ...context: ContextArgs<TContext>
 ) => Promise<void>;
@@ -184,6 +170,46 @@ export interface WebhookRouterOptions {
  */
 export interface WebhookDispatcher<TEvent extends WebhookEvent = WebhookEvent, TContext = unknown> {
   dispatch(event: TEvent, ...context: ContextArgs<TContext>): Promise<void>;
+}
+
+/**
+ * Builds a router context from an adapter's per-request arguments
+ * (e.g. Express `(req, res)`, Lambda `(event, context)`).
+ */
+export type ContextFactory<TArgs extends unknown[], TContext> = (
+  ...args: TArgs
+) => TContext | Promise<TContext>;
+
+/**
+ * The `createContext` option of an adapter whose default context is `TDefault`:
+ * optional when `TDefault` already satisfies the router's `TContext`, required otherwise,
+ * so a router can never be handed a context it was not typed for.
+ */
+export type ContextFactoryOption<TDefault, TContext, TArgs extends unknown[]> = [TDefault] extends [
+  TContext,
+]
+  ? { createContext?: ContextFactory<TArgs, TContext> }
+  : { createContext: ContextFactory<TArgs, TContext> };
+
+/**
+ * Dispatches `event` with the context built by `createContext(...args)`, or with
+ * `defaultContext` when no factory is given. For adapters: their option types
+ * (see {@link ContextFactoryOption}) guarantee that `defaultContext` satisfies the
+ * router's context whenever `createContext` is omitted. Errors from `createContext`
+ * propagate before anything is dispatched.
+ */
+export async function dispatchWithContext<TEvent extends WebhookEvent, TContext, TArgs extends unknown[]>(
+  router: WebhookDispatcher<TEvent, TContext>,
+  event: TEvent,
+  createContext: ContextFactory<TArgs, TContext> | undefined,
+  args: TArgs,
+  defaultContext: unknown
+): Promise<void> {
+  const context = createContext ? await createContext(...args) : (defaultContext as TContext);
+  await (router as unknown as { dispatch(event: TEvent, context: TContext): Promise<void> }).dispatch(
+    event,
+    context
+  );
 }
 
 /**
@@ -332,17 +358,17 @@ export class WebhookRouter<
   ): this {
     const { strategy = 'all-or-nothing', onError } = options;
 
-    const fanoutHandler: ForwardingHandler<TContext> = async (evt, ...args) => {
+    const fanoutHandler: EventHandler<WebhookEvent, TContext> = async (evt, ...args) => {
       if (strategy === 'all-or-nothing') {
         // All-or-nothing: all handlers must succeed, or the entire operation fails
         const promises = handlers.map((handler) =>
-          (handler as ForwardingHandler<TContext>)(evt, ...args)
+          (handler as EventHandler<WebhookEvent, TContext>)(evt, ...args)
         );
         await Promise.all(promises);
       } else {
         // Best-effort: continue even if some handlers fail
         const promises = handlers.map((handler) =>
-          (handler as ForwardingHandler<TContext>)(evt, ...args).catch((error: unknown) => {
+          (handler as EventHandler<WebhookEvent, TContext>)(evt, ...args).catch((error: unknown) => {
             if (onError) {
               onError(error instanceof Error ? error : new Error(String(error)));
             }
@@ -354,7 +380,7 @@ export class WebhookRouter<
     };
 
     const existing = this.handlers.get(event) ?? [];
-    existing.push(fanoutHandler as EventHandler<WebhookEvent, TContext>);
+    existing.push(fanoutHandler);
     this.handlers.set(event, existing);
     return this;
   }
@@ -372,11 +398,10 @@ export class WebhookRouter<
   ): Promise<void> {
     const handlers = this.handlers.get(event.type) ?? [];
     // Forward exactly the arguments we were given, so a context-less dispatch keeps
-    // calling handlers with the event alone. The context is optional only when
-    // TContext admits undefined, so the cast is sound.
+    // calling handlers with the event alone.
     const runHandlers = async (): Promise<void> => {
       for (const handler of handlers) {
-        await (handler as ForwardingHandler<TContext>)(event as WebhookEvent, ...args);
+        await handler(event as WebhookEvent, ...args);
       }
     };
 
@@ -395,7 +420,7 @@ export class WebhookRouter<
             nextCalled = true;
             return await next();
           };
-          await (middleware as ForwardingMiddleware<TContext>)(event as WebhookEvent, wrappedNext, ...args);
+          await middleware(event as WebhookEvent, wrappedNext, ...args);
         }
       };
     }

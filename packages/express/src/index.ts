@@ -1,5 +1,14 @@
 import type { Request, Response, NextFunction } from 'express';
-import { consoleLogger, type Logger, type WebhookDispatcher, type WebhookEvent, type Verifier } from '@kotodayori/core';
+import {
+  consoleLogger,
+  dispatchWithContext,
+  type ContextFactory,
+  type ContextFactoryOption,
+  type Logger,
+  type WebhookDispatcher,
+  type WebhookEvent,
+  type Verifier,
+} from '@kotodayori/core';
 
 /**
  * Options for the Express adapter
@@ -16,18 +25,18 @@ export interface ExpressAdapterOptions<T extends WebhookEvent = WebhookEvent, TC
    * Defaults to passing the Express `req` itself. Required when the router's context
    * type is not satisfied by `Request`. Errors are handled like handler errors.
    */
-  createContext?: (req: Request, res: Response) => TContext | Promise<TContext>;
+  createContext?: ContextFactory<[req: Request, res: Response], TContext>;
 }
 
 /**
  * Express adapter options for a router with context `TContext`: `createContext` is
  * optional when `Request` already satisfies `TContext`, and required otherwise.
  */
-export type ExpressAdapterOptionsFor<T extends WebhookEvent, TContext> = Request extends TContext
-  ? ExpressAdapterOptions<T, TContext>
-  : ExpressAdapterOptions<T, TContext> & {
-      createContext: (req: Request, res: Response) => TContext | Promise<TContext>;
-    };
+export type ExpressAdapterOptionsFor<T extends WebhookEvent, TContext> = Omit<
+  ExpressAdapterOptions<T, TContext>,
+  'createContext'
+> &
+  ContextFactoryOption<Request, TContext, [req: Request, res: Response]>;
 
 /**
  * Creates an Express middleware for handling webhooks
@@ -65,8 +74,6 @@ export function expressAdapter<
 ): (req: Request, res: Response, next: NextFunction) => Promise<void> {
   const { verifier, onError, logger = consoleLogger, createContext } =
     options as ExpressAdapterOptions<TEvent, TContext>;
-  // Without createContext, the option types guarantee that `Request` satisfies TContext
-  const dispatcher = router as unknown as { dispatch(event: TEvent, context: TContext): Promise<void> };
 
   return async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
     // Validate request body exists and is the correct type
@@ -115,9 +122,11 @@ export function expressAdapter<
 
     // Build the per-request context and dispatch the event
     try {
-      const context = createContext ? await createContext(req, res) : (req as TContext);
-      await dispatcher.dispatch(event, context);
-      res.status(200).json({ received: true });
+      await dispatchWithContext(router, event, createContext, [req, res], req);
+      // User code (createContext, or a handler via `req.res`) may have responded already
+      if (!res.headersSent) {
+        res.status(200).json({ received: true });
+      }
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
 
@@ -129,7 +138,9 @@ export function expressAdapter<
         }
       }
 
-      res.status(500).json({ error: 'Internal server error' });
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Internal server error' });
+      }
     }
   };
 }
