@@ -148,13 +148,6 @@ interface LambdaAdapterOptions {
    * @default (event, context) => ({ event, context })
    */
   createContext?: (event: APIGatewayProxyEvent, context: Context) => TContext | Promise<TContext>;
-
-  /**
-   * Custom success response body
-   * @optional
-   * @default { success: true }
-   */
-  successResponse?: unknown;
 }
 ```
 
@@ -311,18 +304,6 @@ export const handler = lambdaAdapter(router, {
       eventType: event?.type,
       error: error.message,
     });
-  },
-});
-```
-
-### Custom Success Response
-
-```typescript
-export const handler = lambdaAdapter(router, {
-  verifier: createStripeVerifier(stripe, secret),
-  successResponse: {
-    status: 'processed',
-    timestamp: Date.now(),
   },
 });
 ```

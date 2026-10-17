@@ -1,5 +1,6 @@
 import type { EventBridgeEvent, Context } from 'aws-lambda';
 import {
+  contextProvider,
   dispatchWithContext,
   type ContextFactory,
   type ContextFactoryOption,
@@ -96,9 +97,7 @@ export function eventBridgeAdapter<TContext = unknown>(
       await dispatchWithContext(
         router,
         webhookEvent,
-        createContext,
-        [eventBridgeEvent, lambdaContext],
-        invocation
+        contextProvider(createContext, [eventBridgeEvent, lambdaContext], invocation)
       );
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));

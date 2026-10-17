@@ -1,5 +1,12 @@
 # sample-hono-stripe
 
+## 0.1.7
+
+### Patch Changes
+
+- Updated dependencies [b7ae349]
+  - @kotodayori/hono@1.2.1
+
 ## 0.1.6
 
 ### Patch Changes

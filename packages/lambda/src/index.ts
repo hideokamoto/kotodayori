@@ -1,7 +1,7 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
 import {
-  consoleLogger,
-  dispatchWithContext,
+  contextProvider,
+  handleWebhook,
   type ContextFactory,
   type ContextFactoryOption,
   type Logger,
@@ -77,8 +77,7 @@ export function lambdaAdapter<
   router: WebhookDispatcher<NoInfer<TEvent>, TContext>,
   options: LambdaAdapterOptionsFor<TEvent, NoInfer<TContext>>
 ): (event: APIGatewayProxyEvent, context: Context) => Promise<APIGatewayProxyResult> {
-  const { verifier, onError, logger = consoleLogger, createContext } =
-    options as LambdaAdapterOptions<TEvent, TContext>;
+  const { createContext } = options as LambdaAdapterOptions<TEvent, TContext>;
 
   return async (
     lambdaEvent: APIGatewayProxyEvent,
@@ -98,64 +97,27 @@ export function lambdaAdapter<
       ? Buffer.from(lambdaEvent.body, 'base64').toString('utf8')
       : lambdaEvent.body;
 
-    // Validate body is not empty or whitespace-only
-    if (!rawBody.trim()) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: 'Request body cannot be empty' }),
-        headers: { 'Content-Type': 'application/json' },
-      };
-    }
-
-    // Collect headers for verifier (normalize to lowercase, filter out null values)
+    // Collect headers for verifier
     const headers: Record<string, string | undefined> = {};
     for (const [key, value] of Object.entries(lambdaEvent.headers)) {
       if (value !== null && value !== undefined) {
-        headers[key.toLowerCase()] = value;
+        headers[key] = value;
       }
     }
 
-    let webhookEvent: TEvent;
-
-    // Verify signature and parse event
-    try {
-      const result = await verifier(rawBody, headers);
-      webhookEvent = result.event;
-    } catch (err) {
-      logger.error('Webhook verification failed:', err);
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: 'Verification failed' }),
-        headers: { 'Content-Type': 'application/json' },
-      };
-    }
-
-    // Build the per-invocation context and dispatch the event
-    try {
-      const invocation: LambdaInvocation = { event: lambdaEvent, context: lambdaContext };
-      await dispatchWithContext(router, webhookEvent, createContext, [lambdaEvent, lambdaContext], invocation);
-      return {
-        statusCode: 200,
-        body: JSON.stringify({ received: true }),
-        headers: { 'Content-Type': 'application/json' },
-      };
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error(String(err));
-
-      if (onError) {
-        try {
-          await onError(error, webhookEvent);
-        } catch {
-          // Ignore errors from onError handler to preserve original error response
-        }
-      }
-
-      return {
-        statusCode: 500,
-        body: JSON.stringify({ error: 'Internal server error' }),
-        headers: { 'Content-Type': 'application/json' },
-      };
-    }
+    const invocation: LambdaInvocation = { event: lambdaEvent, context: lambdaContext };
+    const { status, body } = await handleWebhook(
+      router,
+      options,
+      rawBody,
+      headers,
+      contextProvider(createContext, [lambdaEvent, lambdaContext], invocation)
+    );
+    return {
+      statusCode: status,
+      body: JSON.stringify(body),
+      headers: { 'Content-Type': 'application/json' },
+    };
   };
 }
 

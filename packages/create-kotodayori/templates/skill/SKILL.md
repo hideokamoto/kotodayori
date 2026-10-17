@@ -2,11 +2,11 @@
 name: kotodayori-webhooks
 description: >
   Kotodayori: type-safe webhook routing (@kotodayori/core), Stripe helpers
-  (@kotodayori/stripe), adapters (hono, express, lambda, eventbridge), Zod
+  (@kotodayori/stripe), adapters (hono, fetch, express, lambda, eventbridge), Zod
   (@kotodayori/zod), and create-kotodayori scaffolding. Use when implementing
   or debugging webhook routes, signature verification, Stripe event handlers,
   framework adapters, or the create-kotodayori CLI. Keywords: WebhookRouter,
-  StripeWebhookRouter, createStripeVerifier, honoAdapter, expressAdapter,
+  StripeWebhookRouter, createStripeVerifier, honoAdapter, fetchAdapter, expressAdapter,
   express.raw, create-kotodayori, kotodayori.
 user-invocable: true
 metadata:
@@ -69,7 +69,7 @@ If the workspace is the **kotodayori monorepo**:
 
 - `packages/core` — router engine and shared types
 - `packages/stripe` — `StripeWebhookRouter`, `createStripeVerifier`, `StripeEventMap`
-- `packages/hono`, `packages/express`, `packages/lambda`, `packages/eventbridge` — adapters
+- `packages/hono`, `packages/fetch`, `packages/express`, `packages/lambda`, `packages/eventbridge` — adapters (HTTP ones share `handleWebhook` from core)
 - `packages/zod` — runtime validation helpers (peer: `zod` v4+)
 - `packages/create-kotodayori` — `npx create-kotodayori` templates and CLI
 - `examples/sample-hono-stripe`, `examples/sample-express-stripe` — samples using `workspace:*`
@@ -79,11 +79,12 @@ If the workspace is the **kotodayori monorepo**:
 ### Raw body (Stripe and most HMAC providers)
 
 - **Hono**: use `honoAdapter`; it reads raw text from the request for verification.
+- **Web-standard `Request`** (Cloudflare Workers without Hono, Bun, Deno, Next.js App Router, React Router): use `fetchAdapter`, which returns `(request: Request) => Promise<Response>`.
 - **Express**: apply `express.raw({ type: 'application/json' })` **only** on the webhook path **before** `expressAdapter`. If the body was parsed by `express.json()`, signature verification will fail.
 
 ### TypeScript + adapters
 
-- Pass the event map generic on adapters when using Stripe: `honoAdapter<StripeEventMap>(router, { ... })` and `expressAdapter<StripeEventMap>(router, { ... })` so inference lines up with `createStripeVerifier`.
+- Do not pass `StripeEventMap` as the adapter's type argument. The adapters' generic is a single event type (`TEvent extends WebhookEvent`), not an event map, so `honoAdapter<StripeEventMap>(...)` fails with TS2344. Omit it: `honoAdapter(router, { verifier })` and `expressAdapter(router, { verifier })` infer the event type from the router and `createStripeVerifier`.
 - Prefer full Stripe event names in `router.on('customer.subscription.created', ...)` over `router.group(...)` when you need precise `event.data.object` typing (`group()` registers handlers as generic `WebhookEvent` today).
 
 ### Errors

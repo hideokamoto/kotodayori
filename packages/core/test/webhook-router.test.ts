@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { WebhookRouter, consoleLogger, silentLogger, dispatchWithContext, type Logger, type WebhookEvent } from '../src/index.js';
+import { WebhookRouter, consoleLogger, silentLogger, dispatchWithContext, contextProvider, type Logger, type WebhookEvent } from '../src/index.js';
 
 describe('WebhookRouter', () => {
   describe('instantiation', () => {
@@ -1401,39 +1401,65 @@ describe('WebhookRouter', () => {
   describe('dispatchWithContext()', () => {
     const event = { id: 'evt_dwc', type: 'test.event', data: { object: {} } };
 
-    it('should dispatch with the value built by createContext from the adapter arguments', async () => {
+    it('should dispatch with the value built by getContext', async () => {
       const router = new WebhookRouter<Record<string, WebhookEvent>, { tenant: string }>();
       const handler = vi.fn().mockResolvedValue(undefined);
       router.on('test.event', handler);
-      const createContext = vi.fn(async (req: { t: string }) => ({ tenant: req.t }));
 
-      await dispatchWithContext(router, event, createContext, [{ t: 'acme' }], 'unused-default');
+      await dispatchWithContext(router, event, async () => ({ tenant: 'acme' }));
 
-      expect(createContext).toHaveBeenCalledWith({ t: 'acme' });
       expect(handler).toHaveBeenCalledWith(event, { tenant: 'acme' });
     });
 
-    it('should dispatch with the default context when createContext is omitted', async () => {
+    it('should call handlers with the event alone when getContext is omitted', async () => {
       const router = new WebhookRouter();
       const handler = vi.fn().mockResolvedValue(undefined);
       router.on('test.event', handler);
-      const native = { req: true };
 
-      await dispatchWithContext(router, event, undefined, [], native);
+      await dispatchWithContext(router, event);
 
-      expect(handler).toHaveBeenCalledWith(event, native);
+      expect(handler.mock.calls[0]).toEqual([event]);
     });
 
-    it('should propagate createContext errors without dispatching', async () => {
+    it('should propagate getContext errors without dispatching', async () => {
       const router = new WebhookRouter<Record<string, WebhookEvent>, { tenant: string }>();
       const handler = vi.fn().mockResolvedValue(undefined);
       router.on('test.event', handler);
       const error = new Error('boom');
 
       await expect(
-        dispatchWithContext(router, event, () => { throw error; }, [], undefined)
+        dispatchWithContext(router, event, () => {
+          throw error;
+        })
       ).rejects.toBe(error);
       expect(handler).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('contextProvider()', () => {
+    it('should build the context from the adapter arguments when createContext is given', async () => {
+      const createContext = vi.fn(async (req: { t: string }) => ({ tenant: req.t }));
+
+      const getContext = contextProvider(createContext, [{ t: 'acme' }], 'unused-default');
+
+      await expect(getContext()).resolves.toEqual({ tenant: 'acme' });
+      expect(createContext).toHaveBeenCalledWith({ t: 'acme' });
+    });
+
+    it('should not call createContext until the provider is invoked', () => {
+      const createContext = vi.fn(() => ({ tenant: 'acme' }));
+
+      contextProvider(createContext, [], undefined);
+
+      expect(createContext).not.toHaveBeenCalled();
+    });
+
+    it('should provide the default context when createContext is omitted', async () => {
+      const native = { req: true };
+
+      const getContext = contextProvider(undefined, [], native);
+
+      expect(await getContext()).toBe(native);
     });
   });
 });

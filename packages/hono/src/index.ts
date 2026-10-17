@@ -1,8 +1,8 @@
 import type { Context } from 'hono';
 import type { ParamKeys } from 'hono/types';
 import {
-  consoleLogger,
-  dispatchWithContext,
+  contextProvider,
+  handleWebhook,
   type Logger,
   type WebhookDispatcher,
   type WebhookEvent,
@@ -150,51 +150,27 @@ export function honoAdapter<TEvent extends WebhookEvent, TContext>(
   router: WebhookDispatcher<TEvent, TContext>,
   options: HonoAdapterOptions<TEvent, TContext>
 ): (c: Context) => Promise<Response> {
-  const { verifier, onError, logger = consoleLogger, createContext } = options;
+  const { createContext } = options;
 
   return async (c: Context): Promise<Response> => {
     // Get raw body text for signature verification
     const rawBody = await c.req.text();
 
-    if (!rawBody.trim()) {
-      return c.json({ error: 'Request body cannot be empty' }, 400);
-    }
-
     // Collect headers for verifier
-    const headers: Record<string, string | undefined> = {};
+    const headers: Record<string, string> = {};
     c.req.raw.headers.forEach((value, key) => {
-      headers[key.toLowerCase()] = value;
+      headers[key] = value;
     });
 
-    let webhookEvent: TEvent;
-
-    // Verify signature and parse event
-    try {
-      const result = await verifier(rawBody, headers);
-      webhookEvent = result.event;
-    } catch (err) {
-      logger.error('Webhook verification failed:', err);
-      return c.json({ error: 'Verification failed' }, 400);
-    }
-
-    // Build the per-request context and dispatch the event
-    try {
-      // Without createContext, the overloads require the caller's `c` to satisfy TContext
-      await dispatchWithContext(router, webhookEvent, createContext, [c], c);
-      return c.json({ received: true }, 200);
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error(String(err));
-
-      if (onError) {
-        try {
-          await onError(error, webhookEvent);
-        } catch {
-          // Ignore errors from onError handler to preserve original error response
-        }
-      }
-
-      return c.json({ error: 'Internal server error' }, 500);
-    }
+    // Without createContext, the overloads require the caller's `c` to satisfy TContext
+    const { status, body } = await handleWebhook(
+      router,
+      options,
+      rawBody,
+      headers,
+      contextProvider(createContext, [c], c)
+    );
+    return c.json(body, status);
   };
 }
 

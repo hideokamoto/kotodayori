@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import {
-  consoleLogger,
-  dispatchWithContext,
+  contextProvider,
+  handleWebhook,
   type ContextFactory,
   type ContextFactoryOption,
   type Logger,
@@ -72,8 +72,7 @@ export function expressAdapter<
   router: WebhookDispatcher<NoInfer<TEvent>, TContext>,
   options: ExpressAdapterOptionsFor<TEvent, NoInfer<TContext>>
 ): (req: Request, res: Response, next: NextFunction) => Promise<void> {
-  const { verifier, onError, logger = consoleLogger, createContext } =
-    options as ExpressAdapterOptions<TEvent, TContext>;
+  const { createContext } = options as ExpressAdapterOptions<TEvent, TContext>;
 
   return async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
     // Validate request body exists and is the correct type
@@ -95,52 +94,22 @@ export function expressAdapter<
       return;
     }
 
-    // Convert Buffer to string if needed, then validate it's not empty or whitespace-only
-    const bodyString = Buffer.isBuffer(rawBody) ? rawBody.toString('utf8') : rawBody;
-    if (!bodyString.trim()) {
-      res.status(400).json({ error: 'Request body cannot be empty' });
-      return;
-    }
-
     // Collect headers for verifier
     const headers: Record<string, string | undefined> = {};
     for (const [key, value] of Object.entries(req.headers)) {
-      headers[key.toLowerCase()] = Array.isArray(value) ? value[0] : value;
+      headers[key] = Array.isArray(value) ? value[0] : value;
     }
 
-    let event: TEvent;
-
-    // Verify signature and parse event
-    try {
-      const result = await verifier(rawBody, headers);
-      event = result.event;
-    } catch (err) {
-      logger.error('Webhook verification failed:', err);
-      res.status(400).json({ error: 'Verification failed' });
-      return;
-    }
-
-    // Build the per-request context and dispatch the event
-    try {
-      await dispatchWithContext(router, event, createContext, [req, res], req);
-      // User code (createContext, or a handler via `req.res`) may have responded already
-      if (!res.headersSent) {
-        res.status(200).json({ received: true });
-      }
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error(String(err));
-
-      if (onError) {
-        try {
-          await onError(error, event);
-        } catch {
-          // Ignore errors from onError handler to preserve original error response
-        }
-      }
-
-      if (!res.headersSent) {
-        res.status(500).json({ error: 'Internal server error' });
-      }
+    const { status, body } = await handleWebhook(
+      router,
+      options,
+      rawBody,
+      headers,
+      contextProvider(createContext, [req, res], req)
+    );
+    // User code (createContext, or a handler via `req.res`) may have responded already
+    if (!res.headersSent) {
+      res.status(status).json(body);
     }
   };
 }

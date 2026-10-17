@@ -171,13 +171,7 @@ interface EventBridgeAdapterOptions {
    * Custom error handler
    * @optional
    */
-  onError?: (error: Error, event?: WebhookEvent) => Promise<void> | void;
-
-  /**
-   * Custom event extractor from EventBridge event
-   * @optional
-   */
-  extractEvent?: (event: EventBridgeEvent) => WebhookEvent;
+  onError?: (error: Error, event: WebhookEvent) => void;
 
   /**
    * Builds the per-invocation context passed to handlers as their second argument.
@@ -224,27 +218,7 @@ router.group('customer.subscription', (r) => {
 export const handler = eventBridgeAdapter(router);
 ```
 
-### Pattern 2: Event Transformation
-
-Transform EventBridge events before processing:
-
-```typescript
-export const handler = eventBridgeAdapter(router, {
-  extractEvent: (ebEvent) => {
-    const event = JSON.parse(ebEvent.detail);
-    // Add custom metadata
-    return {
-      ...event,
-      metadata: {
-        receivedAt: ebEvent.time,
-        account: ebEvent.account,
-      },
-    };
-  },
-});
-```
-
-### Pattern 3: Error Handling with DLQ
+### Pattern 2: Error Handling with DLQ
 
 ```typescript
 export const handler = eventBridgeAdapter(router, {

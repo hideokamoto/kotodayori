@@ -1,6 +1,7 @@
 packages:
   - 'packages/*'
   - 'examples/*'
-  # Standalone npm project that depends on the published packages (opened directly by StackBlitz)
+  # Standalone npm projects that depend on the published packages (opened directly by StackBlitz)
   - '!examples/stackblitz-demo'
+  - '!examples/custom-webhooks-demo'
   - 'docs'

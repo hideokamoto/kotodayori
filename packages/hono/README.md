@@ -158,13 +158,6 @@ interface HonoAdapterOptions {
    * @default (c) => c
    */
   createContext?: (c: THonoContext) => TContext | Promise<TContext>;
-
-  /**
-   * Custom success response
-   * @optional
-   * @default { success: true }
-   */
-  successResponse?: unknown;
 }
 ```
 
@@ -221,19 +214,6 @@ app.post('/webhook', honoAdapter(router, {
         eventId: event?.id,
       },
     });
-  },
-}));
-```
-
-### Custom Success Response
-
-```typescript
-app.post('/webhook', honoAdapter(router, {
-  verifier: createStripeVerifier(stripe, secret),
-  successResponse: {
-    status: 'ok',
-    processed: true,
-    timestamp: Date.now(),
   },
 }));
 ```
