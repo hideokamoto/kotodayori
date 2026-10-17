@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { Request, Response } from 'express';
 import { expressAdapter } from '../src/index.js';
 import { WebhookRouter, type Verifier, type WebhookEvent } from '@kotodayori/core';
@@ -131,6 +131,48 @@ describe('expressAdapter', () => {
     expect(mockRes.json).toHaveBeenCalledWith(
       expect.objectContaining({ error: 'Verification failed' })
     );
+  });
+
+  describe('logger', () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('should log verification failures to the injected logger', async () => {
+      const verificationError = new Error('Invalid signature');
+      (mockVerifier as ReturnType<typeof vi.fn>).mockImplementation(() => {
+        throw verificationError;
+      });
+      const logger = { warn: vi.fn(), error: vi.fn() };
+      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      const middleware = expressAdapter(router, {
+        verifier: mockVerifier,
+        logger,
+      });
+
+      await middleware(mockReq as Request, mockRes as Response, vi.fn());
+
+      expect(mockRes.status).toHaveBeenCalledWith(400);
+      expect(logger.error).toHaveBeenCalledWith('Webhook verification failed:', verificationError);
+      expect(consoleError).not.toHaveBeenCalled();
+    });
+
+    it('should log verification failures to console.error by default', async () => {
+      const verificationError = new Error('Invalid signature');
+      (mockVerifier as ReturnType<typeof vi.fn>).mockImplementation(() => {
+        throw verificationError;
+      });
+      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      const middleware = expressAdapter(router, {
+        verifier: mockVerifier,
+      });
+
+      await middleware(mockReq as Request, mockRes as Response, vi.fn());
+
+      expect(consoleError).toHaveBeenCalledWith('Webhook verification failed:', verificationError);
+    });
   });
 
   it('should handle handler errors with 500 status', async () => {

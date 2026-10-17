@@ -100,6 +100,46 @@ export interface FanoutOptions {
 }
 
 /**
+ * Minimal logger contract used by Kotodayori packages.
+ *
+ * Only `warn` and `error` are required so that most logging libraries
+ * (e.g. AWS Lambda Powertools Logger, pino, winston) or a thin wrapper
+ * around an error tracker can be injected.
+ */
+export interface Logger {
+  debug?(message: string, ...args: unknown[]): void;
+  info?(message: string, ...args: unknown[]): void;
+  warn(message: string, ...args: unknown[]): void;
+  error(message: string, ...args: unknown[]): void;
+}
+
+/**
+ * Default logger that forwards to the global `console`
+ */
+export const consoleLogger: Logger = {
+  debug: (message, ...args) => console.debug(message, ...args),
+  info: (message, ...args) => console.info(message, ...args),
+  warn: (message, ...args) => console.warn(message, ...args),
+  error: (message, ...args) => console.error(message, ...args),
+};
+
+/**
+ * Logger that discards every message
+ */
+export const silentLogger: Logger = {
+  warn: () => {},
+  error: () => {},
+};
+
+/**
+ * Options for WebhookRouter
+ */
+export interface WebhookRouterOptions {
+  /** Logger used for warnings emitted by the router. Defaults to `consoleLogger`. */
+  logger?: Logger;
+}
+
+/**
  * Structural contract an adapter needs from a router: just the ability to
  * dispatch a verified event. Adapters accept this interface instead of the
  * concrete `WebhookRouter` class so that a router from a *different installed
@@ -121,6 +161,11 @@ export class WebhookRouter<
 > implements WebhookDispatcher<TEventMap[keyof TEventMap] | WebhookEvent> {
   private handlers: Map<string, EventHandler<WebhookEvent>[]> = new Map();
   private middlewares: Middleware[] = [];
+  private readonly logger: Logger;
+
+  constructor(options: WebhookRouterOptions = {}) {
+    this.logger = options.logger ?? consoleLogger;
+  }
 
   /**
    * Register a handler for a specific event type
@@ -154,7 +199,7 @@ export class WebhookRouter<
 
     // Warn if empty array is passed
     if (Array.isArray(eventOrEvents) && eventOrEvents.length === 0) {
-      console.warn('WebhookRouter.on(): Empty event array passed. No handlers registered.');
+      this.logger.warn('WebhookRouter.on(): Empty event array passed. No handlers registered.');
       return this;
     }
 
@@ -220,7 +265,7 @@ export class WebhookRouter<
       throw new Error('Group prefix cannot be an empty string or whitespace');
     }
 
-    const prefixedRouter = new PrefixedRouter<TEventMap, TPrefix>(prefix, this);
+    const prefixedRouter = new PrefixedRouter<TEventMap, TPrefix>(prefix, this, this.logger);
     callback(prefixedRouter);
     return this;
   }
@@ -318,7 +363,8 @@ class PrefixedRouter<
 > {
   constructor(
     private prefix: TPrefix,
-    private parent: WebhookRouter<TEventMap>
+    private parent: WebhookRouter<TEventMap>,
+    private logger: Logger
   ) {}
 
   /**
@@ -345,7 +391,7 @@ class PrefixedRouter<
 
     // Warn if empty array is passed
     if (Array.isArray(eventOrEvents) && eventOrEvents.length === 0) {
-      console.warn('PrefixedRouter.on(): Empty event array passed. No handlers registered.');
+      this.logger.warn('PrefixedRouter.on(): Empty event array passed. No handlers registered.');
       return this;
     }
 
@@ -384,6 +430,8 @@ export interface WebhookHandlerOptions<T extends WebhookEvent = WebhookEvent> {
   verifier: Verifier<T>;
   /** Custom error handler, called when dispatching a verified event fails */
   onError?: (error: Error, event: T) => Promise<void> | void;
+  /** Logger for adapter diagnostics such as verification failures. Defaults to `consoleLogger`. */
+  logger?: Logger;
 }
 
 /**
@@ -417,7 +465,7 @@ export async function handleWebhook<TEvent extends WebhookEvent = WebhookEvent>(
   rawBody: string | Buffer,
   headers: Record<string, string | undefined>
 ): Promise<WebhookHandlerResult> {
-  const { verifier, onError } = options;
+  const { verifier, onError, logger = consoleLogger } = options;
 
   // TextDecoder instead of Buffer#toString so this also runs where Buffer is absent (e.g. Workers)
   const bodyString = typeof rawBody === 'string' ? rawBody : new TextDecoder().decode(rawBody);
@@ -437,7 +485,7 @@ export async function handleWebhook<TEvent extends WebhookEvent = WebhookEvent>(
     const result = await verifier(rawBody, normalizedHeaders);
     event = result.event;
   } catch (err) {
-    console.error('Webhook verification failed:', err);
+    logger.error('Webhook verification failed:', err);
     return { status: 400, body: { error: 'Verification failed' } };
   }
 

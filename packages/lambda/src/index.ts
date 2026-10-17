@@ -1,5 +1,5 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
-import { handleWebhook, type WebhookDispatcher, type WebhookEvent, type Verifier } from '@kotodayori/core';
+import { handleWebhook, type Logger, type WebhookDispatcher, type WebhookEvent, type Verifier } from '@kotodayori/core';
 
 /**
  * Options for the Lambda adapter
@@ -9,6 +9,8 @@ export interface LambdaAdapterOptions<T extends WebhookEvent = WebhookEvent> {
   verifier: Verifier<T>;
   /** Custom error handler */
   onError?: (error: Error, event?: T) => Promise<void> | void;
+  /** Logger for adapter diagnostics such as verification failures. Defaults to `consoleLogger`. */
+  logger?: Logger;
 }
 
 /**

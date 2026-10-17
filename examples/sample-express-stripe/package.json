@@ -1,6 +1,6 @@
 {
   "name": "sample-express-stripe",
-  "version": "0.1.4",
+  "version": "0.1.6",
   "private": true,
   "type": "module",
   "scripts": {
@@ -13,7 +13,7 @@
     "@kotodayori/express": "workspace:*",
     "@kotodayori/stripe": "workspace:*",
     "express": "^5.0.0",
-    "stripe": "^22.0.0"
+    "stripe": "^23.0.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",

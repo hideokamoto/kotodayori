@@ -181,4 +181,29 @@ describe('handleWebhook', () => {
     expect(result.status).toBe(200);
     expect(dispatch).toHaveBeenCalledWith(testEvent);
   });
+
+  describe('logger', () => {
+    it('logs verification failures to the injected logger instead of console', async () => {
+      const logger = { warn: vi.fn(), error: vi.fn() };
+      const verificationError = new Error('Invalid signature');
+      const verifier: Verifier = () => {
+        throw verificationError;
+      };
+
+      await handleWebhook(new WebhookRouter(), { verifier, logger }, '{}', {});
+
+      expect(logger.error).toHaveBeenCalledWith('Webhook verification failed:', verificationError);
+      expect(consoleErrorSpy).not.toHaveBeenCalled();
+    });
+
+    it('defaults to console.error when no logger is given', async () => {
+      const verifier: Verifier = () => {
+        throw new Error('Invalid signature');
+      };
+
+      await handleWebhook(new WebhookRouter(), { verifier }, '{}', {});
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Webhook verification failed:', expect.any(Error));
+    });
+  });
 });

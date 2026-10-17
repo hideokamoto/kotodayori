@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest';
-import { WebhookRouter } from '../src/index.js';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { WebhookRouter, consoleLogger, silentLogger, type Logger } from '../src/index.js';
 
 describe('WebhookRouter', () => {
   describe('instantiation', () => {
@@ -1043,6 +1043,97 @@ describe('WebhookRouter', () => {
         'PrefixedRouter.on(): Empty event array passed. No handlers registered.'
       );
       warnSpy.mockRestore();
+    });
+  });
+
+  describe('logger injection', () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    const createMockLogger = () => ({
+      debug: vi.fn(),
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+    }) satisfies Logger;
+
+    it('should use the injected logger when on() receives an empty array', () => {
+      const logger = createMockLogger();
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const router = new WebhookRouter({ logger });
+
+      router.on([], vi.fn());
+
+      expect(logger.warn).toHaveBeenCalledWith(
+        'WebhookRouter.on(): Empty event array passed. No handlers registered.'
+      );
+      expect(warnSpy).not.toHaveBeenCalled();
+    });
+
+    it('should use the injected logger in PrefixedRouter.on()', () => {
+      const logger = createMockLogger();
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const router = new WebhookRouter({ logger });
+
+      router.group('test', (group) => {
+        group.on([], vi.fn());
+      });
+
+      expect(logger.warn).toHaveBeenCalledWith(
+        'PrefixedRouter.on(): Empty event array passed. No handlers registered.'
+      );
+      expect(warnSpy).not.toHaveBeenCalled();
+    });
+
+    it('should accept a logger that only implements warn and error', () => {
+      const logger: Logger = { warn: vi.fn(), error: vi.fn() };
+      const router = new WebhookRouter({ logger });
+
+      router.on([], vi.fn());
+
+      expect(logger.warn).toHaveBeenCalledOnce();
+    });
+
+    it('should default to consoleLogger when constructed with empty options', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const router = new WebhookRouter({});
+
+      router.on([], vi.fn());
+
+      expect(warnSpy).toHaveBeenCalledOnce();
+    });
+
+    it('consoleLogger should forward each level to the matching console method', () => {
+      const spies = {
+        debug: vi.spyOn(console, 'debug').mockImplementation(() => {}),
+        info: vi.spyOn(console, 'info').mockImplementation(() => {}),
+        warn: vi.spyOn(console, 'warn').mockImplementation(() => {}),
+        error: vi.spyOn(console, 'error').mockImplementation(() => {}),
+      };
+      const extra = new Error('boom');
+
+      consoleLogger.debug?.('d', extra);
+      consoleLogger.info?.('i', extra);
+      consoleLogger.warn('w', extra);
+      consoleLogger.error('e', extra);
+
+      expect(spies.debug).toHaveBeenCalledWith('d', extra);
+      expect(spies.info).toHaveBeenCalledWith('i', extra);
+      expect(spies.warn).toHaveBeenCalledWith('w', extra);
+      expect(spies.error).toHaveBeenCalledWith('e', extra);
+    });
+
+    it('silentLogger should not write to console', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const router = new WebhookRouter({ logger: silentLogger });
+
+      router.on([], vi.fn());
+      silentLogger.error('ignored');
+
+      expect(warnSpy).not.toHaveBeenCalled();
+      expect(errorSpy).not.toHaveBeenCalled();
     });
   });
 

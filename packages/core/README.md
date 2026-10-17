@@ -66,34 +66,44 @@ await router.dispatch({
 ### With a Custom Verifier
 
 ```typescript
-import crypto from 'crypto';
+import type { Verifier } from '@kotodayori/core';
 
-// Create a verifier for GitHub webhooks
-function createGitHubVerifier(secret: string): Verifier {
-  return (payload, headers) => {
-    const signature = headers['x-hub-signature-256'];
-    if (!signature) {
-      throw new Error('Missing x-hub-signature-256 header');
+// Verifier for CircleCI outbound webhooks: `circleci-signature: v1=<hex HMAC-SHA256 of the raw body>`
+function createCircleCIVerifier(secret: string): Verifier {
+  return async (payload, headers) => {
+    const v1 = headers['circleci-signature']
+      ?.split(',')
+      .map((part) => part.trim())
+      .find((part) => part.startsWith('v1='))
+      ?.slice('v1='.length);
+    if (!v1 || !/^(?:[0-9a-f]{2})+$/i.test(v1)) {
+      throw new Error('Missing or malformed circleci-signature header');
     }
 
-    const hmac = crypto.createHmac('sha256', secret);
-    const digest = 'sha256=' + hmac.update(payload).digest('hex');
-
-    if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(digest))) {
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      'raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['verify']
+    );
+    const signature = new Uint8Array(v1.match(/../g)!.map((pair) => parseInt(pair, 16)));
+    const data = typeof payload === 'string' ? encoder.encode(payload) : new Uint8Array(payload);
+    // crypto.subtle.verify compares in constant time
+    if (!(await crypto.subtle.verify('HMAC', key, signature, data))) {
       throw new Error('Invalid signature');
     }
 
+    const type = headers['circleci-event-type'];
+    if (!type) {
+      throw new Error('Missing circleci-event-type header');
+    }
+
     const body = JSON.parse(payload.toString());
-    return {
-      event: {
-        id: headers['x-github-delivery'] ?? crypto.randomUUID(),
-        type: headers['x-github-event'] ?? 'unknown',
-        data: { object: body },
-      },
-    };
+    return { event: { id: body.id, type, data: { object: body } } };
   };
 }
 ```
+
+For typed CircleCI events and for providers that send several events per request (such as LINE), see the [Custom Webhooks guide](../../docs/src/content/docs/guides/custom-webhooks.md) and the runnable [`examples/custom-webhooks-demo`](../../examples/custom-webhooks-demo).
+
 
 ## API Reference
 
@@ -230,6 +240,35 @@ type Verifier<T extends WebhookEvent> = (
   payload: string | Buffer,
   headers: Record<string, string | undefined>
 ) => VerifyResult<T> | Promise<VerifyResult<T>>;
+```
+
+### Logger
+
+Diagnostics emitted by Kotodayori (for example, the warning for `on([])` or adapter verification failures) go through a `Logger`. By default they are written to `console` via `consoleLogger`. Pass your own logger to route them elsewhere.
+
+```typescript
+import { WebhookRouter, silentLogger, type Logger } from '@kotodayori/core';
+import { Logger as PowertoolsLogger } from '@aws-lambda-powertools/logger';
+
+// Any object with `warn` and `error` methods can be injected
+const logger: Logger = new PowertoolsLogger({ serviceName: 'webhook' });
+
+const router = new WebhookRouter({ logger });
+
+// Adapters and @kotodayori/zod accept the same option
+// lambdaAdapter(router, { verifier, logger });
+
+// Disable diagnostics entirely
+const quietRouter = new WebhookRouter({ logger: silentLogger });
+```
+
+```typescript
+interface Logger {
+  debug?(message: string, ...args: unknown[]): void;
+  info?(message: string, ...args: unknown[]): void;
+  warn(message: string, ...args: unknown[]): void;
+  error(message: string, ...args: unknown[]): void;
+}
 ```
 
 ## Advanced Usage
@@ -378,13 +417,13 @@ import { WebhookRouter } from '@kotodayori/core';
 import { honoAdapter } from '@kotodayori/hono';
 
 const router = new WebhookRouter();
-router.on('my.event', async (event) => {
-  console.log('Event received');
+router.on('workflow-completed', async (event) => {
+  console.log('Workflow completed', event.id);
 });
 
 const app = new Hono();
 app.post('/webhook', honoAdapter(router, {
-  verifier: createGitHubVerifier(process.env.GITHUB_WEBHOOK_SECRET!),
+  verifier: createCircleCIVerifier(process.env.CIRCLECI_WEBHOOK_SECRET!),
 }));
 ```
 

@@ -1,5 +1,16 @@
 # @kotodayori/lambda
 
+## 1.2.0
+
+### Minor Changes
+
+- a478b52: Add an injectable `Logger` interface. `WebhookRouter`, `StripeWebhookRouter`, the Hono/Express/Lambda adapters, `SchemaRegistry`, and `withValidation` accept a `logger` option (defaults to `consoleLogger`). `consoleLogger` and `silentLogger` are exported from `@kotodayori/core`.
+
+### Patch Changes
+
+- Updated dependencies [a478b52]
+  - @kotodayori/core@1.3.0
+
 ## 1.1.2
 
 ### Patch Changes

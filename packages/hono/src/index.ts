@@ -1,5 +1,5 @@
 import type { Context } from 'hono';
-import { handleWebhook, type WebhookDispatcher, type WebhookEvent, type Verifier } from '@kotodayori/core';
+import { handleWebhook, type Logger, type WebhookDispatcher, type WebhookEvent, type Verifier } from '@kotodayori/core';
 
 /**
  * Options for the Hono adapter
@@ -9,6 +9,8 @@ export interface HonoAdapterOptions<T extends WebhookEvent = WebhookEvent> {
   verifier: Verifier<T>;
   /** Custom error handler */
   onError?: (error: Error, event?: T) => Promise<void> | void;
+  /** Logger for adapter diagnostics such as verification failures. Defaults to `consoleLogger`. */
+  logger?: Logger;
 }
 
 /**

@@ -161,4 +161,17 @@ describe('fetchAdapter', () => {
     expect(results.map((r) => r.status)).toEqual([200, 200, 200]);
     expect(handler).toHaveBeenCalledTimes(3);
   });
+
+  it('logs verification failures to the injected logger', async () => {
+    const logger = { warn: vi.fn(), error: vi.fn() };
+    const verificationError = new Error('Invalid signature');
+    const verifier: Verifier = () => {
+      throw verificationError;
+    };
+
+    await fetchAdapter(new WebhookRouter(), { verifier, logger })(post('{}'));
+
+    expect(logger.error).toHaveBeenCalledWith('Webhook verification failed:', verificationError);
+    expect(consoleErrorSpy).not.toHaveBeenCalled();
+  });
 });

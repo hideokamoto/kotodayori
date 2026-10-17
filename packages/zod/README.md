@@ -233,6 +233,12 @@ interface ValidationMiddlewareOptions {
    * Custom error handler
    */
   onError?: (error: WebhookValidationError | UnknownEventTypeError) => void;
+
+  /**
+   * Logger used when the onError callback itself throws
+   * @default consoleLogger
+   */
+  logger?: Logger;
 }
 ```
 
