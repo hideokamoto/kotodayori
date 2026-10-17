@@ -147,13 +147,6 @@ interface HonoAdapterOptions {
    * @default consoleLogger
    */
   logger?: Logger;
-
-  /**
-   * Custom success response
-   * @optional
-   * @default { success: true }
-   */
-  successResponse?: unknown;
 }
 ```
 
@@ -175,19 +168,6 @@ app.post('/webhook', honoAdapter(router, {
         eventId: event?.id,
       },
     });
-  },
-}));
-```
-
-### Custom Success Response
-
-```typescript
-app.post('/webhook', honoAdapter(router, {
-  verifier: createStripeVerifier(stripe, secret),
-  successResponse: {
-    status: 'ok',
-    processed: true,
-    timestamp: Date.now(),
   },
 }));
 ```
