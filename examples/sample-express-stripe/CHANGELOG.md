@@ -1,5 +1,12 @@
 # sample-express-stripe
 
+## 0.1.7
+
+### Patch Changes
+
+- Updated dependencies [b7ae349]
+  - @kotodayori/express@1.2.1
+
 ## 0.1.6
 
 ### Patch Changes

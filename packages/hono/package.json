@@ -1,6 +1,6 @@
 {
   "name": "@kotodayori/hono",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Hono adapter for Kotodayori Webhook Router",
   "type": "module",
   "main": "./dist/index.cjs",

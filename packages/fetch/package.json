@@ -1,6 +1,6 @@
 {
   "name": "@kotodayori/fetch",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Web-standard fetch (Request/Response) adapter for Kotodayori Webhook Router",
   "type": "module",
   "main": "./dist/index.cjs",
