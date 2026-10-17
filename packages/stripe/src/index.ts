@@ -456,6 +456,8 @@ export function createStripeVerifier(
   stripe: Stripe,
   webhookSecret: string
 ): Verifier<Stripe.Event> {
+  warnIfUnsupportedStripeVersion(stripe);
+
   return async (
     payload: string | Buffer,
     headers: Record<string, string | undefined>
@@ -483,6 +485,36 @@ export function createStripeVerifier(
 
     return { event };
   };
+}
+
+/** The lowest `stripe` major version the next major release of this package will support */
+const NEXT_MAJOR_MIN_STRIPE_VERSION = 23;
+
+let hasWarnedUnsupportedStripeVersion = false;
+
+/**
+ * Warns once per process when the Stripe SDK is older than the version the next major release
+ * will require. `stripe.VERSION` exists on instances from Stripe SDK v17 onward; when it is
+ * missing or unparseable (for example a mocked instance), nothing is logged.
+ */
+function warnIfUnsupportedStripeVersion(stripe: Stripe): void {
+  if (hasWarnedUnsupportedStripeVersion) {
+    return;
+  }
+  const version = (stripe as { VERSION?: unknown }).VERSION;
+  if (typeof version !== 'string') {
+    return;
+  }
+  const major = Number.parseInt(version, 10);
+  if (Number.isNaN(major) || major >= NEXT_MAJOR_MIN_STRIPE_VERSION) {
+    return;
+  }
+  hasWarnedUnsupportedStripeVersion = true;
+  console.warn(
+    `[@kotodayori/stripe] Stripe SDK v${version} is deprecated for use with @kotodayori/stripe. ` +
+      `The next major release will require stripe >= ${NEXT_MAJOR_MIN_STRIPE_VERSION}.0.0. ` +
+      `Event types added in Stripe SDK v${NEXT_MAJOR_MIN_STRIPE_VERSION} are already missing from older SDKs.`
+  );
 }
 
 /**
