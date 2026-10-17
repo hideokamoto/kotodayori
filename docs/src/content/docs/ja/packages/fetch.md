@@ -14,34 +14,61 @@ Node 形式の `(req, res)` を受け取るハンドラー（Express、Next.js P
 
 ```bash
 pnpm add @kotodayori/fetch
+# 以下の Stripe の例には次も必要です:
+pnpm add @kotodayori/stripe stripe
 ```
 
 ## 使い方
+
+実行環境が提供するシークレットからハンドラーを作ります。Cloudflare Workers ではシークレットが `fetch` の `env` バインディングとして渡されるため、リクエストごとにハンドラーを作ります。それ以外の環境では `process.env` を使えます。
 
 ```typescript
 import Stripe from 'stripe';
 import { StripeWebhookRouter, createStripeVerifier } from '@kotodayori/stripe';
 import { fetchAdapter } from '@kotodayori/fetch';
 
-const stripe = new Stripe(process.env.STRIPE_API_KEY!);
 const router = new StripeWebhookRouter();
 
 router.on('payment_intent.succeeded', async (event) => {
   console.log('支払い成功:', event.data.object.id);
 });
 
-const handle = fetchAdapter(router, {
-  verifier: createStripeVerifier(stripe, process.env.STRIPE_WEBHOOK_SECRET!),
-});
+export const createHandler = (apiKey: string, webhookSecret: string) =>
+  fetchAdapter(router, {
+    verifier: createStripeVerifier(new Stripe(apiKey), webhookSecret),
+  });
+```
 
-// Cloudflare Workers / Bun / Deno
+### Cloudflare Workers
+
+シークレットは `process.env` ではなく `env` バインディングから読みます（`wrangler secret put` で設定します）:
+
+```typescript
+export default {
+  fetch: (request: Request, env: { STRIPE_API_KEY: string; STRIPE_WEBHOOK_SECRET: string }) =>
+    createHandler(env.STRIPE_API_KEY, env.STRIPE_WEBHOOK_SECRET)(request),
+};
+```
+
+### Bun / Deno
+
+```typescript
+const handle = createHandler(process.env.STRIPE_API_KEY!, process.env.STRIPE_WEBHOOK_SECRET!);
+
 export default { fetch: handle };
+```
 
-// Next.js App Router
-// export const POST = handle;
+### Next.js App Router
 
-// React Router v7 / Remix
-// export const action = ({ request }) => handle(request);
+```typescript
+export const POST = createHandler(process.env.STRIPE_API_KEY!, process.env.STRIPE_WEBHOOK_SECRET!);
+```
+
+### React Router v7 / Remix
+
+```typescript
+export const action = ({ request }: { request: Request }) =>
+  createHandler(process.env.STRIPE_API_KEY!, process.env.STRIPE_WEBHOOK_SECRET!)(request);
 ```
 
 ## API

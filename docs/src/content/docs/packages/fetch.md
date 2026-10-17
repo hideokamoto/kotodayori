@@ -14,34 +14,61 @@ Node-style `(req, res)` handlers (Express, Next.js Pages Router `pages/api`) are
 
 ```bash
 pnpm add @kotodayori/fetch
+# The Stripe example below also needs:
+pnpm add @kotodayori/stripe stripe
 ```
 
 ## Usage
+
+Create the handler from the secrets your runtime provides. Cloudflare Workers passes secrets to `fetch` as the `env` binding, so the handler is created per request there; elsewhere `process.env` works.
 
 ```typescript
 import Stripe from 'stripe';
 import { StripeWebhookRouter, createStripeVerifier } from '@kotodayori/stripe';
 import { fetchAdapter } from '@kotodayori/fetch';
 
-const stripe = new Stripe(process.env.STRIPE_API_KEY!);
 const router = new StripeWebhookRouter();
 
 router.on('payment_intent.succeeded', async (event) => {
   console.log('Payment succeeded:', event.data.object.id);
 });
 
-const handle = fetchAdapter(router, {
-  verifier: createStripeVerifier(stripe, process.env.STRIPE_WEBHOOK_SECRET!),
-});
+export const createHandler = (apiKey: string, webhookSecret: string) =>
+  fetchAdapter(router, {
+    verifier: createStripeVerifier(new Stripe(apiKey), webhookSecret),
+  });
+```
 
-// Cloudflare Workers / Bun / Deno
+### Cloudflare Workers
+
+Secrets come from the `env` binding (set with `wrangler secret put`), not from `process.env`:
+
+```typescript
+export default {
+  fetch: (request: Request, env: { STRIPE_API_KEY: string; STRIPE_WEBHOOK_SECRET: string }) =>
+    createHandler(env.STRIPE_API_KEY, env.STRIPE_WEBHOOK_SECRET)(request),
+};
+```
+
+### Bun / Deno
+
+```typescript
+const handle = createHandler(process.env.STRIPE_API_KEY!, process.env.STRIPE_WEBHOOK_SECRET!);
+
 export default { fetch: handle };
+```
 
-// Next.js App Router
-// export const POST = handle;
+### Next.js App Router
 
-// React Router v7 / Remix
-// export const action = ({ request }) => handle(request);
+```typescript
+export const POST = createHandler(process.env.STRIPE_API_KEY!, process.env.STRIPE_WEBHOOK_SECRET!);
+```
+
+### React Router v7 / Remix
+
+```typescript
+export const action = ({ request }: { request: Request }) =>
+  createHandler(process.env.STRIPE_API_KEY!, process.env.STRIPE_WEBHOOK_SECRET!)(request);
 ```
 
 ## API
