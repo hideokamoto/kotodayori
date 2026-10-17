@@ -24,7 +24,7 @@ yarn add @kotodayori/stripe stripe
 
 **Note**: `stripe` is a peer dependency and must be installed separately.
 
-**Stripe SDK version**: Use `stripe` v23 or later. The peer dependency still accepts `stripe` >= 17.0.0, but Stripe SDK versions older than v23 are deprecated and the next major release of `@kotodayori/stripe` will require `stripe` >= 23.0.0. With an older SDK, `createStripeVerifier()` logs a one-time warning, and projects that type-check libraries (`skipLibCheck: false`) get type errors for event types added in Stripe SDK v23.
+**Stripe SDK version**: `@kotodayori/stripe` requires `stripe` v23 or later (peer dependency `>=23.0.0`). Older SDKs are not supported: `createStripeVerifier()` logs a one-time warning, and projects that type-check libraries (`skipLibCheck: false`) get type errors for event types added in Stripe SDK v23.
 
 ## Features
 
@@ -533,7 +533,7 @@ See [MAINTAINING_STRIPE_EVENTMAP.md](./MAINTAINING_STRIPE_EVENTMAP.md) for detai
 
 - Node.js >= 18
 - TypeScript >= 5.3
-- Stripe SDK >= 17.0.0
+- Stripe SDK >= 23.0.0
 
 ## Related Packages
 

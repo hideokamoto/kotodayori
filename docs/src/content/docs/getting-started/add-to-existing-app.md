@@ -77,7 +77,7 @@ For Express, use `express.raw({ type: 'application/json' })` before the adapter 
 
 ## Peer dependencies
 
-- **Stripe adapter** (`@kotodayori/stripe`): `stripe` >= 17.0.0
+- **Stripe adapter** (`@kotodayori/stripe`): `stripe` >= 23.0.0
 - **Hono adapter** (`@kotodayori/hono`): `hono` >= 4.0.0
 - **Express adapter** (`@kotodayori/express`): `express` >= 4.0.0
 - **Zod integration** (`@kotodayori/zod`): `zod` ^4.0.0

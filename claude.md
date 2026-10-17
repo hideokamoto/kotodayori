@@ -404,11 +404,11 @@ interface EventBridgeAdapterOptions {
      "name": "@kotodayori/new-adapter",
      "dependencies": {
        "@kotodayori/core": "workspace:*",
-       "stripe": ">=17.0.0"
+       "stripe": ">=23.0.0"
      },
      "peerDependencies": {
        "framework-name": "^x.x.x",
-       "stripe": ">=17.0.0"
+       "stripe": ">=23.0.0"
      }
    }
    ```

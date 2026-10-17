@@ -435,7 +435,7 @@ See [MAINTAINING_STRIPE_EVENTMAP.md](packages/stripe/MAINTAINING_STRIPE_EVENTMAP
 
 - Node.js >= 18
 - TypeScript >= 5.3
-- Stripe SDK >= 17.0.0 (for `@kotodayori/stripe`)
+- Stripe SDK >= 23.0.0 (for `@kotodayori/stripe`)
 
 ## License
 
