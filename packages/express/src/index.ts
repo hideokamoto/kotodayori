@@ -4,14 +4,30 @@ import { consoleLogger, type Logger, type WebhookDispatcher, type WebhookEvent, 
 /**
  * Options for the Express adapter
  */
-export interface ExpressAdapterOptions<T extends WebhookEvent = WebhookEvent> {
+export interface ExpressAdapterOptions<T extends WebhookEvent = WebhookEvent, TContext = Request> {
   /** Webhook verifier function for signature validation and event parsing */
   verifier: Verifier<T>;
   /** Custom error handler */
   onError?: (error: Error, event: T) => Promise<void> | void;
   /** Logger for adapter diagnostics such as verification failures. Defaults to `consoleLogger`. */
   logger?: Logger;
+  /**
+   * Builds the per-request context passed to handlers as their second argument.
+   * Defaults to passing the Express `req` itself. Required when the router's context
+   * type is not satisfied by `Request`. Errors are handled like handler errors.
+   */
+  createContext?: (req: Request, res: Response) => TContext | Promise<TContext>;
 }
+
+/**
+ * Express adapter options for a router with context `TContext`: `createContext` is
+ * optional when `Request` already satisfies `TContext`, and required otherwise.
+ */
+export type ExpressAdapterOptionsFor<T extends WebhookEvent, TContext> = Request extends TContext
+  ? ExpressAdapterOptions<T, TContext>
+  : ExpressAdapterOptions<T, TContext> & {
+      createContext: (req: Request, res: Response) => TContext | Promise<TContext>;
+    };
 
 /**
  * Creates an Express middleware for handling webhooks
@@ -42,11 +58,15 @@ export interface ExpressAdapterOptions<T extends WebhookEvent = WebhookEvent> {
  */
 export function expressAdapter<
   TEvent extends WebhookEvent = WebhookEvent,
+  TContext = unknown,
 >(
-  router: WebhookDispatcher<NoInfer<TEvent>>,
-  options: ExpressAdapterOptions<TEvent>
+  router: WebhookDispatcher<NoInfer<TEvent>, TContext>,
+  options: ExpressAdapterOptionsFor<TEvent, NoInfer<TContext>>
 ): (req: Request, res: Response, next: NextFunction) => Promise<void> {
-  const { verifier, onError, logger = consoleLogger } = options;
+  const { verifier, onError, logger = consoleLogger, createContext } =
+    options as ExpressAdapterOptions<TEvent, TContext>;
+  // Without createContext, the option types guarantee that `Request` satisfies TContext
+  const dispatcher = router as unknown as { dispatch(event: TEvent, context: TContext): Promise<void> };
 
   return async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
     // Validate request body exists and is the correct type
@@ -93,9 +113,10 @@ export function expressAdapter<
       return;
     }
 
-    // Dispatch the event
+    // Build the per-request context and dispatch the event
     try {
-      await router.dispatch(event);
+      const context = createContext ? await createContext(req, res) : (req as TContext);
+      await dispatcher.dispatch(event, context);
       res.status(200).json({ received: true });
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));

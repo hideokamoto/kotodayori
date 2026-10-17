@@ -334,4 +334,74 @@ describe('honoAdapter', () => {
     expect(handler).toHaveBeenCalledOnce();
     expect(res.status).toBe(200);
   });
+
+  describe('per-request context', () => {
+    const postWebhook = (app: Hono<any>, env?: Record<string, unknown>) =>
+      app.request(
+        new Request('http://localhost/webhook', {
+          method: 'POST',
+          body: JSON.stringify(testEvent),
+          headers: { 'Content-Type': 'application/json' },
+        }),
+        undefined,
+        env
+      );
+
+    it('should pass the Hono context to handlers by default, exposing c.env bindings', async () => {
+      const db = { prepare: vi.fn() };
+      let received: unknown;
+      router.on('payment_intent.succeeded', async (_event, context) => {
+        received = context;
+      });
+
+      const app = new Hono();
+      app.post('/webhook', honoAdapter(router, { verifier: mockVerifier }));
+
+      const res = await postWebhook(app, { DB: db });
+
+      expect(res.status).toBe(200);
+      expect((received as { env: { DB: unknown } }).env.DB).toBe(db);
+    });
+
+    it('should pass the value built by createContext to handlers', async () => {
+      const db = { prepare: vi.fn() };
+      const handler = vi.fn().mockResolvedValue(undefined);
+      const typedRouter = new WebhookRouter<Record<string, WebhookEvent>, { db: unknown }>();
+      typedRouter.on('payment_intent.succeeded', handler);
+
+      const app = new Hono<{ Bindings: { DB: unknown } }>();
+      app.post('/webhook', honoAdapter(typedRouter, {
+        verifier: mockVerifier,
+        createContext: async (c) => ({ db: c.env.DB }),
+      }));
+
+      const res = await postWebhook(app, { DB: db });
+
+      expect(res.status).toBe(200);
+      expect(handler).toHaveBeenCalledWith(testEvent, { db });
+    });
+
+    it('should return 500 and call onError when createContext throws', async () => {
+      const contextError = new Error('binding missing');
+      const handler = vi.fn().mockResolvedValue(undefined);
+      const onError = vi.fn();
+      const typedRouter = new WebhookRouter<Record<string, WebhookEvent>, { db: unknown }>();
+      typedRouter.on('payment_intent.succeeded', handler);
+
+      const app = new Hono();
+      app.post('/webhook', honoAdapter(typedRouter, {
+        verifier: mockVerifier,
+        onError,
+        createContext: () => {
+          throw contextError;
+        },
+      }));
+
+      const res = await postWebhook(app);
+
+      expect(res.status).toBe(500);
+      expect(handler).not.toHaveBeenCalled();
+      expect(onError).toHaveBeenCalledWith(contextError, testEvent);
+    });
+  });
 });

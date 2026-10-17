@@ -178,8 +178,19 @@ interface EventBridgeAdapterOptions {
    * @optional
    */
   extractEvent?: (event: EventBridgeEvent) => WebhookEvent;
+
+  /**
+   * Builds the per-invocation context passed to handlers as their second argument.
+   * Required when the router's context type is not satisfied by `EventBridgeInvocation`.
+   * @optional
+   * @default (event, context) => ({ event, context })
+   */
+  createContext?: (event: EventBridgeEvent<string, unknown>, context: Context) => TContext | Promise<TContext>;
 }
 ```
+
+Handlers receive `{ event, context }` (`EventBridgeInvocation`) as their second argument,
+so they can read the EventBridge envelope (e.g. `source`, `account`) and the Lambda context.
 
 ## Usage Patterns
 

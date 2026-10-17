@@ -311,4 +311,51 @@ describe('expressAdapter', () => {
     expect(handler).toHaveBeenCalledOnce();
     expect(mockRes.status).toHaveBeenCalledWith(200);
   });
+
+  describe('per-request context', () => {
+    it('should pass the Express request to handlers by default', async () => {
+      const handler = vi.fn().mockResolvedValue(undefined);
+      router.on('payment_intent.succeeded', handler);
+
+      const middleware = expressAdapter(router, { verifier: mockVerifier });
+      await middleware(mockReq as Request, mockRes as Response, vi.fn());
+
+      expect(handler).toHaveBeenCalledWith(testEvent, mockReq);
+    });
+
+    it('should pass the value built by createContext(req, res) to handlers', async () => {
+      const handler = vi.fn().mockResolvedValue(undefined);
+      const typedRouter = new WebhookRouter<Record<string, WebhookEvent>, { tenant: string }>();
+      typedRouter.on('payment_intent.succeeded', handler);
+      const createContext = vi.fn(async () => ({ tenant: 'acme' }));
+
+      const middleware = expressAdapter(typedRouter, { verifier: mockVerifier, createContext });
+      await middleware(mockReq as Request, mockRes as Response, vi.fn());
+
+      expect(createContext).toHaveBeenCalledWith(mockReq, mockRes);
+      expect(handler).toHaveBeenCalledWith(testEvent, { tenant: 'acme' });
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+    });
+
+    it('should return 500 and call onError when createContext throws', async () => {
+      const contextError = new Error('no tenant');
+      const handler = vi.fn().mockResolvedValue(undefined);
+      const onError = vi.fn();
+      const typedRouter = new WebhookRouter<Record<string, WebhookEvent>, { tenant: string }>();
+      typedRouter.on('payment_intent.succeeded', handler);
+
+      const middleware = expressAdapter(typedRouter, {
+        verifier: mockVerifier,
+        onError,
+        createContext: () => {
+          throw contextError;
+        },
+      });
+      await middleware(mockReq as Request, mockRes as Response, vi.fn());
+
+      expect(handler).not.toHaveBeenCalled();
+      expect(onError).toHaveBeenCalledWith(contextError, testEvent);
+      expect(mockRes.status).toHaveBeenCalledWith(500);
+    });
+  });
 });

@@ -1,5 +1,6 @@
 import { describe, it, expectTypeOf } from 'vitest';
 import { honoAdapter } from '../src/index.js';
+import type { Context } from 'hono';
 import { WebhookRouter, type Verifier, type WebhookEvent, type WebhookDispatcher } from '@kotodayori/core';
 
 /**
@@ -92,5 +93,46 @@ describe('honoAdapter generic inference', () => {
       },
     });
     expectTypeOf(handler).toBeFunction();
+  });
+});
+
+describe('honoAdapter per-request context', () => {
+  type Bindings = { DB: { prepare(sql: string): unknown } };
+  type AppEnv = { Bindings: Bindings };
+  const verifier: Verifier<CreatedEvent> = () => ({
+    event: { id: 'e', type: 'thing.created', data: { object: { id: 'x' } } },
+  });
+
+  it('accepts a router whose context is the Hono Context without createContext', () => {
+    const router = new WebhookRouter<EventMap, Context<AppEnv>>();
+    router.on('thing.created', async (_event, c) => {
+      expectTypeOf(c.env).toEqualTypeOf<Bindings>();
+    });
+    const handler = honoAdapter(router, { verifier });
+    expectTypeOf(handler).toBeFunction();
+  });
+
+  it('accepts a router whose context is a structural subset of Context (e.g. { env })', () => {
+    const router = new WebhookRouter<EventMap, { env: Bindings }>();
+    honoAdapter(router, { verifier });
+  });
+
+  it('requires createContext when the router context is not provided by Context', () => {
+    const router = new WebhookRouter<EventMap, { db: Bindings['DB'] }>();
+    // @ts-expect-error -- `{ db }` is not a Hono Context, so createContext is required
+    honoAdapter(router, { verifier });
+    honoAdapter(router, {
+      verifier,
+      createContext: (c: Context<AppEnv>) => ({ db: c.env.DB }),
+    });
+  });
+
+  it('checks the createContext return type against the router context', () => {
+    const router = new WebhookRouter<EventMap, { db: Bindings['DB'] }>();
+    honoAdapter(router, {
+      verifier,
+      // @ts-expect-error -- must return `{ db }`
+      createContext: () => ({ notDb: 1 }),
+    });
   });
 });

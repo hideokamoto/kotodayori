@@ -4,10 +4,41 @@ import type { WebhookDispatcher, WebhookEvent } from '@kotodayori/core';
 /**
  * Options for the EventBridge adapter
  */
-export interface EventBridgeAdapterOptions {
+export interface EventBridgeAdapterOptions<TContext = EventBridgeInvocation> {
   /** Custom error handler */
   onError?: (error: Error, event: WebhookEvent) => void;
+  /**
+   * Builds the per-invocation context passed to handlers as their second argument.
+   * Defaults to `{ event, context }` (an {@link EventBridgeInvocation}). Required when
+   * the router's context type is not satisfied by `EventBridgeInvocation`. Errors are
+   * handled like handler errors.
+   */
+  createContext?: (
+    event: EventBridgeEvent<string, unknown>,
+    context: Context
+  ) => TContext | Promise<TContext>;
 }
+
+/**
+ * The default per-invocation context: the EventBridge event and the Lambda context
+ */
+export interface EventBridgeInvocation {
+  event: EventBridgeEvent<string, unknown>;
+  context: Context;
+}
+
+/**
+ * Options argument for a router with context `TContext`: optional when
+ * `EventBridgeInvocation` already satisfies `TContext`, and otherwise required
+ * with `createContext`.
+ */
+export type EventBridgeAdapterOptionsArgs<TContext> = EventBridgeInvocation extends TContext
+  ? [options?: EventBridgeAdapterOptions<TContext>]
+  : [
+      options: EventBridgeAdapterOptions<TContext> & {
+        createContext: NonNullable<EventBridgeAdapterOptions<TContext>['createContext']>;
+      },
+    ];
 
 /**
  * Creates an AWS Lambda handler for processing webhook events from EventBridge
@@ -19,13 +50,19 @@ export interface EventBridgeAdapterOptions {
  * @param options - Adapter options
  * @returns Lambda handler function
  */
-export function eventBridgeAdapter(
-  router: WebhookDispatcher,
-  options: EventBridgeAdapterOptions = {}
+export function eventBridgeAdapter<TContext = unknown>(
+  router: WebhookDispatcher<WebhookEvent, TContext>,
+  ...[options = {}]: EventBridgeAdapterOptionsArgs<NoInfer<TContext>>
 ): (event: EventBridgeEvent<string, unknown>, context: Context) => Promise<void> {
+  const { onError, createContext } = options as EventBridgeAdapterOptions<TContext>;
+  // Without createContext, the option types guarantee that `EventBridgeInvocation` satisfies TContext
+  const dispatcher = router as unknown as {
+    dispatch(event: WebhookEvent, context: TContext): Promise<void>;
+  };
+
   return async (
     eventBridgeEvent: EventBridgeEvent<string, unknown>,
-    _context: Context
+    lambdaContext: Context
   ): Promise<void> => {
     // Validate and extract the webhook event from the EventBridge detail
     const detail = eventBridgeEvent.detail;
@@ -53,12 +90,15 @@ export function eventBridgeAdapter(
     const webhookEvent = detail as WebhookEvent;
 
     try {
-      await router.dispatch(webhookEvent);
+      const context = createContext
+        ? await createContext(eventBridgeEvent, lambdaContext)
+        : ({ event: eventBridgeEvent, context: lambdaContext } satisfies EventBridgeInvocation as TContext);
+      await dispatcher.dispatch(webhookEvent, context);
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
 
-      if (options.onError) {
-        options.onError(error, webhookEvent);
+      if (onError) {
+        onError(error, webhookEvent);
       }
 
       throw error;
