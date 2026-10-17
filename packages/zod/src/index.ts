@@ -1,4 +1,4 @@
-import type { WebhookEvent, Middleware, Verifier, VerifyResult } from '@kotodayori/core';
+import { consoleLogger, type Logger, type WebhookEvent, type Middleware, type Verifier, type VerifyResult } from '@kotodayori/core';
 import { z } from 'zod';
 
 /**
@@ -138,7 +138,7 @@ export class SchemaRegistry<TEventMap extends Record<string, WebhookEvent> = Rec
       if (this.options.strict) {
         throw new Error(message);
       }
-      console.warn(`[SchemaRegistry] ${message}`);
+      (this.options.logger ?? consoleLogger).warn(`[SchemaRegistry] ${message}`);
     }
     this.schemas.set(type, schema);
     return this;
@@ -206,6 +206,12 @@ export interface SchemaRegistryOptions {
    * @default false (logs warning instead)
    */
   strict?: boolean;
+
+  /**
+   * Logger used for non-strict duplicate registration warnings
+   * @default consoleLogger
+   */
+  logger?: Logger;
 }
 
 /**
@@ -246,6 +252,12 @@ export interface ValidationMiddlewareOptions {
    * Custom error handler for validation or unknown event errors
    */
   onError?: (error: WebhookValidationError | UnknownEventTypeError) => void | Promise<void>;
+
+  /**
+   * Logger used when the onError callback itself throws
+   * @default consoleLogger
+   */
+  logger?: Logger;
 }
 
 /**
@@ -296,7 +308,7 @@ export function withValidation<TEventMap extends Record<string, WebhookEvent>>(
   registry: SchemaRegistry<TEventMap>,
   options: ValidationMiddlewareOptions = {}
 ): Middleware<WebhookEvent> {
-  const { allowUnknownEvents = true, onError } = options;
+  const { allowUnknownEvents = true, onError, logger = consoleLogger } = options;
 
   return async (event, next) => {
     // Check if schema is registered
@@ -316,7 +328,7 @@ export function withValidation<TEventMap extends Record<string, WebhookEvent>>(
           try {
             await onError(error);
           } catch (callbackError) {
-            console.error('[withValidation] Error in onError callback:', callbackError);
+            logger.error('[withValidation] Error in onError callback:', callbackError);
           }
         }
 
@@ -332,7 +344,7 @@ export function withValidation<TEventMap extends Record<string, WebhookEvent>>(
         try {
           await onError(error);
         } catch (callbackError) {
-          console.error('[withValidation] Error in onError callback:', callbackError);
+          logger.error('[withValidation] Error in onError callback:', callbackError);
         }
       }
       throw error;
@@ -351,7 +363,7 @@ export function withValidation<TEventMap extends Record<string, WebhookEvent>>(
         try {
           await onError(error);
         } catch (callbackError) {
-          console.error('[withValidation] Error in onError callback:', callbackError);
+          logger.error('[withValidation] Error in onError callback:', callbackError);
         }
       }
 

@@ -228,6 +228,35 @@ type Verifier<T extends WebhookEvent> = (
 ) => VerifyResult<T> | Promise<VerifyResult<T>>;
 ```
 
+### ロガー
+
+Kotodayori が出力する診断メッセージ（`on([])` の警告やアダプターでの署名検証失敗など）は `Logger` を経由します。デフォルトでは `consoleLogger` が `console` に出力します。任意のロガーを渡すと出力先を差し替えられます。
+
+```typescript
+import { WebhookRouter, silentLogger, type Logger } from '@kotodayori/core';
+import { Logger as PowertoolsLogger } from '@aws-lambda-powertools/logger';
+
+// `warn` と `error` メソッドを持つオブジェクトなら注入できます
+const logger: Logger = new PowertoolsLogger({ serviceName: 'webhook' });
+
+const router = new WebhookRouter({ logger });
+
+// アダプターと @kotodayori/zod も同じオプションを受け付けます
+// lambdaAdapter(router, { verifier, logger });
+
+// 診断メッセージを完全に無効化する
+const quietRouter = new WebhookRouter({ logger: silentLogger });
+```
+
+```typescript
+interface Logger {
+  debug?(message: string, ...args: unknown[]): void;
+  info?(message: string, ...args: unknown[]): void;
+  warn(message: string, ...args: unknown[]): void;
+  error(message: string, ...args: unknown[]): void;
+}
+```
+
 ## 応用的な使い方
 
 ### 1 つのイベントに対する複数のハンドラー

@@ -1,5 +1,5 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
-import type { WebhookDispatcher, WebhookEvent, Verifier } from '@kotodayori/core';
+import { consoleLogger, type Logger, type WebhookDispatcher, type WebhookEvent, type Verifier } from '@kotodayori/core';
 
 /**
  * Options for the Lambda adapter
@@ -9,6 +9,8 @@ export interface LambdaAdapterOptions<T extends WebhookEvent = WebhookEvent> {
   verifier: Verifier<T>;
   /** Custom error handler */
   onError?: (error: Error, event?: T) => Promise<void> | void;
+  /** Logger for adapter diagnostics such as verification failures. Defaults to `consoleLogger`. */
+  logger?: Logger;
 }
 
 /**
@@ -40,7 +42,7 @@ export function lambdaAdapter<
   router: WebhookDispatcher<TEvent>,
   options: LambdaAdapterOptions<TEvent>
 ): (event: APIGatewayProxyEvent, context: Context) => Promise<APIGatewayProxyResult> {
-  const { verifier, onError } = options;
+  const { verifier, onError, logger = consoleLogger } = options;
 
   return async (
     lambdaEvent: APIGatewayProxyEvent,
@@ -84,7 +86,7 @@ export function lambdaAdapter<
       const result = await verifier(rawBody, headers);
       webhookEvent = result.event;
     } catch (err) {
-      console.error('Webhook verification failed:', err);
+      logger.error('Webhook verification failed:', err);
       return {
         statusCode: 400,
         body: JSON.stringify({ error: 'Verification failed' }),

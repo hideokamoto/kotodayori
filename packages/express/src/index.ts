@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import type { WebhookDispatcher, WebhookEvent, Verifier } from '@kotodayori/core';
+import { consoleLogger, type Logger, type WebhookDispatcher, type WebhookEvent, type Verifier } from '@kotodayori/core';
 
 /**
  * Options for the Express adapter
@@ -9,6 +9,8 @@ export interface ExpressAdapterOptions<T extends WebhookEvent = WebhookEvent> {
   verifier: Verifier<T>;
   /** Custom error handler */
   onError?: (error: Error, event: T) => Promise<void> | void;
+  /** Logger for adapter diagnostics such as verification failures. Defaults to `consoleLogger`. */
+  logger?: Logger;
 }
 
 /**
@@ -44,7 +46,7 @@ export function expressAdapter<
   router: WebhookDispatcher<TEvent>,
   options: ExpressAdapterOptions<TEvent>
 ): (req: Request, res: Response, next: NextFunction) => Promise<void> {
-  const { verifier, onError } = options;
+  const { verifier, onError, logger = consoleLogger } = options;
 
   return async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
     // Validate request body exists and is the correct type
@@ -86,7 +88,7 @@ export function expressAdapter<
       const result = await verifier(rawBody, headers);
       event = result.event;
     } catch (err) {
-      console.error('Webhook verification failed:', err);
+      logger.error('Webhook verification failed:', err);
       res.status(400).json({ error: 'Verification failed' });
       return;
     }

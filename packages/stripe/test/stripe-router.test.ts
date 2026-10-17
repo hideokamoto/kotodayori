@@ -38,6 +38,17 @@ describe('StripeWebhookRouter', () => {
     expect(true).toBe(true);
   });
 
+  it('should accept an injected logger', () => {
+    const logger = { warn: vi.fn(), error: vi.fn() };
+    const router = new StripeWebhookRouter({ logger });
+
+    router.on([], vi.fn());
+
+    expect(logger.warn).toHaveBeenCalledWith(
+      'WebhookRouter.on(): Empty event array passed. No handlers registered.'
+    );
+  });
+
   describe('dispatch()', () => {
     it('should dispatch events to registered handlers', async () => {
       const router = new StripeWebhookRouter();
