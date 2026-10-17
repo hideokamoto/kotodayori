@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { Hono } from 'hono';
+import { Hono, type Context } from 'hono';
 import { honoAdapter } from '../src/index.js';
 import { WebhookRouter, type Verifier, type WebhookEvent } from '@kotodayori/core';
 
@@ -372,7 +372,7 @@ describe('honoAdapter', () => {
       const app = new Hono<{ Bindings: { DB: unknown } }>();
       app.post('/webhook', honoAdapter(typedRouter, {
         verifier: mockVerifier,
-        createContext: async (c) => ({ db: c.env.DB }),
+        createContext: async (c: Context<{ Bindings: { DB: unknown } }>) => ({ db: c.env.DB }),
       }));
 
       const res = await postWebhook(app, { DB: db });

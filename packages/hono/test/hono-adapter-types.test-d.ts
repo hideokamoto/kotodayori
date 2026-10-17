@@ -1,6 +1,6 @@
 import { describe, it, expectTypeOf } from 'vitest';
 import { honoAdapter } from '../src/index.js';
-import type { Context } from 'hono';
+import { Hono, type Context } from 'hono';
 import { WebhookRouter, type Verifier, type WebhookEvent, type WebhookDispatcher } from '@kotodayori/core';
 
 /**
@@ -129,10 +129,97 @@ describe('honoAdapter per-request context', () => {
 
   it('checks the createContext return type against the router context', () => {
     const router = new WebhookRouter<EventMap, { db: Bindings['DB'] }>();
+    // @ts-expect-error -- createContext must return `{ db }`
     honoAdapter(router, {
       verifier,
-      // @ts-expect-error -- must return `{ db }`
       createContext: () => ({ notDb: 1 }),
     });
+  });
+});
+
+describe('honoAdapter checks bindings against the app env', () => {
+  type DB = { prepare(sql: string): unknown };
+  type GoodEnv = { Bindings: { DB: DB } };
+  type BadEnv = { Bindings: { OTHER: string } };
+  const verifier: Verifier<CreatedEvent> = () => ({
+    event: { id: 'e', type: 'thing.created', data: { object: { id: 'x' } } },
+  });
+
+  it('accepts a router needing { env: { DB } } on an app that has DB', () => {
+    const router = new WebhookRouter<EventMap, { env: { DB: DB } }>();
+    const app = new Hono<GoodEnv>();
+    app.post('/webhook', honoAdapter(router, { verifier }));
+  });
+
+  it('rejects a router needing { env: { DB } } on an app without DB', () => {
+    const router = new WebhookRouter<EventMap, { env: { DB: DB } }>();
+    const app = new Hono<BadEnv>();
+    // @ts-expect-error -- the app's Bindings have no DB
+    app.post('/webhook', honoAdapter(router, { verifier }));
+  });
+
+  it('accepts a Context<Env> router on an app with the same env', () => {
+    const router = new WebhookRouter<EventMap, Context<GoodEnv>>();
+    const app = new Hono<GoodEnv>();
+    app.post('/webhook', honoAdapter(router, { verifier }));
+    app.post('/webhook', (c) => honoAdapter(router, { verifier })(c));
+  });
+
+  it('rejects a Context<Env> router on an app with a different env', () => {
+    const router = new WebhookRouter<EventMap, Context<GoodEnv>>();
+    const app = new Hono<BadEnv>();
+    // @ts-expect-error -- Context<BadEnv> does not provide DB
+    app.post('/webhook', honoAdapter(router, { verifier }));
+  });
+
+  it('checks the env when the adapter is invoked with c directly', () => {
+    const router = new WebhookRouter<EventMap, { env: { DB: DB } }>();
+    const app = new Hono<BadEnv>();
+    app.post('/webhook', (c) =>
+      // @ts-expect-error -- c.env has no DB
+      honoAdapter(router, { verifier })(c)
+    );
+  });
+
+  it('rejects an annotated createContext whose env the app does not have', () => {
+    const router = new WebhookRouter<EventMap, { db: DB }>();
+    const app = new Hono<BadEnv>();
+    app.post(
+      '/webhook',
+      // @ts-expect-error -- createContext expects Context<GoodEnv>, the app provides Context<BadEnv>
+      honoAdapter(router, { verifier, createContext: (c: Context<GoodEnv>) => ({ db: c.env.DB }) })
+    );
+  });
+
+  it('accepts an annotated createContext whose env matches the app', () => {
+    const router = new WebhookRouter<EventMap, { db: DB }>();
+    const app = new Hono<GoodEnv>();
+    app.post(
+      '/webhook',
+      honoAdapter(router, { verifier, createContext: (c: Context<GoodEnv>) => ({ db: c.env.DB }) })
+    );
+  });
+});
+
+describe('honoAdapter createContext without a Context annotation', () => {
+  const verifier: Verifier<CreatedEvent> = () => ({
+    event: { id: 'e', type: 'thing.created', data: { object: { id: 'x' } } },
+  });
+
+  it('does not silently type c.env as any', () => {
+    const router = new WebhookRouter<EventMap, { db: string }>();
+    honoAdapter(router, {
+      verifier,
+      createContext: (c) => {
+        expectTypeOf(c.env).not.toBeAny();
+        // @ts-expect-error -- annotate `c: Context<AppEnv>` to read bindings
+        return { db: c.env.DB };
+      },
+    });
+  });
+
+  it('still allows createContext that ignores c', () => {
+    const router = new WebhookRouter<EventMap, { db: string }>();
+    honoAdapter(router, { verifier, createContext: () => ({ db: 'x' }) });
   });
 });

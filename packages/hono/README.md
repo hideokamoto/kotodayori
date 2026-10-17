@@ -182,12 +182,21 @@ router.on('checkout.session.completed', async (event, c) => {
 ```
 
 To pass something other than `c`, give the router your own context type and build it with
-`createContext`. The types then require `createContext`:
+`createContext`. The types then require `createContext`. Annotate its `c` with your app's
+`Context<AppEnv>`: TypeScript cannot infer the app's env there, so an unannotated `c`
+exposes no bindings and `c.env.DB` is a compile error rather than an untyped `any`.
 
 ```typescript
 const router = new StripeWebhookRouter<{ db: D1Database }>();
-app.post('/webhook', honoAdapter(router, { verifier, createContext: (c) => ({ db: c.env.DB }) }));
+app.post('/webhook', honoAdapter(router, {
+  verifier,
+  createContext: (c: Context<AppEnv>) => ({ db: c.env.DB }),
+}));
 ```
+
+The bindings are checked against the app at `app.post(...)` (or wherever you call the
+returned handler with `c`): a router whose handlers read `c.env.DB`, or a `createContext`
+annotated with `Context<AppEnv>`, is rejected on an app whose `Bindings` lack `DB`.
 
 ## Advanced Usage
 

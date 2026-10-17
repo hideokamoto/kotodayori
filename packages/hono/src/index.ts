@@ -4,7 +4,11 @@ import { consoleLogger, type Logger, type WebhookDispatcher, type WebhookEvent, 
 /**
  * Options for the Hono adapter
  */
-export interface HonoAdapterOptions<T extends WebhookEvent = WebhookEvent, TContext = Context> {
+export interface HonoAdapterOptions<
+  T extends WebhookEvent = WebhookEvent,
+  TContext = Context,
+  THonoContext extends Context = Context,
+> {
   /** Webhook verifier function for signature validation and event parsing */
   verifier: Verifier<T>;
   /** Custom error handler */
@@ -17,16 +21,35 @@ export interface HonoAdapterOptions<T extends WebhookEvent = WebhookEvent, TCont
    * (D1, KV, secrets) on Cloudflare Workers. Required when the router's context
    * type is not satisfied by Hono's `Context`. Errors are handled like handler errors.
    */
-  createContext?: (c: Context) => TContext | Promise<TContext>;
+  createContext?: (c: THonoContext) => TContext | Promise<TContext>;
 }
 
 /**
- * Hono adapter options for a router with context `TContext`: `createContext` is
- * optional when Hono's `Context` already satisfies `TContext`, and required otherwise.
+ * Any Hono context. The returned handler is generic over the caller's concrete
+ * `Context<Env, Path, Input>` and intersects it with the context the router needs, so
+ * an app whose `Bindings` lack what the handlers use is rejected at `app.post(...)`.
+ * (Plain `Context` cannot be used here: intersecting it with `Context<Env>` makes
+ * Hono's `set()` signatures conflict.)
  */
-export type HonoAdapterOptionsFor<T extends WebhookEvent, TContext> = Context extends TContext
-  ? HonoAdapterOptions<T, TContext>
-  : HonoAdapterOptions<T, TContext> & { createContext: (c: Context) => TContext | Promise<TContext> };
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyContext = Context<any, any, any>;
+
+/**
+ * The `c` given to an unannotated `createContext`. Its `env` / `var` expose nothing,
+ * so reading a binding without annotating `c: Context<AppEnv>` is a compile error
+ * instead of an untyped `any` (TypeScript cannot infer the app's env here).
+ */
+type UnannotatedContext = Context<{ Bindings: object; Variables: object }>;
+
+/**
+ * What a required context demands from the caller's `c`. A Hono `Context<E>` is reduced
+ * to its `env` / `var` shape, because intersecting two `Context` instantiations that
+ * differ in path or input also makes their `set()` signatures conflict.
+ */
+type RequiredOfContext<T> = T extends Context<infer E, infer _P, infer _I>
+  ? (E extends { Bindings: infer B } ? { env: B } : unknown) &
+      (E extends { Variables: infer V } ? { var: Readonly<V> } : unknown)
+  : T;
 
 /**
  * Creates a Hono handler for handling webhooks
@@ -67,11 +90,28 @@ export function honoAdapter<
   TContext = unknown,
 >(
   router: WebhookDispatcher<NoInfer<TEvent>, TContext>,
-  options: HonoAdapterOptionsFor<TEvent, NoInfer<TContext>>
+  // Without createContext, `c` itself is the handler context. Only a Context-shaped
+  // TContext can be satisfied that way; otherwise this overload is skipped and the
+  // next one reports the missing createContext.
+  options: HonoAdapterOptions<TEvent, never> & { createContext?: never } &
+    ([Context] extends [TContext] ? unknown : { createContext: never })
+): <C extends AnyContext>(c: C & RequiredOfContext<TContext>) => Promise<Response>;
+export function honoAdapter<
+  TEvent extends WebhookEvent = WebhookEvent,
+  TContext = unknown,
+  THonoContext extends Context = UnannotatedContext,
+>(
+  router: WebhookDispatcher<NoInfer<TEvent>, TContext>,
+  options: HonoAdapterOptions<TEvent, NoInfer<TContext>, THonoContext> & {
+    createContext: (c: THonoContext) => NoInfer<TContext> | Promise<NoInfer<TContext>>;
+  }
+): <C extends AnyContext>(c: C & RequiredOfContext<THonoContext>) => Promise<Response>;
+export function honoAdapter<TEvent extends WebhookEvent, TContext>(
+  router: WebhookDispatcher<TEvent, TContext>,
+  options: HonoAdapterOptions<TEvent, TContext>
 ): (c: Context) => Promise<Response> {
-  const { verifier, onError, logger = consoleLogger, createContext } =
-    options as HonoAdapterOptions<TEvent, TContext>;
-  // Without createContext, the option types guarantee that `Context` satisfies TContext
+  const { verifier, onError, logger = consoleLogger, createContext } = options;
+  // Without createContext, the overloads require the caller's `c` to satisfy TContext
   const dispatcher = router as unknown as { dispatch(event: TEvent, context: TContext): Promise<void> };
 
   return async (c: Context): Promise<Response> => {
