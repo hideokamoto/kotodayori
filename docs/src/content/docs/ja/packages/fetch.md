@@ -79,11 +79,13 @@ function fetchAdapter<TEvent extends WebhookEvent>(
   options: {
     verifier: Verifier<TEvent>;
     onError?: (error: Error, event: TEvent) => Promise<void> | void;
+    logger?: Logger; // 省略時は consoleLogger
   }
 ): (request: Request) => Promise<Response>
 ```
 
 - **verifier** — 必須。リクエストを検証してイベントを返します（例: `createStripeVerifier`）。
-- **onError** — オプション。ハンドラーがエラーをスローした場合に呼び出されます。
+- **onError** — オプション。ハンドラーがエラーをスローした場合に呼び出されます。`onError` 自体がスローしたエラーは無視され、レスポンスは 500 のままです。
+- **logger** — オプション。アダプターの診断ログ（現状は検証失敗）を受け取ります。省略時は `console` に書き出す `consoleLogger` です。`@kotodayori/core` の `silentLogger` や、`warn` と `error` を持つ任意のオブジェクトを渡せます。
 
 アダプターは生のリクエストボディを `request.text()` で取得し（署名検証に必要）、JSON の `Response` を返します（成功: 200・本文が空または検証失敗: 400・ハンドラーエラー: 500・POST 以外のメソッド: 405 と `Allow: POST`）。

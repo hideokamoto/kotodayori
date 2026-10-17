@@ -86,9 +86,14 @@ function fetchAdapter<TEvent extends WebhookEvent>(
   options: {
     verifier: Verifier<TEvent>;
     onError?: (error: Error, event: TEvent) => Promise<void> | void;
+    logger?: Logger; // defaults to consoleLogger
   }
 ): (request: Request) => Promise<Response>
 ```
+
+- **verifier** — Required. Verifies the request and returns the event (e.g. `createStripeVerifier`).
+- **onError** — Optional. Called when a handler throws; errors thrown by `onError` itself are ignored and the response stays 500.
+- **logger** — Optional. Receives adapter diagnostics, currently verification failures (`logger.error('Webhook verification failed:', err)`). Defaults to `consoleLogger`, which writes to `console`.
 
 The raw body is read with `request.text()` and passed to the verifier untouched, so signature verification sees the exact bytes that were signed.
 
@@ -99,6 +104,19 @@ The raw body is read with `request.text()` and passed to the verifier untouched,
 | Verification failed | 400 | `{ "error": "Verification failed" }` |
 | Handler threw | 500 | `{ "error": "Internal server error" }` |
 | Success | 200 | `{ "received": true }` |
+
+### Custom logger
+
+Route verification failures to your own logger, or silence them:
+
+```typescript
+import { silentLogger } from '@kotodayori/core';
+
+const handle = fetchAdapter(router, {
+  verifier,
+  logger: silentLogger, // or any object with `warn` and `error` methods
+});
+```
 
 Unlike the Hono adapter, non-POST requests are rejected with 405 because the handler may be mounted directly (e.g. `export default { fetch: handle }`) with no router in front of it.
 
