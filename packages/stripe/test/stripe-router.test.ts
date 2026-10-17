@@ -1,6 +1,19 @@
 import { describe, it, expect, vi } from 'vitest';
-import { StripeWebhookRouter, StripeEventMap, createStripeVerifier } from '../src/index.js';
+import crypto from 'node:crypto';
+import { syncBuiltinESMExports } from 'node:module';
+import StripeSDK from 'stripe';
+import {
+  StripeWebhookRouter,
+  StripeEventMap,
+  StripeVerifierRuntimeError,
+  createStripeVerifier,
+} from '../src/index.js';
 import type Stripe from 'stripe';
+
+/** Mimics Stripe's StripeSignatureVerificationError, which createStripeVerifier rethrows unchanged */
+function signatureVerificationError(message: string): Error {
+  return Object.assign(new Error(message), { type: 'StripeSignatureVerificationError' });
+}
 
 describe('StripeWebhookRouter', () => {
   it('should create an instance with Stripe type safety', () => {
@@ -402,19 +415,18 @@ describe('createStripeVerifier', () => {
     ).rejects.toThrow('Missing stripe-signature header');
   });
 
-  it('should propagate errors from constructEventAsync', async () => {
+  it('should rethrow signature verification errors from constructEventAsync unchanged', async () => {
+    const error = signatureVerificationError('Invalid signature');
     const mockStripe = {
       webhooks: {
-        constructEventAsync: vi
-          .fn()
-          .mockRejectedValue(new Error('Invalid signature')),
+        constructEventAsync: vi.fn().mockRejectedValue(error),
       },
     } as unknown as Stripe;
 
     const verifier = createStripeVerifier(mockStripe, 'whsec_test');
     const headers = { 'stripe-signature': 'invalid_sig' };
 
-    await expect(verifier('{}', headers)).rejects.toThrow('Invalid signature');
+    await expect(verifier('{}', headers)).rejects.toBe(error);
   });
 
   describe('edge cases', () => {
@@ -591,10 +603,10 @@ describe('createStripeVerifier', () => {
     });
 
     it('should distinguish timestamp tolerance errors from signature errors', async () => {
-      const timestampError = new Error(
+      const timestampError = signatureVerificationError(
         'Webhook Error: Timestamp outside the tolerance zone'
       );
-      const signatureError = new Error(
+      const signatureError = signatureVerificationError(
         'Webhook Error: No signatures found matching the expected signature for payload'
       );
 
@@ -616,17 +628,15 @@ describe('createStripeVerifier', () => {
       const headers = { 'stripe-signature': 't=0,v1=abc123' };
 
       // Timestamp error: expired webhook replay
-      await expect(verifierTimestamp('{}', headers)).rejects.toThrow(
-        'Timestamp outside the tolerance zone'
-      );
+      await expect(verifierTimestamp('{}', headers)).rejects.toBe(timestampError);
       // Signature error: tampered payload or wrong secret
-      await expect(verifierSignature('{}', headers)).rejects.toThrow(
-        'No signatures found matching'
-      );
+      await expect(verifierSignature('{}', headers)).rejects.toBe(signatureError);
     });
 
     it('should propagate timestamp-expired errors from Stripe SDK', async () => {
-      const expiredError = new Error('Webhook Error: Timestamp outside the tolerance zone');
+      const expiredError = signatureVerificationError(
+        'Webhook Error: Timestamp outside the tolerance zone'
+      );
 
       const mockStripe = {
         webhooks: {
@@ -637,12 +647,12 @@ describe('createStripeVerifier', () => {
       const verifier = createStripeVerifier(mockStripe, 'whsec_test');
       const headers = { 'stripe-signature': 't=0,v1=abc123' };
 
-      // Should propagate the full original error from Stripe
-      await expect(verifier('{}', headers)).rejects.toThrow(expiredError.message);
+      // Should propagate the original error from Stripe
+      await expect(verifier('{}', headers)).rejects.toBe(expiredError);
     });
 
     it('should propagate invalid-format signature errors from Stripe SDK', async () => {
-      const formatError = new Error(
+      const formatError = signatureVerificationError(
         'Webhook Error: No v1 signature found in the `Stripe-Signature` header'
       );
 
@@ -655,7 +665,100 @@ describe('createStripeVerifier', () => {
       const verifier = createStripeVerifier(mockStripe, 'whsec_test');
       const headers = { 'stripe-signature': 'malformed-header' };
 
-      await expect(verifier('{}', headers)).rejects.toThrow('No v1 signature found');
+      await expect(verifier('{}', headers)).rejects.toBe(formatError);
     });
+  });
+});
+
+describe('createStripeVerifier: errors other than signature verification', () => {
+  const headers = { 'stripe-signature': 't=0,v1=abc123' };
+
+  it('should wrap them in StripeVerifierRuntimeError and keep the original as cause', async () => {
+    const original = new TypeError(
+      'The "buf1" argument must be an instance of ArrayBuffer, Buffer, TypedArray, or DataView.'
+    );
+    const mockStripe = {
+      webhooks: { constructEventAsync: vi.fn().mockRejectedValue(original) },
+    } as unknown as Stripe;
+
+    const error = await createStripeVerifier(mockStripe, 'whsec_test')('{}', headers).catch(
+      (err: unknown) => err
+    );
+
+    expect(error).toBeInstanceOf(StripeVerifierRuntimeError);
+    expect(error).toMatchObject({ name: 'StripeVerifierRuntimeError', cause: original });
+    expect((error as Error).message).toContain(original.message);
+    expect((error as Error).message).toContain('--conditions=worker');
+  });
+
+  it('should wrap non-Error rejections', async () => {
+    const mockStripe = {
+      webhooks: { constructEventAsync: vi.fn().mockRejectedValue('boom') },
+    } as unknown as Stripe;
+
+    const error = await createStripeVerifier(mockStripe, 'whsec_test')('{}', headers).catch(
+      (err: unknown) => err
+    );
+
+    expect(error).toBeInstanceOf(StripeVerifierRuntimeError);
+    expect(error).toMatchObject({ cause: 'boom' });
+    expect((error as Error).message).toContain('boom');
+  });
+});
+
+// Uses the real Stripe SDK, so that a change in how it reports errors is caught here
+describe('createStripeVerifier with the real Stripe SDK', () => {
+  const secret = 'whsec_kotodayori_test';
+  const stripe = new StripeSDK('sk_test_kotodayori_not_a_real_key');
+  const payload = JSON.stringify({
+    id: 'evt_test',
+    object: 'event',
+    type: 'payment_intent.succeeded',
+    data: { object: { id: 'pi_test', object: 'payment_intent' } },
+  });
+
+  it('should return the event for a valid signature', async () => {
+    const signature = stripe.webhooks.generateTestHeaderString({ payload, secret });
+
+    const result = await createStripeVerifier(stripe, secret)(payload, {
+      'stripe-signature': signature,
+    });
+
+    expect(result.event.id).toBe('evt_test');
+  });
+
+  it('should rethrow a signature mismatch as StripeSignatureVerificationError', async () => {
+    const signature = stripe.webhooks.generateTestHeaderString({ payload, secret });
+
+    const error = await createStripeVerifier(stripe, secret)(payload.replace('pi_test', 'pi_evil'), {
+      'stripe-signature': signature,
+    }).catch((err: unknown) => err);
+
+    expect(error).not.toBeInstanceOf(StripeVerifierRuntimeError);
+    expect(error).toMatchObject({ type: 'StripeSignatureVerificationError' });
+  });
+
+  it('should wrap a crypto failure (as on StackBlitz WebContainers) in StripeVerifierRuntimeError', async () => {
+    const signature = stripe.webhooks.generateTestHeaderString({ payload, secret });
+    const original = crypto.timingSafeEqual;
+    const failure = new TypeError(
+      'The "buf1" argument must be an instance of ArrayBuffer, Buffer, TypedArray, or DataView.'
+    );
+    crypto.timingSafeEqual = () => {
+      throw failure;
+    };
+    syncBuiltinESMExports();
+
+    try {
+      const error = await createStripeVerifier(stripe, secret)(payload, {
+        'stripe-signature': signature,
+      }).catch((err: unknown) => err);
+
+      expect(error).toBeInstanceOf(StripeVerifierRuntimeError);
+      expect(error).toMatchObject({ cause: failure });
+    } finally {
+      crypto.timingSafeEqual = original;
+      syncBuiltinESMExports();
+    }
   });
 });

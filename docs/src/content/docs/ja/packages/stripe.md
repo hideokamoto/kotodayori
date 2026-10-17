@@ -22,6 +22,7 @@ pnpm add @kotodayori/stripe stripe
 | `StripeWebhookRouter` | 完全な Stripe イベント型推論を持つルーター |
 | `StripeEventMap` | 351 種類以上の Stripe イベント型マップ |
 | `createStripeVerifier(stripe, secret)` | Stripe 署名検証のファクトリ関数 |
+| `StripeVerifierRuntimeError` | 署名検証以外の理由で Stripe SDK が失敗したときに Verifier が投げるエラー |
 | `@kotodayori/core` からの再エクスポート | `WebhookRouter`・`WebhookEvent`・`Verifier` など |
 
 ## 型安全なイベントハンドラー
@@ -60,6 +61,8 @@ const verifier = createStripeVerifier(stripe, process.env.STRIPE_WEBHOOK_SECRET!
 ```
 
 Verifier は `Stripe-Signature` ヘッダーを検証し、パースされたイベントを返します。検証前に Webhook ボディを JSON パースしないでください。
+
+署名の不一致、タイムスタンプの期限切れ、ヘッダーの形式不正は、Stripe の `StripeSignatureVerificationError` のまま投げ直します。それ以外の Stripe SDK のエラーは、リクエストではなく実行環境側の問題であることが多いため、`StripeVerifierRuntimeError` で包んで元のエラーを `cause` に保持します。たとえば StackBlitz の WebContainers では、Stripe SDK の Node.js 版ビルドが `crypto.timingSafeEqual` で例外を投げます。その環境では Node.js を `--conditions=worker` 付きで起動し、SDK に Web 標準版のビルドを読み込ませてください。
 
 ## Stripe イベントのカバレッジ
 
