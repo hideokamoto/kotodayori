@@ -1,5 +1,11 @@
 # create-kotodayori
 
+## 1.1.2
+
+### Patch Changes
+
+- 99f758f: Scaffold templates now depend on `stripe` ^23.0.0 and pin `apiVersion` to `2026-09-30.endive`
+
 ## 1.1.1
 
 ### Patch Changes
