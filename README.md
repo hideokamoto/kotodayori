@@ -19,6 +19,8 @@ Kotodayori provides a clean, type-safe API for handling webhooks from any event 
 
 The [StackBlitz demo](./examples/stackblitz-demo) signs fake Stripe events and sends them to a Kotodayori webhook endpoint, so you can watch routing and signature verification without a Stripe account. Edit `src/router.ts` to try your own handlers.
 
+Not using Stripe? The [custom webhooks demo](./examples/custom-webhooks-demo) uses the generic `WebhookRouter` with hand-written verifiers for CircleCI and LINE, including a LINE request that carries several events ([open in StackBlitz](https://stackblitz.com/github/hideokamoto/kotodayori/tree/main/examples/custom-webhooks-demo?file=src/routers.ts)).
+
 ## Features
 
 - **Type-Safe**: Full TypeScript support with generic event type definitions
