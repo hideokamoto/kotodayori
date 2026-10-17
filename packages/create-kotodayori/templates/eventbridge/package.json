@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "@kotodayori/eventbridge": "^1.0.0",
-    "@kotodayori/stripe": "^1.0.0",
+    "@kotodayori/stripe": "^2.0.0",
     "stripe": "^23.0.0"
   },
   "devDependencies": {

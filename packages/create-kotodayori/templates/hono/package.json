@@ -9,8 +9,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@kotodayori/hono": "^1.0.0",
-    "@kotodayori/stripe": "^1.0.0",
+    "@kotodayori/hono": "^2.0.0",
+    "@kotodayori/stripe": "^2.0.0",
     "hono": "^4.0.0",
     "stripe": "^23.0.0"
   },
