@@ -12,7 +12,7 @@
   "dependencies": {
     "@kotodayori/express": "workspace:*",
     "@kotodayori/stripe": "workspace:*",
-    "express": "^5.0.0",
+    "express": "^5.3.0",
     "stripe": "^23.0.0"
   },
   "devDependencies": {
