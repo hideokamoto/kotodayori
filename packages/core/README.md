@@ -232,6 +232,35 @@ type Verifier<T extends WebhookEvent> = (
 ) => VerifyResult<T> | Promise<VerifyResult<T>>;
 ```
 
+### Logger
+
+Diagnostics emitted by Kotodayori (for example, the warning for `on([])` or adapter verification failures) go through a `Logger`. By default they are written to `console` via `consoleLogger`. Pass your own logger to route them elsewhere.
+
+```typescript
+import { WebhookRouter, silentLogger, type Logger } from '@kotodayori/core';
+import { Logger as PowertoolsLogger } from '@aws-lambda-powertools/logger';
+
+// Any object with `warn` and `error` methods can be injected
+const logger: Logger = new PowertoolsLogger({ serviceName: 'webhook' });
+
+const router = new WebhookRouter({ logger });
+
+// Adapters and @kotodayori/zod accept the same option
+// lambdaAdapter(router, { verifier, logger });
+
+// Disable diagnostics entirely
+const quietRouter = new WebhookRouter({ logger: silentLogger });
+```
+
+```typescript
+interface Logger {
+  debug?(message: string, ...args: unknown[]): void;
+  info?(message: string, ...args: unknown[]): void;
+  warn(message: string, ...args: unknown[]): void;
+  error(message: string, ...args: unknown[]): void;
+}
+```
+
 ## Advanced Usage
 
 ### Multiple Handlers per Event

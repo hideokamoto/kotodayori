@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { z } from 'zod';
 import { WebhookRouter } from '@kotodayori/core';
 import {
@@ -367,6 +367,86 @@ describe('withValidation middleware', () => {
 
     expect(onError).toHaveBeenCalledOnce();
     expect(onError.mock.calls[0][0]).toBeInstanceOf(WebhookValidationError);
+  });
+
+  describe('logger injection', () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('SchemaRegistry warns about duplicates through the injected logger', () => {
+      const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const logger = { warn: vi.fn(), error: vi.fn() };
+      const registry = new SchemaRegistry({ logger });
+      const schema = createEventSchema('test.event', z.object({ id: z.number() }));
+
+      registry.register('test.event', schema);
+      registry.register('test.event', schema);
+
+      expect(logger.warn).toHaveBeenCalledWith(
+        '[SchemaRegistry] Schema for event type "test.event" is already registered'
+      );
+      expect(consoleWarn).not.toHaveBeenCalled();
+    });
+
+    it('withValidation logs onError callback failures for schema validation errors', async () => {
+      const issueOpened = defineEvent('issue.opened', z.object({ id: z.number() }));
+      const registry = new SchemaRegistry().registerAll({ issueOpened });
+      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const logger = { warn: vi.fn(), error: vi.fn() };
+      const callbackError = new Error('Callback error');
+      const router = new WebhookRouter()
+        .use(withValidation(registry, { onError: vi.fn().mockRejectedValue(callbackError), logger }))
+        .on('issue.opened', vi.fn());
+
+      await expect(
+        router.dispatch({ id: 'evt_1', type: 'issue.opened', data: { object: { id: 'invalid' } } })
+      ).rejects.toThrow(WebhookValidationError);
+
+      expect(logger.error).toHaveBeenCalledWith('[withValidation] Error in onError callback:', callbackError);
+      expect(consoleError).not.toHaveBeenCalled();
+    });
+
+    it('withValidation logs onError callback failures for unknown event types', async () => {
+      const registry = new SchemaRegistry();
+      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const logger = { warn: vi.fn(), error: vi.fn() };
+      const callbackError = new Error('Callback error');
+      const router = new WebhookRouter()
+        .use(withValidation(registry, {
+          allowUnknownEvents: false,
+          onError: vi.fn().mockRejectedValue(callbackError),
+          logger,
+        }))
+        .on('unknown.event', vi.fn());
+
+      await expect(
+        router.dispatch({ id: 'evt_1', type: 'unknown.event', data: { object: {} } })
+      ).rejects.toThrow(UnknownEventTypeError);
+
+      expect(logger.error).toHaveBeenCalledWith('[withValidation] Error in onError callback:', callbackError);
+      expect(consoleError).not.toHaveBeenCalled();
+    });
+
+    it('withValidation logs onError callback failures for malformed unknown events', async () => {
+      const registry = new SchemaRegistry();
+      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const logger = { warn: vi.fn(), error: vi.fn() };
+      const callbackError = new Error('Callback error');
+      const router = new WebhookRouter()
+        .use(withValidation(registry, {
+          onError: vi.fn().mockRejectedValue(callbackError),
+          logger,
+        }))
+        .on('unknown.event', vi.fn());
+
+      await expect(
+        router.dispatch({ id: 'evt_1', type: 'unknown.event' } as never)
+      ).rejects.toThrow(WebhookValidationError);
+
+      expect(logger.error).toHaveBeenCalledWith('[withValidation] Error in onError callback:', callbackError);
+      expect(consoleError).not.toHaveBeenCalled();
+    });
   });
 
   it('handles errors thrown in onError callback gracefully', async () => {

@@ -135,6 +135,13 @@ interface LambdaAdapterOptions {
   onError?: (error: Error, event?: WebhookEvent) => Promise<void> | void;
 
   /**
+   * Logger for adapter diagnostics such as verification failures
+   * @optional
+   * @default consoleLogger
+   */
+  logger?: Logger;
+
+  /**
    * Custom success response body
    * @optional
    * @default { success: true }

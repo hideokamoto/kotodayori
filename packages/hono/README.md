@@ -142,6 +142,13 @@ interface HonoAdapterOptions {
   onError?: (error: Error, event?: WebhookEvent) => Promise<void> | void;
 
   /**
+   * Logger for adapter diagnostics such as verification failures
+   * @optional
+   * @default consoleLogger
+   */
+  logger?: Logger;
+
+  /**
    * Custom success response
    * @optional
    * @default { success: true }

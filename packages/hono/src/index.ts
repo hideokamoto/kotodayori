@@ -1,5 +1,5 @@
 import type { Context } from 'hono';
-import type { WebhookDispatcher, WebhookEvent, Verifier } from '@kotodayori/core';
+import { consoleLogger, type Logger, type WebhookDispatcher, type WebhookEvent, type Verifier } from '@kotodayori/core';
 
 /**
  * Options for the Hono adapter
@@ -9,6 +9,8 @@ export interface HonoAdapterOptions<T extends WebhookEvent = WebhookEvent> {
   verifier: Verifier<T>;
   /** Custom error handler */
   onError?: (error: Error, event?: T) => Promise<void> | void;
+  /** Logger for adapter diagnostics such as verification failures. Defaults to `consoleLogger`. */
+  logger?: Logger;
 }
 
 /**
@@ -41,7 +43,7 @@ export function honoAdapter<
   router: WebhookDispatcher<TEvent>,
   options: HonoAdapterOptions<TEvent>
 ): (c: Context) => Promise<Response> {
-  const { verifier, onError } = options;
+  const { verifier, onError, logger = consoleLogger } = options;
 
   return async (c: Context): Promise<Response> => {
     // Get raw body text for signature verification
@@ -64,7 +66,7 @@ export function honoAdapter<
       const result = await verifier(rawBody, headers);
       webhookEvent = result.event;
     } catch (err) {
-      console.error('Webhook verification failed:', err);
+      logger.error('Webhook verification failed:', err);
       return c.json({ error: 'Verification failed' }, 400);
     }
 
