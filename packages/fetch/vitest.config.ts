@@ -7,6 +7,8 @@ export default defineConfig({
     typecheck: {
       enabled: true,
       include: ['**/*.test-d.ts'],
+      // tsconfig.json excludes test/, so point the type checker at one that includes it
+      tsconfig: './tsconfig.test.json',
     },
     coverage: {
       provider: 'v8',

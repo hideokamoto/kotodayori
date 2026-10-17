@@ -220,4 +220,80 @@ describe('handleWebhook', () => {
       expect(consoleErrorSpy).toHaveBeenCalledWith('Webhook verification failed:', expect.any(Error));
     });
   });
+
+  describe('context', () => {
+    const typedRouter = () => new WebhookRouter<Record<string, WebhookEvent>, { tenant: string }>();
+
+    it('passes the value built by getContext to handlers', async () => {
+      const router = typedRouter();
+      const handler = vi.fn(async () => {});
+      router.on('test.event', handler);
+
+      const result = await handleWebhook(router, { verifier: okVerifier }, '{"id":"evt_123"}', {}, () => ({
+        tenant: 'acme',
+      }));
+
+      expect(result).toEqual({ status: 200, body: { received: true } });
+      expect(handler).toHaveBeenCalledWith(testEvent, { tenant: 'acme' });
+    });
+
+    it('awaits an async getContext', async () => {
+      const router = typedRouter();
+      const handler = vi.fn(async () => {});
+      router.on('test.event', handler);
+
+      await handleWebhook(router, { verifier: okVerifier }, '{"id":"evt_123"}', {}, async () => ({
+        tenant: 'async',
+      }));
+
+      expect(handler).toHaveBeenCalledWith(testEvent, { tenant: 'async' });
+    });
+
+    it('returns 500 and calls onError when getContext throws, without dispatching', async () => {
+      const router = typedRouter();
+      const handler = vi.fn(async () => {});
+      router.on('test.event', handler);
+      const onError = vi.fn();
+      const error = new Error('no tenant');
+
+      const result = await handleWebhook(router, { verifier: okVerifier, onError }, '{"id":"evt_123"}', {}, () => {
+        throw error;
+      });
+
+      expect(result).toEqual({ status: 500, body: { error: 'Internal server error' } });
+      expect(handler).not.toHaveBeenCalled();
+      expect(onError).toHaveBeenCalledWith(error, testEvent);
+    });
+
+    it('does not call getContext when verification fails', async () => {
+      const getContext = vi.fn(() => ({ tenant: 'acme' }));
+      const verifier: Verifier = () => {
+        throw new Error('bad signature');
+      };
+
+      const result = await handleWebhook(typedRouter(), { verifier }, '{"id":"evt_123"}', {}, getContext);
+
+      expect(result.status).toBe(400);
+      expect(getContext).not.toHaveBeenCalled();
+    });
+
+    it('does not call getContext for an empty body', async () => {
+      const getContext = vi.fn(() => ({ tenant: 'acme' }));
+
+      const result = await handleWebhook(typedRouter(), { verifier: okVerifier }, '   ', {}, getContext);
+
+      expect(result.status).toBe(400);
+      expect(getContext).not.toHaveBeenCalled();
+    });
+
+    it('calls handlers with the event alone when no getContext is given', async () => {
+      const router = new WebhookRouter();
+      const handler = vi.fn(async () => {});
+      router.on('test.event', handler);
+
+      await handleWebhook(router, { verifier: okVerifier }, '{"id":"evt_123"}', {});
+
+      expect(handler.mock.calls[0]).toEqual([testEvent]);
+    });
+  });
 });

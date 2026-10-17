@@ -391,8 +391,11 @@ export { WebhookRouter, type WebhookDispatcher, type WebhookEvent, type EventHan
 /**
  * Type-safe Stripe Webhook Router
  * Uses Stripe's event types for full type inference
+ *
+ * @typeParam TContext - Per-dispatch context forwarded to handlers (e.g. Hono's `c` on
+ *   Cloudflare Workers, so handlers can reach `c.env` bindings). Defaults to `unknown`.
  */
-export class StripeWebhookRouter extends WebhookRouter<StripeEventMap> {}
+export class StripeWebhookRouter<TContext = unknown> extends WebhookRouter<StripeEventMap, TContext> {}
 
 /**
  * Creates a Stripe webhook verifier function

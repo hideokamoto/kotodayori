@@ -302,4 +302,53 @@ describe('lambdaAdapter', () => {
     expect(result.statusCode).toBe(400);
     expect(JSON.parse(result.body)).toEqual({ error: 'Request body cannot be empty' });
   });
+
+  describe('per-invocation context', () => {
+    it('should pass { event, context } to handlers by default', async () => {
+      const handler = vi.fn().mockResolvedValue(undefined);
+      router.on('payment_intent.succeeded', handler);
+
+      const lambdaHandler = lambdaAdapter(router, { verifier: mockVerifier });
+      await lambdaHandler(mockEvent as APIGatewayProxyEvent, mockContext);
+
+      expect(handler).toHaveBeenCalledWith(testEvent, { event: mockEvent, context: mockContext });
+    });
+
+    it('should pass the value built by createContext(event, context) to handlers', async () => {
+      const handler = vi.fn().mockResolvedValue(undefined);
+      const typedRouter = new WebhookRouter<Record<string, WebhookEvent>, { requestId: string }>();
+      typedRouter.on('payment_intent.succeeded', handler);
+      const createContext = vi.fn(async (_event: APIGatewayProxyEvent, context: Context) => ({
+        requestId: context.awsRequestId,
+      }));
+
+      const lambdaHandler = lambdaAdapter(typedRouter, { verifier: mockVerifier, createContext });
+      const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent, mockContext);
+
+      expect(createContext).toHaveBeenCalledWith(mockEvent, mockContext);
+      expect(handler).toHaveBeenCalledWith(testEvent, { requestId: 'test-request-id' });
+      expect(result.statusCode).toBe(200);
+    });
+
+    it('should return 500 and call onError when createContext throws', async () => {
+      const contextError = new Error('boom');
+      const handler = vi.fn().mockResolvedValue(undefined);
+      const onError = vi.fn();
+      const typedRouter = new WebhookRouter<Record<string, WebhookEvent>, { requestId: string }>();
+      typedRouter.on('payment_intent.succeeded', handler);
+
+      const lambdaHandler = lambdaAdapter(typedRouter, {
+        verifier: mockVerifier,
+        onError,
+        createContext: () => {
+          throw contextError;
+        },
+      });
+      const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent, mockContext);
+
+      expect(handler).not.toHaveBeenCalled();
+      expect(onError).toHaveBeenCalledWith(contextError, testEvent);
+      expect(result.statusCode).toBe(500);
+    });
+  });
 });

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { EventBridgeEvent, Context } from 'aws-lambda';
 import { eventBridgeAdapter } from '../src/index.js';
-import { WebhookRouter } from '@kotodayori/core';
+import { WebhookRouter, type WebhookEvent } from '@kotodayori/core';
 
 describe('eventBridgeAdapter', () => {
   let mockContext: Context;
@@ -84,7 +84,7 @@ describe('eventBridgeAdapter', () => {
 
     await lambdaHandler(event, mockContext);
 
-    expect(handler).toHaveBeenCalledWith(stripeEvent);
+    expect(handler).toHaveBeenCalledWith(stripeEvent, expect.objectContaining({ context: mockContext }));
   });
 
   it('should not call handlers for non-matching events', async () => {
@@ -374,7 +374,7 @@ describe('eventBridgeAdapter', () => {
 
       await lambdaHandler(event, mockContext);
 
-      expect(handler).toHaveBeenCalledWith(complexDetail);
+      expect(handler).toHaveBeenCalledWith(complexDetail, expect.objectContaining({ context: mockContext }));
     });
   });
 
@@ -444,6 +444,70 @@ describe('eventBridgeAdapter', () => {
       await lambdaHandler(event, mockContext);
 
       expect(handler).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('per-invocation context', () => {
+    const webhookEvent = {
+      id: 'evt_ctx',
+      type: 'payment_intent.succeeded',
+      data: { object: { id: 'pi_ctx' } },
+    };
+    const eventBridgeEvent: EventBridgeEvent<string, unknown> = {
+      version: '0',
+      id: 'eb_ctx',
+      'detail-type': 'payment_intent.succeeded',
+      source: 'stripe',
+      account: '123456789012',
+      time: '2021-01-01T00:00:00Z',
+      region: 'us-east-1',
+      resources: [],
+      detail: webhookEvent,
+    };
+
+    it('should pass { event, context } to handlers by default', async () => {
+      const handler = vi.fn().mockResolvedValue(undefined);
+      router.on('payment_intent.succeeded', handler);
+
+      await eventBridgeAdapter(router)(eventBridgeEvent, mockContext);
+
+      expect(handler).toHaveBeenCalledWith(webhookEvent, {
+        event: eventBridgeEvent,
+        context: mockContext,
+      });
+    });
+
+    it('should pass the value built by createContext(event, context) to handlers', async () => {
+      const handler = vi.fn().mockResolvedValue(undefined);
+      const typedRouter = new WebhookRouter<Record<string, WebhookEvent>, { requestId: string }>();
+      typedRouter.on('payment_intent.succeeded', handler);
+      const createContext = vi.fn(async (_event: EventBridgeEvent<string, unknown>, context: Context) => ({
+        requestId: context.awsRequestId,
+      }));
+
+      await eventBridgeAdapter(typedRouter, { createContext })(eventBridgeEvent, mockContext);
+
+      expect(createContext).toHaveBeenCalledWith(eventBridgeEvent, mockContext);
+      expect(handler).toHaveBeenCalledWith(webhookEvent, { requestId: 'test-request-id' });
+    });
+
+    it('should call onError and rethrow when createContext throws', async () => {
+      const contextError = new Error('boom');
+      const handler = vi.fn().mockResolvedValue(undefined);
+      const onError = vi.fn();
+      const typedRouter = new WebhookRouter<Record<string, WebhookEvent>, { requestId: string }>();
+      typedRouter.on('payment_intent.succeeded', handler);
+
+      const run = eventBridgeAdapter(typedRouter, {
+        onError,
+        createContext: () => {
+          throw contextError;
+        },
+      });
+
+      await expect(run(eventBridgeEvent, mockContext)).rejects.toBe(contextError);
+      expect(handler).not.toHaveBeenCalled();
+      expect(onError).toHaveBeenCalledWith(contextError, webhookEvent);
     });
   });
 });

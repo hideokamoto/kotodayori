@@ -141,7 +141,30 @@ interface LambdaAdapterOptions {
    * @default consoleLogger
    */
   logger?: Logger;
+
+  /**
+   * Builds the per-invocation context passed to handlers as their second argument.
+   * Required when the router's context type is not satisfied by `LambdaInvocation`.
+   * @optional
+   * @default (event, context) => ({ event, context })
+   */
+  createContext?: (event: APIGatewayProxyEvent, context: Context) => TContext | Promise<TContext>;
 }
+```
+
+### Per-invocation context in handlers
+
+Handlers receive `{ event, context }` (`LambdaInvocation`) as their second argument
+(middleware receive it as the third). To pass something else, give the router a context
+type and build it with `createContext`:
+
+```typescript
+import type { LambdaInvocation } from '@kotodayori/lambda';
+
+const router = new StripeWebhookRouter<LambdaInvocation>();
+router.on('invoice.paid', async (event, { context }) => {
+  console.log('request', context.awsRequestId, event.id);
+});
 ```
 
 ## AWS Deployment

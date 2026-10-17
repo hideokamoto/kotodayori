@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { WebhookRouter, consoleLogger, silentLogger, type Logger } from '../src/index.js';
+import { WebhookRouter, consoleLogger, silentLogger, dispatchWithContext, contextProvider, type Logger, type WebhookEvent } from '../src/index.js';
 
 describe('WebhookRouter', () => {
   describe('instantiation', () => {
@@ -1292,6 +1292,174 @@ describe('WebhookRouter', () => {
       await expect(router.dispatch(event)).resolves.toBeUndefined();
       // Handler should not be called because next was not called
       expect(handler).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('per-dispatch context', () => {
+    const event = {
+      id: 'evt_ctx',
+      type: 'test.event',
+      data: { object: {} },
+    };
+
+    it('should pass the context to handlers as the second argument', async () => {
+      const router = new WebhookRouter<Record<string, typeof event>, { db: string }>();
+      const handler = vi.fn().mockResolvedValue(undefined);
+      router.on('test.event', handler);
+
+      const context = { db: 'd1' };
+      await router.dispatch(event, context);
+
+      expect(handler).toHaveBeenCalledWith(event, context);
+    });
+
+    it('should pass the context to middleware as the third argument', async () => {
+      const router = new WebhookRouter<Record<string, typeof event>, { db: string }>();
+      const middleware = vi.fn(async (_event: unknown, next: () => Promise<void>) => {
+        await next();
+      });
+      const handler = vi.fn().mockResolvedValue(undefined);
+      router.use(middleware);
+      router.on('test.event', handler);
+
+      const context = { db: 'd1' };
+      await router.dispatch(event, context);
+
+      expect(middleware).toHaveBeenCalledWith(event, expect.any(Function), context);
+      expect(handler).toHaveBeenCalledWith(event, context);
+    });
+
+    it('should pass the context to every fanout handler', async () => {
+      const router = new WebhookRouter<Record<string, typeof event>, { db: string }>();
+      const first = vi.fn().mockResolvedValue(undefined);
+      const second = vi.fn().mockResolvedValue(undefined);
+      router.fanout('test.event', [first, second]);
+
+      const context = { db: 'd1' };
+      await router.dispatch(event, context);
+
+      expect(first).toHaveBeenCalledWith(event, context);
+      expect(second).toHaveBeenCalledWith(event, context);
+    });
+
+    it('should pass the context to best-effort fanout handlers', async () => {
+      const router = new WebhookRouter<Record<string, typeof event>, { db: string }>();
+      const handler = vi.fn().mockResolvedValue(undefined);
+      router.fanout('test.event', [handler], { strategy: 'best-effort' });
+
+      const context = { db: 'd1' };
+      await router.dispatch(event, context);
+
+      expect(handler).toHaveBeenCalledWith(event, context);
+    });
+
+    it('should pass the context to handlers registered via group()', async () => {
+      const router = new WebhookRouter<Record<string, typeof event>, { db: string }>();
+      const handler = vi.fn().mockResolvedValue(undefined);
+      router.group('test', (g) => {
+        g.on('event', handler);
+      });
+
+      const context = { db: 'd1' };
+      await router.dispatch(event, context);
+
+      expect(handler).toHaveBeenCalledWith(event, context);
+    });
+
+    it('should pass the context to handlers of a router mounted via route()', async () => {
+      const parent = new WebhookRouter<Record<string, typeof event>, { db: string }>();
+      const child = new WebhookRouter<Record<string, WebhookEvent>, { db: string }>();
+      const handler = vi.fn().mockResolvedValue(undefined);
+      child.on('event', handler);
+      parent.route('test', child);
+
+      const context = { db: 'd1' };
+      await parent.dispatch(event, context);
+
+      expect(handler).toHaveBeenCalledWith(event, context);
+    });
+
+    it('should call handlers with the event alone when dispatch() is called without a context', async () => {
+      const router = new WebhookRouter();
+      const handler = vi.fn().mockResolvedValue(undefined);
+      const fanoutHandler = vi.fn().mockResolvedValue(undefined);
+      const middleware = vi.fn(async (_event: unknown, next: () => Promise<void>) => {
+        await next();
+      });
+      router.use(middleware);
+      router.on('test.event', handler);
+      router.fanout('test.event', [fanoutHandler]);
+
+      await router.dispatch(event);
+
+      expect(handler.mock.calls[0]).toEqual([event]);
+      expect(fanoutHandler.mock.calls[0]).toEqual([event]);
+      expect(middleware.mock.calls[0]).toEqual([event, expect.any(Function)]);
+    });
+  });
+
+  describe('dispatchWithContext()', () => {
+    const event = { id: 'evt_dwc', type: 'test.event', data: { object: {} } };
+
+    it('should dispatch with the value built by getContext', async () => {
+      const router = new WebhookRouter<Record<string, WebhookEvent>, { tenant: string }>();
+      const handler = vi.fn().mockResolvedValue(undefined);
+      router.on('test.event', handler);
+
+      await dispatchWithContext(router, event, async () => ({ tenant: 'acme' }));
+
+      expect(handler).toHaveBeenCalledWith(event, { tenant: 'acme' });
+    });
+
+    it('should call handlers with the event alone when getContext is omitted', async () => {
+      const router = new WebhookRouter();
+      const handler = vi.fn().mockResolvedValue(undefined);
+      router.on('test.event', handler);
+
+      await dispatchWithContext(router, event);
+
+      expect(handler.mock.calls[0]).toEqual([event]);
+    });
+
+    it('should propagate getContext errors without dispatching', async () => {
+      const router = new WebhookRouter<Record<string, WebhookEvent>, { tenant: string }>();
+      const handler = vi.fn().mockResolvedValue(undefined);
+      router.on('test.event', handler);
+      const error = new Error('boom');
+
+      await expect(
+        dispatchWithContext(router, event, () => {
+          throw error;
+        })
+      ).rejects.toBe(error);
+      expect(handler).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('contextProvider()', () => {
+    it('should build the context from the adapter arguments when createContext is given', async () => {
+      const createContext = vi.fn(async (req: { t: string }) => ({ tenant: req.t }));
+
+      const getContext = contextProvider(createContext, [{ t: 'acme' }], 'unused-default');
+
+      await expect(getContext()).resolves.toEqual({ tenant: 'acme' });
+      expect(createContext).toHaveBeenCalledWith({ t: 'acme' });
+    });
+
+    it('should not call createContext until the provider is invoked', () => {
+      const createContext = vi.fn(() => ({ tenant: 'acme' }));
+
+      contextProvider(createContext, [], undefined);
+
+      expect(createContext).not.toHaveBeenCalled();
+    });
+
+    it('should provide the default context when createContext is omitted', async () => {
+      const native = { req: true };
+
+      const getContext = contextProvider(undefined, [], native);
+
+      expect(await getContext()).toBe(native);
     });
   });
 });

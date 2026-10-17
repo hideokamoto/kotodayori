@@ -214,7 +214,10 @@ interface WebhookEvent {
 イベントを処理するためのハンドラー関数の型です。
 
 ```typescript
-type EventHandler<T extends WebhookEvent> = (event: T) => Promise<void>;
+type EventHandler<T extends WebhookEvent, TContext = unknown> = (
+  event: T,
+  ...context: ContextArgs<TContext> // optional unless TContext excludes undefined
+) => Promise<void>;
 ```
 
 #### Middleware<T>
@@ -222,9 +225,10 @@ type EventHandler<T extends WebhookEvent> = (event: T) => Promise<void>;
 横断的な関心事を扱うためのミドルウェア関数の型です。
 
 ```typescript
-type Middleware<T extends WebhookEvent> = (
+type Middleware<T extends WebhookEvent, TContext = unknown> = (
   event: T,
-  next: () => Promise<void>
+  next: () => Promise<void>,
+  ...context: ContextArgs<TContext>
 ) => Promise<void>;
 ```
 
@@ -285,6 +289,32 @@ interface Logger {
   error(message: string, ...args: unknown[]): void;
 }
 ```
+
+### dispatch ごとのコンテキスト
+
+`dispatch(event, context)` は省略可能な第 2 引数を受け取り、すべてのハンドラー（第 2 引数）、
+`fanout()` のハンドラー、ミドルウェア（第 3 引数）に転送します。Cloudflare Workers の
+バインディングのように、リクエストごとにしか存在しない値を、ルーターをモジュールスコープに
+置いたまま渡すために使います。型はルーターの第 2 型引数で指定します。
+
+```typescript
+interface AppContext {
+  db: D1Database;
+}
+
+const router = new WebhookRouter<MyEventMap, AppContext>();
+
+router.on('order.paid', async (event, { db }) => {
+  await db.prepare('INSERT INTO orders (id) VALUES (?)').bind(event.data.object.id).run();
+});
+
+await router.dispatch(event, { db: env.DB }); // 型を指定した場合、コンテキストは必須
+```
+
+コンテキストの型を指定しない場合（既定は `unknown`）は、従来どおり `dispatch(event)` で
+呼び出せ、ハンドラーは event だけを受け取ります。各フレームワークアダプターは既定で
+リクエストのオブジェクト（Hono の `c`、Express の `req`、Lambda / EventBridge の
+`{ event, context }`）を渡し、`createContext` オプションで独自のコンテキストを組み立てることもできます。
 
 ## 応用的な使い方
 

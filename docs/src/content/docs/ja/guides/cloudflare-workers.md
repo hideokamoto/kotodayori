@@ -9,7 +9,7 @@ Cloudflare Workers は Webhook ハンドラーに最適なランタイムです�
 
 ## `wrangler.jsonc` の設定
 
-Stripe SDK は Node.js 互換の API を必要とします。`nodejs_compat` フラグで有効化してください。このフラグは後述の `contextStorage()` パターンで使用される `nodejs_als`（AsyncLocalStorage）も有効にします。
+Stripe SDK は Node.js 互換の API を必要とします。`nodejs_compat` フラグで有効化してください。このフラグは、任意で使う `contextStorage()` パターンに必要な `nodejs_als`（AsyncLocalStorage）も有効にします。
 
 ```jsonc
 {
@@ -102,16 +102,11 @@ export default app;
 
 ## ハンドラー内での `env` へのアクセス
 
-Kotodayori のハンドラーが受け取るのは `event` のみです。`c` パラメーターはありません。ハンドラーがバインディング（D1 への書き込み、Slack への送信、シークレットの読み取りなど）にアクセスする必要がある場合、以下の 2 つの方法があります。
-
-### 推奨：Hono の `contextStorage()` + `getContext()`
-
-Hono が提供する `contextStorage()` ミドルウェアは、AsyncLocalStorage をバックエンドとして、各リクエストのライフタイム中に現在の `Context` を保持します。そのリクエスト中に実行されるコード（Kotodayori のハンドラーを含む）は、`c` を引き回すことなく `getContext()` を呼び出してコンテキストを取得できます。
+ハンドラーは Hono のコンテキスト `c` を**第 2 引数**で受け取ります。ルーターをモジュールスコープに置いたまま、ハンドラーの中でリクエストごとのバインディング（D1 への書き込み、Slack への送信、シークレットの読み取りなど）を使えます。ルーターにコンテキストの型を指定すると、`c.env` にも型が付きます。
 
 ```typescript
 import Stripe from 'stripe';
-import { Hono } from 'hono';
-import { contextStorage, getContext } from 'hono/context-storage';
+import { Hono, type Context } from 'hono';
 import { honoAdapter } from '@kotodayori/hono';
 import { StripeWebhookRouter, createStripeVerifier } from '@kotodayori/stripe';
 
@@ -122,35 +117,28 @@ interface Bindings {
   DB: D1Database;
 }
 
-type AppContext = { Bindings: Bindings };
+type AppEnv = { Bindings: Bindings };
 
-const router = new StripeWebhookRouter();
+// モジュールスコープで一度だけ登録する。`c` はリクエストごとに第 2 引数で届く
+const router = new StripeWebhookRouter<Context<AppEnv>>();
 
-router.on('checkout.session.completed', async (event) => {
-  // getContext() は contextStorage() が保持する Hono コンテキストを取得する。
-  // このハンドラーに `c` を渡す必要はない。
-  const { env } = getContext<AppContext>();
-
+router.on('checkout.session.completed', async (event, c) => {
   // D1 への書き込み
-  await env.DB.prepare(
+  await c.env.DB.prepare(
     'INSERT INTO orders (session_id, amount) VALUES (?, ?)'
   )
     .bind(event.data.object.id, event.data.object.amount_total)
     .run();
 
   // Slack への送信
-  await fetch(env.SLACK_WEBHOOK_URL, {
+  await fetch(c.env.SLACK_WEBHOOK_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ text: `新しい注文: ${event.data.object.id}` }),
   });
 });
 
-const app = new Hono<AppContext>();
-
-// Webhook ルートの前に contextStorage() を登録することで、
-// ハンドラー実行中に getContext() が使用可能になる。
-app.use(contextStorage());
+const app = new Hono<AppEnv>();
 
 app.post('/webhook', (c) => {
   const stripe = new Stripe(c.env.STRIPE_API_KEY, {
@@ -164,7 +152,42 @@ app.post('/webhook', (c) => {
 export default app;
 ```
 
-`contextStorage()` は AsyncLocalStorage を必要とします。Stripe SDK のために既に追加した `nodejs_compat`（または `nodejs_als`）互換フラグで有効になっています。このパターンはすべての Hono デプロイターゲット（Workers、Node.js、Bun、Deno）に移植可能です。
+`honoAdapter` は `router.dispatch(event, c)` の形で `c` を渡し、ルーターはそれをすべてのハンドラー、`fanout()` のハンドラー、ミドルウェア（第 3 引数）に転送します。
+
+### ハンドラーに必要なものだけを渡す：`createContext`
+
+ハンドラーを Hono に依存させたくない場合（単体テストしやすくしたい、他のアダプターでも使い回したいなど）は、独自のコンテキスト型をルーターに指定し、`createContext` で組み立てます。ルーターのコンテキストが Hono の `Context` で満たせない型のときは、`createContext` が**型の上で必須**になるため、指定し忘れることはありません。
+
+```typescript
+interface WebhookContext {
+  db: D1Database;
+  slackUrl: string;
+}
+
+const router = new StripeWebhookRouter<WebhookContext>();
+
+router.on('checkout.session.completed', async (event, { db }) => {
+  await db.prepare('INSERT INTO orders (session_id) VALUES (?)')
+    .bind(event.data.object.id)
+    .run();
+});
+
+app.post('/webhook', (c) => {
+  const stripe = new Stripe(c.env.STRIPE_API_KEY, {
+    httpClient: Stripe.createFetchHttpClient(),
+  });
+  return honoAdapter(router, {
+    verifier: createStripeVerifier(stripe, c.env.STRIPE_WEBHOOK_SECRET),
+    createContext: () => ({ db: c.env.DB, slackUrl: c.env.SLACK_WEBHOOK_URL }),
+  })(c);
+});
+```
+
+`createContext` は非同期関数でも構いません。例外を投げた場合、アダプターはハンドラーのエラーと同じく 500 を返し、`onError` を呼び出します。
+
+### 代替：Hono の `contextStorage()` + `getContext()`
+
+ハンドラー自身ではなく、ハンドラーから深く呼ばれるコードでコンテキストが必要な場合は、Hono の `contextStorage()` ミドルウェア（AsyncLocalStorage を利用）が使えます。各リクエストの間、現在の `Context` を保持し、そのリクエスト中であればどこからでも `getContext()` で取得できます。Webhook ルートより前に `app.use(contextStorage())` を登録し、`getContext<AppEnv>()` を呼び出してください。`getContext()` の型引数はルーターから推論されるのではなく、呼び出し側が指定するものである点に注意してください。`nodejs_compat`（または `nodejs_als`）互換フラグが必要です。
 
 ### 代替：`cloudflare:workers` の env インポート
 
@@ -187,10 +210,6 @@ router.on('checkout.session.completed', async (event) => {
 ```
 
 これには最新の `compatibility_date` が必要です。Wrangler の互換日と [Cloudflare 互換フラグのドキュメント](https://developers.cloudflare.com/workers/configuration/compatibility-dates/) でサポートを確認してください。このアプローチは Workers 専用であり、Node.js、Express、Lambda には移植できません。
-
-### `hono/adapter` の `env(c)` が使えない理由
-
-Hono の `hono/adapter` が提供する `env(c)` ヘルパーは、`Context` オブジェクト（`c`）を受け取りプラットフォーム固有の環境変数を返すラッパーです。Kotodayori のハンドラーは `event` のみを受け取り `c` は受け取らないため、ハンドラー内で `env(c)` を使用することはできません。代わりに `hono/context-storage` の `getContext()` を使用してください。
 
 ## ローカル開発とテスト
 
@@ -216,5 +235,5 @@ stripe trigger payment_intent.succeeded
 
 - **リクエストごとにルーターを再作成しないこと。** ルーターが保持するのはハンドラー登録のみです。モジュールスコープで一度だけ作成するのが正しい使い方です。リクエストごとに新しいルーターを作成するとメモリを無駄に消費し、ハンドラーのセットアップも毎回やり直しになります。
 - **署名検証を自前で実装しないこと。** `@kotodayori/stripe` の `createStripeVerifier` は Workers の非同期 Web Crypto 要件を自動的に処理します。詳細は [Stripe Webhooks ガイド](/guides/stripe-webhooks) を参照してください。
-- **`nodejs_compat` を忘れないこと。** Stripe SDK は Node.js 互換 API を必要とします。`wrangler.jsonc` に `"compatibility_flags": ["nodejs_compat"]` がないとランタイムエラーになります。このフラグは Hono の `contextStorage()` が必要とする `nodejs_als` フラグも有効にします。
+- **`nodejs_compat` を忘れないこと。** Stripe SDK は Node.js 互換 API を必要とします。`wrangler.jsonc` に `"compatibility_flags": ["nodejs_compat"]` がないとランタイムエラーになります。このフラグは、Hono の `contextStorage()` を使う場合に必要な `nodejs_als` フラグも有効にします。
 - **モジュールスコープで Stripe クライアントを構築しないこと。** `c.env` はリクエストコンテキスト内でのみ存在します。`new Stripe(c.env.STRIPE_API_KEY, ...)` はルートハンドラー内で構築してください。

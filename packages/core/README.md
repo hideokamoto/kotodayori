@@ -218,7 +218,10 @@ interface WebhookEvent {
 Handler function type for processing events.
 
 ```typescript
-type EventHandler<T extends WebhookEvent> = (event: T) => Promise<void>;
+type EventHandler<T extends WebhookEvent, TContext = unknown> = (
+  event: T,
+  ...context: ContextArgs<TContext> // optional unless TContext excludes undefined
+) => Promise<void>;
 ```
 
 #### Middleware<T>
@@ -226,9 +229,10 @@ type EventHandler<T extends WebhookEvent> = (event: T) => Promise<void>;
 Middleware function type for cross-cutting concerns.
 
 ```typescript
-type Middleware<T extends WebhookEvent> = (
+type Middleware<T extends WebhookEvent, TContext = unknown> = (
   event: T,
-  next: () => Promise<void>
+  next: () => Promise<void>,
+  ...context: ContextArgs<TContext>
 ) => Promise<void>;
 ```
 
@@ -289,6 +293,32 @@ interface Logger {
   error(message: string, ...args: unknown[]): void;
 }
 ```
+
+### Per-dispatch context
+
+`dispatch(event, context)` takes an optional second argument that is forwarded to every
+handler (second argument), `fanout()` handler and middleware (third argument). Use it for
+values that only exist per request, such as Cloudflare Workers bindings, while the router
+stays at module scope. Declare its type as the router's second type parameter:
+
+```typescript
+interface AppContext {
+  db: D1Database;
+}
+
+const router = new WebhookRouter<MyEventMap, AppContext>();
+
+router.on('order.paid', async (event, { db }) => {
+  await db.prepare('INSERT INTO orders (id) VALUES (?)').bind(event.data.object.id).run();
+});
+
+await router.dispatch(event, { db: env.DB }); // the context is required when declared
+```
+
+Without a declared context type (the default `unknown`), `dispatch(event)` keeps working
+and handlers are called with the event alone. The framework adapters pass their request
+object by default (Hono `c`, Express `req`, Lambda/EventBridge `{ event, context }`) and
+accept a `createContext` option to build your own context instead.
 
 ## Advanced Usage
 
