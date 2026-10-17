@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import type { WebhookDispatcher, WebhookEvent, Verifier } from '@kotodayori/core';
+import { handleWebhook, type WebhookDispatcher, type WebhookEvent, type Verifier } from '@kotodayori/core';
 
 /**
  * Options for the Express adapter
@@ -44,8 +44,6 @@ export function expressAdapter<
   router: WebhookDispatcher<TEvent>,
   options: ExpressAdapterOptions<TEvent>
 ): (req: Request, res: Response, next: NextFunction) => Promise<void> {
-  const { verifier, onError } = options;
-
   return async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
     // Validate request body exists and is the correct type
     if (req.body == null) {
@@ -66,48 +64,14 @@ export function expressAdapter<
       return;
     }
 
-    // Convert Buffer to string if needed, then validate it's not empty or whitespace-only
-    const bodyString = Buffer.isBuffer(rawBody) ? rawBody.toString('utf8') : rawBody;
-    if (!bodyString.trim()) {
-      res.status(400).json({ error: 'Request body cannot be empty' });
-      return;
-    }
-
     // Collect headers for verifier
     const headers: Record<string, string | undefined> = {};
     for (const [key, value] of Object.entries(req.headers)) {
-      headers[key.toLowerCase()] = Array.isArray(value) ? value[0] : value;
+      headers[key] = Array.isArray(value) ? value[0] : value;
     }
 
-    let event: TEvent;
-
-    // Verify signature and parse event
-    try {
-      const result = await verifier(rawBody, headers);
-      event = result.event;
-    } catch (err) {
-      console.error('Webhook verification failed:', err);
-      res.status(400).json({ error: 'Verification failed' });
-      return;
-    }
-
-    // Dispatch the event
-    try {
-      await router.dispatch(event);
-      res.status(200).json({ received: true });
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error(String(err));
-
-      if (onError) {
-        try {
-          await onError(error, event);
-        } catch {
-          // Ignore errors from onError handler to preserve original error response
-        }
-      }
-
-      res.status(500).json({ error: 'Internal server error' });
-    }
+    const { status, body } = await handleWebhook(router, options, rawBody, headers);
+    res.status(status).json(body);
   };
 }
 

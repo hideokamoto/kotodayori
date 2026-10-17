@@ -1,5 +1,5 @@
 import type { Context } from 'hono';
-import type { WebhookDispatcher, WebhookEvent, Verifier } from '@kotodayori/core';
+import { handleWebhook, type WebhookDispatcher, type WebhookEvent, type Verifier } from '@kotodayori/core';
 
 /**
  * Options for the Hono adapter
@@ -41,50 +41,18 @@ export function honoAdapter<
   router: WebhookDispatcher<TEvent>,
   options: HonoAdapterOptions<TEvent>
 ): (c: Context) => Promise<Response> {
-  const { verifier, onError } = options;
-
   return async (c: Context): Promise<Response> => {
     // Get raw body text for signature verification
     const rawBody = await c.req.text();
 
-    if (!rawBody.trim()) {
-      return c.json({ error: 'Request body cannot be empty' }, 400);
-    }
-
     // Collect headers for verifier
-    const headers: Record<string, string | undefined> = {};
+    const headers: Record<string, string> = {};
     c.req.raw.headers.forEach((value, key) => {
-      headers[key.toLowerCase()] = value;
+      headers[key] = value;
     });
 
-    let webhookEvent: TEvent;
-
-    // Verify signature and parse event
-    try {
-      const result = await verifier(rawBody, headers);
-      webhookEvent = result.event;
-    } catch (err) {
-      console.error('Webhook verification failed:', err);
-      return c.json({ error: 'Verification failed' }, 400);
-    }
-
-    // Dispatch the event
-    try {
-      await router.dispatch(webhookEvent);
-      return c.json({ received: true }, 200);
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error(String(err));
-
-      if (onError) {
-        try {
-          await onError(error, webhookEvent);
-        } catch {
-          // Ignore errors from onError handler to preserve original error response
-        }
-      }
-
-      return c.json({ error: 'Internal server error' }, 500);
-    }
+    const { status, body } = await handleWebhook(router, options, rawBody, headers);
+    return c.json(body, status);
   };
 }
 
