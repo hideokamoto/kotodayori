@@ -18,11 +18,9 @@ updates:
     # Group related dependencies
     groups:
       production:
-        dependency-types:
-          - "production"
+        dependency-type: "production"
       development:
-        dependency-types:
-          - "development"
+        dependency-type: "development"
 
   # Standalone StackBlitz demo (npm, depends on published @kotodayori/* packages)
   - package-ecosystem: "npm"
