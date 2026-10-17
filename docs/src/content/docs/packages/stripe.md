@@ -22,6 +22,7 @@ pnpm add @kotodayori/stripe stripe
 | `StripeWebhookRouter` | Router with full Stripe event type inference |
 | `StripeEventMap` | Type map of 351+ Stripe event types |
 | `createStripeVerifier(stripe, secret)` | Factory for Stripe signature verification |
+| `StripeVerifierRuntimeError` | Thrown by the verifier when the Stripe SDK fails for a reason other than signature verification |
 | Re-exports from `@kotodayori/core` | `WebhookRouter`, `WebhookEvent`, `Verifier`, etc. |
 
 ## Type-safe event handlers
@@ -60,6 +61,8 @@ const verifier = createStripeVerifier(stripe, process.env.STRIPE_WEBHOOK_SECRET!
 ```
 
 The verifier validates the `Stripe-Signature` header and returns the parsed event. Never parse the webhook body before verification.
+
+Signature mismatches, expired timestamps and malformed headers are rethrown as Stripe's `StripeSignatureVerificationError`. Any other error from the Stripe SDK is wrapped in `StripeVerifierRuntimeError` with the original error as `cause`, because it usually means the runtime, not the request, is the problem. For example, on StackBlitz WebContainers the Stripe SDK's Node.js build throws from `crypto.timingSafeEqual`; run Node.js with `--conditions=worker` there so the SDK loads its web-standard build.
 
 ## Stripe event coverage
 

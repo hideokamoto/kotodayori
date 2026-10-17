@@ -151,6 +151,10 @@ const verifier = createStripeVerifier(
 2. イベントペイロードをパースする
 3. 型付けされた Stripe イベントを返す（`Promise<VerifyResult<Stripe.Event>>` として）
 
+**エラー:**
+- 署名の不一致、タイムスタンプの期限切れ、`Stripe-Signature` ヘッダーの形式不正は、Stripe の `StripeSignatureVerificationError` のまま投げ直します。
+- それ以外の Stripe SDK のエラーは `StripeVerifierRuntimeError` で包み、元のエラーを `cause` に保持します。この場合はリクエストではなく実行環境側に原因があることが多いです。たとえば StackBlitz の WebContainers では、Stripe SDK の Node.js 版ビルドが `crypto.timingSafeEqual` で例外を投げます。Node.js を `--conditions=worker` 付きで起動すると、SDK は代わりに Web 標準版のビルドを読み込みます。
+
 > **注意:** この検証関数は非同期であり、Stripe の `constructEventAsync()` を使用します。
 > これは Node.js に加えて、Cloudflare Workers や Deno Deploy のような Edge ランタイムでも動作します。
 > これらの環境では Stripe は Web Crypto の `SubtleCryptoProvider` に依存しており、非同期の署名検証のみをサポートします。

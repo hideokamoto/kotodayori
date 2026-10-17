@@ -397,6 +397,11 @@ export class StripeWebhookRouter extends WebhookRouter<StripeEventMap> {}
  * be used there. `constructEventAsync` runs fine on Node.js too, making this a
  * single verifier that works across all supported runtimes.
  *
+ * Signature mismatches, expired timestamps and malformed headers are rethrown as Stripe's
+ * `StripeSignatureVerificationError`. Any other error from the Stripe SDK (for example a
+ * runtime whose `node:crypto` is incompatible with it) is wrapped in
+ * {@link StripeVerifierRuntimeError}, with the original error as `cause`.
+ *
  * @param stripe - Pre-configured Stripe instance
  * @param webhookSecret - Stripe webhook secret (starts with 'whsec_')
  * @returns A Verifier function compatible with all Kotodayori adapters
@@ -451,12 +456,62 @@ export function createStripeVerifier(
       throw new Error('Missing stripe-signature header');
     }
 
-    const event = await stripe.webhooks.constructEventAsync(
-      payload,
-      signature,
-      webhookSecret
-    );
+    let event: Stripe.Event;
+    try {
+      event = await stripe.webhooks.constructEventAsync(
+        payload,
+        signature,
+        webhookSecret
+      );
+    } catch (err) {
+      // Signature, timestamp and header-format failures are rethrown unchanged
+      if (isStripeSignatureVerificationError(err)) {
+        throw err;
+      }
+      throw new StripeVerifierRuntimeError(err);
+    }
 
     return { event };
   };
+}
+
+/**
+ * Checks for Stripe's `StripeSignatureVerificationError` by its `type` field rather than
+ * `instanceof`: the Node.js and web-standard builds of the Stripe SDK define separate classes.
+ */
+function isStripeSignatureVerificationError(err: unknown): boolean {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    (err as { type?: unknown }).type === 'StripeSignatureVerificationError'
+  );
+}
+
+/**
+ * Thrown by {@link createStripeVerifier} when the Stripe SDK fails for a reason other than
+ * signature verification, for example when the runtime's `node:crypto` is incompatible with
+ * the Stripe SDK's Node.js build. The original error is kept as `cause`.
+ *
+ * Signature mismatches, expired timestamps and malformed `Stripe-Signature` headers are not
+ * wrapped: they are rethrown as Stripe's own `StripeSignatureVerificationError`.
+ *
+ * @example
+ * On StackBlitz WebContainers, the Stripe SDK's Node.js build throws from
+ * `crypto.timingSafeEqual` while comparing signatures. Running Node.js with
+ * `--conditions=worker` makes the SDK load its web-standard build, which does not use
+ * `node:crypto`.
+ */
+export class StripeVerifierRuntimeError extends Error {
+  override readonly name = 'StripeVerifierRuntimeError';
+
+  constructor(cause: unknown) {
+    const original = cause instanceof Error ? cause.message : String(cause);
+    super(
+      `Stripe webhook verification failed with an error that is not a signature verification failure: ${original}\n` +
+        'The signature itself was not judged invalid. If this error comes from crypto or buffer handling, ' +
+        "the runtime may be incompatible with the Stripe SDK's Node.js build. On StackBlitz WebContainers, " +
+        "run Node.js with `--conditions=worker` so the Stripe SDK loads its web-standard build.",
+      { cause }
+    );
+  }
 }

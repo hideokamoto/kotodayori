@@ -155,6 +155,10 @@ The verifier will:
 2. Parse the event payload
 3. Return the typed Stripe event (as a `Promise<VerifyResult<Stripe.Event>>`)
 
+**Errors:**
+- Signature mismatches, expired timestamps and malformed `Stripe-Signature` headers are rethrown unchanged as Stripe's `StripeSignatureVerificationError`.
+- Any other error from the Stripe SDK is wrapped in `StripeVerifierRuntimeError`, with the original error as `cause`. This usually points to the runtime rather than the request. For example, on StackBlitz WebContainers the Stripe SDK's Node.js build throws from `crypto.timingSafeEqual`; running Node.js with `--conditions=worker` makes the SDK load its web-standard build instead.
+
 > **Note:** The verifier is asynchronous and uses Stripe's `constructEventAsync()`.
 > This works on Node.js **and** Edge runtimes such as Cloudflare Workers and Deno
 > Deploy, where Stripe relies on the Web Crypto `SubtleCryptoProvider` (which only
