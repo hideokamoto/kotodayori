@@ -32,10 +32,10 @@
   },
   "devDependencies": {
     "stripe": "^23.0.0",
-    "tsup": "^8.5.1",
-    "tsx": "^4.22.4",
-    "typescript": "^6.0.0",
-    "vitest": "^4.1.8"
+    "tsup": "^9.0.0",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.4"
   },
   "peerDependencies": {
     "stripe": ">=23.0.0"
