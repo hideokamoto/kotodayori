@@ -1,0 +1,62 @@
+---
+title: "@kotodayori/fetch"
+description: Web-standard fetch (Request/Response) adapter for Kotodayori
+---
+
+[![npm version](https://img.shields.io/npm/v/%40kotodayori%2Ffetch.svg?logo=npm&label=npm)](https://www.npmjs.com/package/@kotodayori/fetch)
+[![license](https://img.shields.io/npm/l/%40kotodayori%2Ffetch.svg)](https://www.npmjs.com/package/@kotodayori/fetch)
+
+The fetch adapter turns a Kotodayori router into a `(request: Request) => Promise<Response>` handler. Any runtime or framework that passes a Web-standard `Request` can use it: Cloudflare Workers without Hono, Bun, Deno, Next.js App Router, React Router v7 / Remix, and Netlify Functions written as `export default async (req: Request, context: Context) => ...`.
+
+Node-style `(req, res)` handlers (Express, Next.js Pages Router `pages/api`) are not supported.
+
+## Installation
+
+```bash
+pnpm add @kotodayori/fetch
+```
+
+## Usage
+
+```typescript
+import Stripe from 'stripe';
+import { StripeWebhookRouter, createStripeVerifier } from '@kotodayori/stripe';
+import { fetchAdapter } from '@kotodayori/fetch';
+
+const stripe = new Stripe(process.env.STRIPE_API_KEY!);
+const router = new StripeWebhookRouter();
+
+router.on('payment_intent.succeeded', async (event) => {
+  console.log('Payment succeeded:', event.data.object.id);
+});
+
+const handle = fetchAdapter(router, {
+  verifier: createStripeVerifier(stripe, process.env.STRIPE_WEBHOOK_SECRET!),
+});
+
+// Cloudflare Workers / Bun / Deno
+export default { fetch: handle };
+
+// Next.js App Router
+// export const POST = handle;
+
+// React Router v7 / Remix
+// export const action = ({ request }) => handle(request);
+```
+
+## API
+
+```typescript
+function fetchAdapter<TEvent extends WebhookEvent>(
+  router: WebhookDispatcher<TEvent>,
+  options: {
+    verifier: Verifier<TEvent>;
+    onError?: (error: Error, event: TEvent) => Promise<void> | void;
+  }
+): (request: Request) => Promise<Response>
+```
+
+- **verifier** — Required. Verifies the request and returns the event (e.g. `createStripeVerifier`).
+- **onError** — Optional. Called when a handler throws.
+
+The adapter reads the raw body with `request.text()` (required for signature verification) and returns a JSON `Response`: 200 on success, 400 for an empty body or failed verification, 500 for handler errors, and 405 (`Allow: POST`) for non-POST methods.
