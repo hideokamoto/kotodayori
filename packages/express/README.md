@@ -148,7 +148,7 @@ interface ExpressAdapterOptions {
    * Custom error handler
    * @optional
    */
-  onError?: (error: Error, event?: WebhookEvent) => Promise<void> | void;
+  onError?: (error: Error, event: WebhookEvent) => Promise<void> | void;
 
   /**
    * Logger for adapter diagnostics such as verification failures
@@ -156,13 +156,6 @@ interface ExpressAdapterOptions {
    * @default consoleLogger
    */
   logger?: Logger;
-
-  /**
-   * Custom success response
-   * @optional
-   * @default { success: true }
-   */
-  successResponse?: unknown;
 }
 ```
 
@@ -260,22 +253,6 @@ app.post('/webhook',
           eventId: event?.id,
         },
       });
-    },
-  })
-);
-```
-
-### Custom Success Response
-
-```typescript
-app.post('/webhook',
-  express.raw({ type: 'application/json' }),
-  expressAdapter(router, {
-    verifier: createStripeVerifier(stripe, secret),
-    successResponse: {
-      status: 'ok',
-      processed: true,
-      timestamp: Date.now(),
     },
   })
 );

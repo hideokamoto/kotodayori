@@ -83,7 +83,7 @@ If the workspace is the **kotodayori monorepo**:
 
 ### TypeScript + adapters
 
-- Pass the event map generic on adapters when using Stripe: `honoAdapter<StripeEventMap>(router, { ... })` and `expressAdapter<StripeEventMap>(router, { ... })` so inference lines up with `createStripeVerifier`.
+- Do not pass `StripeEventMap` as the adapter's type argument. The adapters' generic is a single event type (`TEvent extends WebhookEvent`), not an event map, so `honoAdapter<StripeEventMap>(...)` fails with TS2344. Omit it: `honoAdapter(router, { verifier })` and `expressAdapter(router, { verifier })` infer the event type from the router and `createStripeVerifier`.
 - Prefer full Stripe event names in `router.on('customer.subscription.created', ...)` over `router.group(...)` when you need precise `event.data.object` typing (`group()` registers handlers as generic `WebhookEvent` today).
 
 ### Errors
