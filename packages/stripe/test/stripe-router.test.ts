@@ -762,3 +762,57 @@ describe('createStripeVerifier with the real Stripe SDK', () => {
     }
   });
 });
+
+describe('createStripeVerifier Stripe SDK version warning', () => {
+  async function loadFreshModule() {
+    vi.resetModules();
+    return import('../src/index.js');
+  }
+
+  function stripeWithVersion(version: unknown): Stripe {
+    return {
+      VERSION: version,
+      webhooks: { constructEventAsync: vi.fn() },
+    } as unknown as Stripe;
+  }
+
+  it('warns once per process for Stripe SDK older than v23', async () => {
+    const { createStripeVerifier: create } = await loadFreshModule();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      create(stripeWithVersion('22.2.0'), 'whsec_test');
+      create(stripeWithVersion('17.0.0'), 'whsec_test');
+
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(warn.mock.calls[0][0]).toContain('Stripe SDK v22.2.0');
+      expect(warn.mock.calls[0][0]).toContain('stripe >= 23.0.0');
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it.each([['23.0.0'], ['24.1.0'], [undefined], ['not-a-version']])(
+    'does not warn for VERSION %s',
+    async (version) => {
+      const { createStripeVerifier: create } = await loadFreshModule();
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      try {
+        create(stripeWithVersion(version), 'whsec_test');
+        expect(warn).not.toHaveBeenCalled();
+      } finally {
+        warn.mockRestore();
+      }
+    }
+  );
+
+  it('does not warn for a real Stripe SDK v23 instance', async () => {
+    const { createStripeVerifier: create } = await loadFreshModule();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      create(new StripeSDK('sk_test_dummy'), 'whsec_test');
+      expect(warn).not.toHaveBeenCalled();
+    } finally {
+      warn.mockRestore();
+    }
+  });
+});

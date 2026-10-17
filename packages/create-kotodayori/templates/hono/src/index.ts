@@ -18,7 +18,7 @@ if (!process.env.STRIPE_WEBHOOK_SECRET) {
 
 // Initialize Stripe
 const stripe = new Stripe(process.env.STRIPE_API_KEY, {
-  apiVersion: '2026-01-28.clover',
+  apiVersion: '2026-09-30.endive',
 });
 
 // --- Cloudflare Workers / Edge runtimes ---
@@ -26,7 +26,7 @@ const stripe = new Stripe(process.env.STRIPE_API_KEY, {
 // inside the request handler instead, and use the fetch-based HTTP client:
 //
 //   const stripe = new Stripe(c.env.STRIPE_API_KEY, {
-//     apiVersion: '2026-01-28.clover',
+//     apiVersion: '2026-09-30.endive',
 //     httpClient: Stripe.createFetchHttpClient(),
 //   });
 //

@@ -20,6 +20,8 @@ yarn add @kotodayori/stripe stripe
 
 **注意**: `stripe` はピア依存関係であり、個別にインストールする必要があります。
 
+**Stripe SDK のバージョン**: `stripe` は v23 以上を使ってください。ピア依存関係は現在も `stripe` >= 17.0.0 を受け付けますが、v23 未満の Stripe SDK は非推奨です。`@kotodayori/stripe` の次のメジャーリリースでは `stripe` >= 23.0.0 が必須になります。古い SDK を使うと `createStripeVerifier()` が一度だけ警告を出します。また、ライブラリの型チェックを行う設定（`skipLibCheck: false`）では、Stripe SDK v23 で追加されたイベント型が型エラーになります。
+
 ## 特徴
 
 - **完全な型カバレッジ**: 253 種類以上のすべての Stripe イベント型を、完全な TypeScript サポート付きで提供します

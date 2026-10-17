@@ -23,6 +23,11 @@ export type StripeEventMap = {
   'application_fee.refund.updated': Stripe.ApplicationFeeRefundUpdatedEvent;
   'application_fee.refunded': Stripe.ApplicationFeeRefundedEvent;
 
+  // Apps events
+  'apps.install.created': Stripe.AppsInstallCreatedEvent;
+  'apps.install.deleted': Stripe.AppsInstallDeletedEvent;
+  'apps.install.updated': Stripe.AppsInstallUpdatedEvent;
+
   // Balance events
   'balance.available': Stripe.BalanceAvailableEvent;
   'balance_settings.updated': Stripe.BalanceSettingsUpdatedEvent;
@@ -121,11 +126,16 @@ export type StripeEventMap = {
   'financial_connections.account.created': Stripe.FinancialConnectionsAccountCreatedEvent;
   'financial_connections.account.deactivated': Stripe.FinancialConnectionsAccountDeactivatedEvent;
   'financial_connections.account.disconnected': Stripe.FinancialConnectionsAccountDisconnectedEvent;
+  'financial_connections.account.expected_deactivation_date_updated': Stripe.FinancialConnectionsAccountExpectedDeactivationDateUpdatedEvent;
   'financial_connections.account.reactivated': Stripe.FinancialConnectionsAccountReactivatedEvent;
   'financial_connections.account.refreshed_balance': Stripe.FinancialConnectionsAccountRefreshedBalanceEvent;
   'financial_connections.account.refreshed_ownership': Stripe.FinancialConnectionsAccountRefreshedOwnershipEvent;
   'financial_connections.account.refreshed_transactions': Stripe.FinancialConnectionsAccountRefreshedTransactionsEvent;
+  'financial_connections.account.supported_payment_method_types_updated': Stripe.FinancialConnectionsAccountSupportedPaymentMethodTypesUpdatedEvent;
   'financial_connections.account.upcoming_account_number_expiry': Stripe.FinancialConnectionsAccountUpcomingAccountNumberExpiryEvent;
+  'financial_connections.account.upcoming_deactivation': Stripe.FinancialConnectionsAccountUpcomingDeactivationEvent;
+  'financial_connections.authorization.expected_deactivation_date_updated': Stripe.FinancialConnectionsAuthorizationExpectedDeactivationDateUpdatedEvent;
+  'financial_connections.authorization.upcoming_deactivation': Stripe.FinancialConnectionsAuthorizationUpcomingDeactivationEvent;
 
   // Identity events
   'identity.verification_session.canceled': Stripe.IdentityVerificationSessionCanceledEvent;
@@ -446,6 +456,8 @@ export function createStripeVerifier(
   stripe: Stripe,
   webhookSecret: string
 ): Verifier<Stripe.Event> {
+  warnIfUnsupportedStripeVersion(stripe);
+
   return async (
     payload: string | Buffer,
     headers: Record<string, string | undefined>
@@ -473,6 +485,36 @@ export function createStripeVerifier(
 
     return { event };
   };
+}
+
+/** The lowest `stripe` major version the next major release of this package will support */
+const NEXT_MAJOR_MIN_STRIPE_VERSION = 23;
+
+let hasWarnedUnsupportedStripeVersion = false;
+
+/**
+ * Warns once per process when the Stripe SDK is older than the version the next major release
+ * will require. `stripe.VERSION` exists on instances from Stripe SDK v17 onward; when it is
+ * missing or unparseable (for example a mocked instance), nothing is logged.
+ */
+function warnIfUnsupportedStripeVersion(stripe: Stripe): void {
+  if (hasWarnedUnsupportedStripeVersion) {
+    return;
+  }
+  const version = (stripe as { VERSION?: unknown }).VERSION;
+  if (typeof version !== 'string') {
+    return;
+  }
+  const major = Number.parseInt(version, 10);
+  if (Number.isNaN(major) || major >= NEXT_MAJOR_MIN_STRIPE_VERSION) {
+    return;
+  }
+  hasWarnedUnsupportedStripeVersion = true;
+  console.warn(
+    `[@kotodayori/stripe] Stripe SDK v${version} is deprecated for use with @kotodayori/stripe. ` +
+      `The next major release will require stripe >= ${NEXT_MAJOR_MIN_STRIPE_VERSION}.0.0. ` +
+      `Event types added in Stripe SDK v${NEXT_MAJOR_MIN_STRIPE_VERSION} are already missing from older SDKs.`
+  );
 }
 
 /**
