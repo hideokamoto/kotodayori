@@ -79,11 +79,13 @@ function fetchAdapter<TEvent extends WebhookEvent>(
   options: {
     verifier: Verifier<TEvent>;
     onError?: (error: Error, event: TEvent) => Promise<void> | void;
+    logger?: Logger; // defaults to consoleLogger
   }
 ): (request: Request) => Promise<Response>
 ```
 
 - **verifier** — Required. Verifies the request and returns the event (e.g. `createStripeVerifier`).
-- **onError** — Optional. Called when a handler throws.
+- **onError** — Optional. Called when a handler throws; errors thrown by `onError` itself are ignored and the response stays 500.
+- **logger** — Optional. Receives adapter diagnostics, currently verification failures. Defaults to `consoleLogger`, which writes to `console`. Pass `silentLogger` from `@kotodayori/core` or any object with `warn` and `error`.
 
 The adapter reads the raw body with `request.text()` (required for signature verification) and returns a JSON `Response`: 200 on success, 400 for an empty body or failed verification, 500 for handler errors, and 405 (`Allow: POST`) for non-POST methods.
