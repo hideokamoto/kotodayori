@@ -1,6 +1,6 @@
 # Kotodayori — Agent context
 
-Kotodayori is a pnpm monorepo of TypeScript packages for type-safe webhook routing (`@kotodayori/core`) with adapters (Hono, Express, Lambda, EventBridge), Stripe helpers (`@kotodayori/stripe`), optional Zod validation (`@kotodayori/zod`), and a scaffold CLI (`create-kotodayori`).
+Kotodayori is a pnpm monorepo of TypeScript packages for type-safe webhook routing (`@kotodayori/core`) with adapters (Hono, fetch, Express, Lambda, EventBridge), Stripe helpers (`@kotodayori/stripe`), optional Zod validation (`@kotodayori/zod`), and a scaffold CLI (`create-kotodayori`).
 
 ## Always do
 
@@ -14,7 +14,7 @@ Kotodayori is a pnpm monorepo of TypeScript packages for type-safe webhook routi
 | --- | --- |
 | Router and types | `packages/core/src/index.ts` |
 | Stripe router + verifier | `packages/stripe/src/index.ts` |
-| Adapters | `packages/{hono,express,lambda,eventbridge}/src/index.ts` |
+| Adapters | `packages/{hono,fetch,express,lambda,eventbridge}/src/index.ts` (shared HTTP flow: `handleWebhook` in core) |
 | Scaffold templates | `packages/create-kotodayori/templates/` |
 | Runnable samples | `examples/sample-hono-stripe`, `examples/sample-express-stripe` |
 | Human-oriented guide | `claude.md` |

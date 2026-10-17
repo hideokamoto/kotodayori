@@ -1,5 +1,5 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
-import { consoleLogger, type Logger, type WebhookDispatcher, type WebhookEvent, type Verifier } from '@kotodayori/core';
+import { handleWebhook, type Logger, type WebhookDispatcher, type WebhookEvent, type Verifier } from '@kotodayori/core';
 
 /**
  * Options for the Lambda adapter
@@ -42,8 +42,6 @@ export function lambdaAdapter<
   router: WebhookDispatcher<TEvent>,
   options: LambdaAdapterOptions<TEvent>
 ): (event: APIGatewayProxyEvent, context: Context) => Promise<APIGatewayProxyResult> {
-  const { verifier, onError, logger = consoleLogger } = options;
-
   return async (
     lambdaEvent: APIGatewayProxyEvent,
     _context: Context
@@ -62,63 +60,20 @@ export function lambdaAdapter<
       ? Buffer.from(lambdaEvent.body, 'base64').toString('utf8')
       : lambdaEvent.body;
 
-    // Validate body is not empty or whitespace-only
-    if (!rawBody.trim()) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: 'Request body cannot be empty' }),
-        headers: { 'Content-Type': 'application/json' },
-      };
-    }
-
-    // Collect headers for verifier (normalize to lowercase, filter out null values)
+    // Collect headers for verifier
     const headers: Record<string, string | undefined> = {};
     for (const [key, value] of Object.entries(lambdaEvent.headers)) {
       if (value !== null && value !== undefined) {
-        headers[key.toLowerCase()] = value;
+        headers[key] = value;
       }
     }
 
-    let webhookEvent: TEvent;
-
-    // Verify signature and parse event
-    try {
-      const result = await verifier(rawBody, headers);
-      webhookEvent = result.event;
-    } catch (err) {
-      logger.error('Webhook verification failed:', err);
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: 'Verification failed' }),
-        headers: { 'Content-Type': 'application/json' },
-      };
-    }
-
-    // Dispatch the event
-    try {
-      await router.dispatch(webhookEvent);
-      return {
-        statusCode: 200,
-        body: JSON.stringify({ received: true }),
-        headers: { 'Content-Type': 'application/json' },
-      };
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error(String(err));
-
-      if (onError) {
-        try {
-          await onError(error, webhookEvent);
-        } catch {
-          // Ignore errors from onError handler to preserve original error response
-        }
-      }
-
-      return {
-        statusCode: 500,
-        body: JSON.stringify({ error: 'Internal server error' }),
-        headers: { 'Content-Type': 'application/json' },
-      };
-    }
+    const { status, body } = await handleWebhook(router, options, rawBody, headers);
+    return {
+      statusCode: status,
+      body: JSON.stringify(body),
+      headers: { 'Content-Type': 'application/json' },
+    };
   };
 }
 

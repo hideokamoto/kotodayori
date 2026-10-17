@@ -421,3 +421,89 @@ class PrefixedRouter<
     return this;
   }
 }
+
+/**
+ * Options shared by HTTP adapters built on {@link handleWebhook}
+ */
+export interface WebhookHandlerOptions<T extends WebhookEvent = WebhookEvent> {
+  /** Webhook verifier function for signature validation and event parsing */
+  verifier: Verifier<T>;
+  /** Custom error handler, called when dispatching a verified event fails */
+  onError?: (error: Error, event: T) => Promise<void> | void;
+  /** Logger for adapter diagnostics such as verification failures. Defaults to `consoleLogger`. */
+  logger?: Logger;
+}
+
+/**
+ * Framework-agnostic HTTP result produced by {@link handleWebhook}
+ */
+export type WebhookHandlerResult =
+  | { status: 200; body: { received: true } }
+  | { status: 400 | 500; body: { error: string } };
+
+/**
+ * Runs the shared verify → dispatch → respond flow for an HTTP webhook request.
+ *
+ * Adapters only need to extract the raw body and headers from their framework's
+ * request object and translate the returned `{ status, body }` into their
+ * framework's response. The raw body is handed to the verifier as-is; it must
+ * never be a parsed JSON object.
+ *
+ * - Empty or whitespace-only body → 400 `Request body cannot be empty`
+ * - Verifier throws/rejects → 400 `Verification failed`
+ * - Dispatch throws/rejects → `onError` is called (its own errors are ignored), then 500
+ * - Otherwise → 200 `{ received: true }`
+ *
+ * @param router - A WebhookDispatcher (any object with a `dispatch(event)` method, e.g. WebhookRouter)
+ * @param options - Verifier and optional error handler
+ * @param rawBody - Raw request body (string or Buffer)
+ * @param headers - Request headers; keys are lowercased before reaching the verifier
+ */
+export async function handleWebhook<TEvent extends WebhookEvent = WebhookEvent>(
+  router: WebhookDispatcher<TEvent>,
+  options: WebhookHandlerOptions<TEvent>,
+  rawBody: string | Buffer,
+  headers: Record<string, string | undefined>
+): Promise<WebhookHandlerResult> {
+  const { verifier, onError, logger = consoleLogger } = options;
+
+  // TextDecoder instead of Buffer#toString so this also runs where Buffer is absent (e.g. Workers)
+  const bodyString = typeof rawBody === 'string' ? rawBody : new TextDecoder().decode(rawBody);
+  if (!bodyString.trim()) {
+    return { status: 400, body: { error: 'Request body cannot be empty' } };
+  }
+
+  const normalizedHeaders: Record<string, string | undefined> = {};
+  for (const [key, value] of Object.entries(headers)) {
+    normalizedHeaders[key.toLowerCase()] = value;
+  }
+
+  let event: TEvent;
+
+  // Verify signature and parse event
+  try {
+    const result = await verifier(rawBody, normalizedHeaders);
+    event = result.event;
+  } catch (err) {
+    logger.error('Webhook verification failed:', err);
+    return { status: 400, body: { error: 'Verification failed' } };
+  }
+
+  // Dispatch the event
+  try {
+    await router.dispatch(event);
+    return { status: 200, body: { received: true } };
+  } catch (err) {
+    const error = err instanceof Error ? err : new Error(String(err));
+
+    if (onError) {
+      try {
+        await onError(error, event);
+      } catch {
+        // Ignore errors from onError handler to preserve original error response
+      }
+    }
+
+    return { status: 500, body: { error: 'Internal server error' } };
+  }
+}

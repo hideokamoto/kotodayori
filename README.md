@@ -24,7 +24,7 @@ Not using Stripe? The [custom webhooks demo](./examples/custom-webhooks-demo) us
 ## Features
 
 - **Type-Safe**: Full TypeScript support with generic event type definitions
-- **Framework Adapters**: Built-in support for Hono, Express, AWS Lambda, and EventBridge
+- **Framework Adapters**: Built-in support for Hono, Express, AWS Lambda, EventBridge, and any Web-standard `Request`/`Response` runtime (Cloudflare Workers, Bun, Deno, Next.js App Router, React Router)
 - **Pluggable Verification**: Bring your own verifier for any webhook provider
 - **Middleware Support**: Add cross-cutting concerns with middleware
 - **Flexible Routing**: Group handlers, mount nested routers, and fanout patterns
@@ -38,6 +38,7 @@ Not using Stripe? The [custom webhooks demo](./examples/custom-webhooks-demo) us
 | [`@kotodayori/stripe`](./packages/stripe) | [![npm](https://img.shields.io/npm/v/%40kotodayori%2Fstripe.svg)](https://www.npmjs.com/package/@kotodayori/stripe) | Stripe-specific type definitions, router, and verifier |
 | [`@kotodayori/zod`](./packages/zod) | [![npm](https://img.shields.io/npm/v/%40kotodayori%2Fzod.svg)](https://www.npmjs.com/package/@kotodayori/zod) | Zod schema validation helpers |
 | [`@kotodayori/hono`](./packages/hono) | [![npm](https://img.shields.io/npm/v/%40kotodayori%2Fhono.svg)](https://www.npmjs.com/package/@kotodayori/hono) | Hono framework adapter |
+| [`@kotodayori/fetch`](./packages/fetch) | [![npm](https://img.shields.io/npm/v/%40kotodayori%2Ffetch.svg)](https://www.npmjs.com/package/@kotodayori/fetch) | Web-standard `Request`/`Response` adapter (Workers, Bun, Deno, Next.js, React Router) |
 | [`@kotodayori/express`](./packages/express) | [![npm](https://img.shields.io/npm/v/%40kotodayori%2Fexpress.svg)](https://www.npmjs.com/package/@kotodayori/express) | Express framework adapter |
 | [`@kotodayori/lambda`](./packages/lambda) | [![npm](https://img.shields.io/npm/v/%40kotodayori%2Flambda.svg)](https://www.npmjs.com/package/@kotodayori/lambda) | AWS Lambda adapter |
 | [`@kotodayori/eventbridge`](./packages/eventbridge) | [![npm](https://img.shields.io/npm/v/%40kotodayori%2Feventbridge.svg)](https://www.npmjs.com/package/@kotodayori/eventbridge) | AWS EventBridge adapter |
@@ -89,7 +90,7 @@ pnpm add @kotodayori/stripe @kotodayori/express stripe
 pnpm add @kotodayori/stripe @kotodayori/lambda stripe
 
 # For custom webhooks (without Stripe)
-pnpm add @kotodayori/core @kotodayori/hono  # or @kotodayori/express, @kotodayori/lambda
+pnpm add @kotodayori/core @kotodayori/hono  # or @kotodayori/fetch, @kotodayori/express, @kotodayori/lambda
 ```
 
 ## Quick Start (Stripe)
@@ -410,6 +411,7 @@ kotodayori/
 │   ├── core/          # Core routing logic and Verifier type
 │   ├── stripe/        # Stripe type definitions and verifier
 │   ├── hono/          # Hono adapter
+│   ├── fetch/         # Web-standard fetch adapter
 │   ├── express/       # Express adapter
 │   ├── lambda/        # AWS Lambda adapter
 │   └── eventbridge/   # AWS EventBridge adapter
