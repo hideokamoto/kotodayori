@@ -1,0 +1,89 @@
+import type { Scenario } from './events.js';
+
+const escape = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+export function renderPage(scenarios: Scenario[], modes: string[]): string {
+  const options = scenarios.map((s) => `<option value="${escape(s.id)}">${escape(s.label)}</option>`).join('');
+  const labels: Record<string, string> = {
+    valid: 'Send signed delivery',
+    tampered: 'Send tampered body',
+    unsigned: 'Send without signature',
+  };
+  const expected: Record<string, string> = {
+    valid: '200: the middleware and the matching handlers run',
+    tampered: '400 "Verification failed": the body was changed after signing',
+    unsigned: '400 "Verification failed": the signature header is missing',
+  };
+  const expectations = modes
+    .map((m) => `<li><strong>${labels[m] ?? m}</strong> → ${expected[m] ?? ''}</li>`)
+    .join('');
+  const buttons = modes.map((m) => `<button data-mode="${m}">${labels[m] ?? m}</button>`).join('');
+
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kotodayori custom webhooks demo</title>
+<style>
+  :root { color-scheme: light dark; --bg: #fff; --fg: #1a1a1a; --muted: #666; --panel: #f4f4f5; --accent: #4f46e5; --ok: #15803d; --ng: #b91c1c; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #111113; --fg: #ececec; --muted: #9a9a9a; --panel: #1c1c20; --accent: #818cf8; --ok: #4ade80; --ng: #f87171; } }
+  body { margin: 0; padding: 24px 16px; background: var(--bg); color: var(--fg); font: 15px/1.6 system-ui, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 1.4rem; margin: 0 0 4px; }
+  p { color: var(--muted); margin: 0 0 16px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  select { max-width: 100%; }
+  select, button { font: inherit; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--muted); background: var(--panel); color: var(--fg); }
+  button { cursor: pointer; }
+  button[data-mode="valid"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  h2 { font-size: 1rem; margin: 16px 0 6px; }
+  ul { margin: 0 0 16px; padding-left: 20px; color: var(--muted); }
+  pre { background: var(--panel); padding: 12px; border-radius: 6px; overflow-x: auto; margin: 0; font-size: 13px; white-space: pre-wrap; word-break: break-all; }
+  .status.ok { color: var(--ok); } .status.ng { color: var(--ng); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Kotodayori custom webhooks demo</h1>
+  <p>The generic <code>WebhookRouter</code> with hand-written verifiers for CircleCI and LINE. This page plays the role of
+     the provider: it signs a fake delivery with a demo secret and posts it to <code>/webhooks/circleci</code> or
+     <code>/webhooks/line</code>. Edit <code>src/routers.ts</code> to change the handlers.</p>
+  <div class="controls">
+    <select id="scenario">${options}</select>
+    ${buttons}
+  </div>
+  <ul>${expectations}</ul>
+  <h2>Response: <span id="status" class="status"></span></h2>
+  <pre id="response">Pick a delivery and send it.</pre>
+  <h2>Activity (verification, middleware and handlers)</h2>
+  <pre id="activity"></pre>
+  <h2>Request</h2>
+  <pre id="request"></pre>
+</main>
+<script>
+  const $ = (id) => document.getElementById(id);
+  document.querySelectorAll('button[data-mode]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const res = await fetch('/demo/send', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ scenario: $('scenario').value, mode: button.dataset.mode }),
+      });
+      const result = await res.json();
+      if (!res.ok) { $('response').textContent = JSON.stringify(result, null, 2); return; }
+      const status = result.response.status;
+      $('status').textContent = status;
+      $('status').className = 'status ' + (status === 200 ? 'ok' : 'ng');
+      $('response').textContent = JSON.stringify(result.response.body, null, 2);
+      $('activity').textContent = result.activity.length ? result.activity.join('\\n') : '(nothing ran)';
+      $('request').textContent =
+        'POST ' + result.request.path + '\\n' +
+        Object.entries(result.request.headers).map(([k, v]) => k + ': ' + v).join('\\n') +
+        '\\n\\n' + result.request.body;
+    });
+  });
+</script>
+</body>
+</html>`;
+}
