@@ -156,7 +156,34 @@ interface ExpressAdapterOptions {
    * @default consoleLogger
    */
   logger?: Logger;
+
+  /**
+   * Builds the per-request context passed to handlers as their second argument.
+   * Required when the router's context type is not satisfied by Express's `Request`.
+   * @optional
+   * @default (req) => req
+   */
+  createContext?: (req: Request, res: Response) => TContext | Promise<TContext>;
 }
+```
+
+### Per-request context in handlers
+
+Handlers receive the Express `req` as their second argument (middleware receive it as the third).
+To pass something else, give the router a context type and build it with `createContext`:
+
+```typescript
+const router = new StripeWebhookRouter<{ tenantId: string }>();
+router.on('invoice.paid', async (event, { tenantId }) => { /* ... */ });
+
+app.post('/webhook', express.raw({ type: 'application/json' }), expressAdapter(router, {
+  verifier,
+  createContext: (req) => {
+    const tenantId = req.get('x-tenant-id');
+    if (!tenantId) throw new Error('missing x-tenant-id');
+    return { tenantId };
+  },
+}));
 ```
 
 ## Important: Raw Body Requirement

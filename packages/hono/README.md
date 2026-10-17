@@ -147,8 +147,54 @@ interface HonoAdapterOptions {
    * @default consoleLogger
    */
   logger?: Logger;
+
+  /**
+   * Builds the per-request context passed to handlers as their second argument.
+   * Required when the router's context type is not satisfied by Hono's `Context`.
+   * Annotate `c` with your app's `Context<AppEnv>` to read bindings: an unannotated
+   * `c` exposes no bindings (TypeScript cannot infer the app's env here), and the
+   * annotation is checked against the app at `app.post(...)`.
+   * @optional
+   * @default (c) => c
+   */
+  createContext?: (c: THonoContext) => TContext | Promise<TContext>;
 }
 ```
+
+### Per-request context (`c`) in handlers
+
+Handlers receive Hono's `c` as their second argument (middleware receive it as the third).
+Declare it on the router to get typed bindings:
+
+```typescript
+import type { Context } from 'hono';
+
+type AppEnv = { Bindings: { DB: D1Database } };
+const router = new StripeWebhookRouter<Context<AppEnv>>();
+
+router.on('checkout.session.completed', async (event, c) => {
+  await c.env.DB.prepare('INSERT INTO orders (id) VALUES (?)').bind(event.data.object.id).run();
+});
+```
+
+To pass something other than `c`, give the router your own context type and build it with
+`createContext`. The types then require `createContext`. Annotate its `c` with your app's
+`Context<AppEnv>`: TypeScript cannot infer the app's env there, so an unannotated `c`
+exposes no bindings and `c.env.DB` is a compile error rather than an untyped `any`.
+
+```typescript
+const router = new StripeWebhookRouter<{ db: D1Database }>();
+app.post('/webhook', honoAdapter(router, {
+  verifier,
+  createContext: (c: Context<AppEnv>) => ({ db: c.env.DB }),
+}));
+```
+
+The bindings are checked against the app at `app.post(...)` (or wherever you call the
+returned handler with `c`): a router whose handlers read `c.env.DB`, or a `createContext`
+annotated with `Context<AppEnv>`, is rejected on an app whose `Bindings` lack `DB`. A router
+typed with a path or validated input (e.g. `Context<AppEnv, '/w/:id'>`) is likewise rejected
+on a route that lacks the `:id` param or that validator.
 
 ## Advanced Usage
 
@@ -208,7 +254,7 @@ uses Stripe's `constructEventAsync()` internally, so signature verification work
 on the Workers runtime — which requires async Web Crypto — out of the box.
 
 ```typescript
-import { Hono } from 'hono';
+import { Hono, type Context } from 'hono';
 import { StripeWebhookRouter, createStripeVerifier } from '@kotodayori/stripe';
 import { honoAdapter } from '@kotodayori/hono';
 import Stripe from 'stripe';
@@ -216,14 +262,16 @@ import Stripe from 'stripe';
 type Bindings = {
   STRIPE_API_KEY: string;
   STRIPE_WEBHOOK_SECRET: string;
+  ENVIRONMENT: string;
 };
 
 const app = new Hono<{ Bindings: Bindings }>();
 
-// Define the router and register handlers once, at module scope
-const router = new StripeWebhookRouter();
-router.on('payment_intent.succeeded', async (event) => {
-  console.log('Payment:', event.data.object.id);
+// Define the router and register handlers once, at module scope.
+// Handlers receive `c` as their second argument, so `c.env` bindings are reachable.
+const router = new StripeWebhookRouter<Context<{ Bindings: Bindings }>>();
+router.on('payment_intent.succeeded', async (event, c) => {
+  console.log('Payment:', event.data.object.id, 'in', c.env.ENVIRONMENT);
 });
 
 app.post('/webhook', (c) => {
@@ -239,6 +287,8 @@ app.post('/webhook', (c) => {
 
 export default app;
 ```
+
+See the [Cloudflare Workers guide](https://github.com/hideokamoto/kotodayori/blob/main/docs/src/content/docs/guides/cloudflare-workers.md) for writing to D1 and other bindings from handlers.
 
 ### Deno Deploy
 

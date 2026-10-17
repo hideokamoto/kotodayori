@@ -1,17 +1,51 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
-import { handleWebhook, type Logger, type WebhookDispatcher, type WebhookEvent, type Verifier } from '@kotodayori/core';
+import {
+  contextProvider,
+  handleWebhook,
+  type ContextFactory,
+  type ContextFactoryOption,
+  type Logger,
+  type WebhookDispatcher,
+  type WebhookEvent,
+  type Verifier,
+} from '@kotodayori/core';
 
 /**
  * Options for the Lambda adapter
  */
-export interface LambdaAdapterOptions<T extends WebhookEvent = WebhookEvent> {
+export interface LambdaAdapterOptions<T extends WebhookEvent = WebhookEvent, TContext = LambdaInvocation> {
   /** Webhook verifier function for signature validation and event parsing */
   verifier: Verifier<T>;
   /** Custom error handler */
   onError?: (error: Error, event?: T) => Promise<void> | void;
   /** Logger for adapter diagnostics such as verification failures. Defaults to `consoleLogger`. */
   logger?: Logger;
+  /**
+   * Builds the per-invocation context passed to handlers as their second argument.
+   * Defaults to `{ event, context }` (a {@link LambdaInvocation}). Required when the
+   * router's context type is not satisfied by `LambdaInvocation`. Errors are handled
+   * like handler errors.
+   */
+  createContext?: ContextFactory<[event: APIGatewayProxyEvent, context: Context], TContext>;
 }
+
+/**
+ * The default per-invocation context: the API Gateway event and the Lambda context
+ */
+export interface LambdaInvocation {
+  event: APIGatewayProxyEvent;
+  context: Context;
+}
+
+/**
+ * Lambda adapter options for a router with context `TContext`: `createContext` is
+ * optional when `LambdaInvocation` already satisfies `TContext`, and required otherwise.
+ */
+export type LambdaAdapterOptionsFor<T extends WebhookEvent, TContext> = Omit<
+  LambdaAdapterOptions<T, TContext>,
+  'createContext'
+> &
+  ContextFactoryOption<LambdaInvocation, TContext, [event: APIGatewayProxyEvent, context: Context]>;
 
 /**
  * Creates an AWS Lambda handler for handling webhooks
@@ -38,13 +72,16 @@ export interface LambdaAdapterOptions<T extends WebhookEvent = WebhookEvent> {
  */
 export function lambdaAdapter<
   TEvent extends WebhookEvent = WebhookEvent,
+  TContext = unknown,
 >(
-  router: WebhookDispatcher<TEvent>,
-  options: LambdaAdapterOptions<TEvent>
+  router: WebhookDispatcher<NoInfer<TEvent>, TContext>,
+  options: LambdaAdapterOptionsFor<TEvent, NoInfer<TContext>>
 ): (event: APIGatewayProxyEvent, context: Context) => Promise<APIGatewayProxyResult> {
+  const { createContext } = options as LambdaAdapterOptions<TEvent, TContext>;
+
   return async (
     lambdaEvent: APIGatewayProxyEvent,
-    _context: Context
+    lambdaContext: Context
   ): Promise<APIGatewayProxyResult> => {
     // Validate request body exists
     if (lambdaEvent.body == null) {
@@ -68,7 +105,14 @@ export function lambdaAdapter<
       }
     }
 
-    const { status, body } = await handleWebhook(router, options, rawBody, headers);
+    const invocation: LambdaInvocation = { event: lambdaEvent, context: lambdaContext };
+    const { status, body } = await handleWebhook(
+      router,
+      options,
+      rawBody,
+      headers,
+      contextProvider(createContext, [lambdaEvent, lambdaContext], invocation)
+    );
     return {
       statusCode: status,
       body: JSON.stringify(body),

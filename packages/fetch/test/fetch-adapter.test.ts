@@ -44,7 +44,8 @@ describe('fetchAdapter', () => {
     expect(res.status).toBe(200);
     expect(res.headers.get('content-type')).toMatch(/^application\/json/);
     expect(await res.json()).toEqual({ received: true });
-    expect(handler).toHaveBeenCalledWith(testEvent);
+    // Adapters pass the Request as the handler's second argument by default
+    expect(handler).toHaveBeenCalledWith(testEvent, expect.any(Request));
   });
 
   it('passes the raw body text to the verifier byte-for-byte', async () => {
@@ -173,5 +174,68 @@ describe('fetchAdapter', () => {
 
     expect(logger.error).toHaveBeenCalledWith('Webhook verification failed:', verificationError);
     expect(consoleErrorSpy).not.toHaveBeenCalled();
+  });
+
+  describe('per-request context', () => {
+    it('passes the Request to handlers by default', async () => {
+      const router = new WebhookRouter();
+      const handler = vi.fn(async () => {});
+      router.on('test.event', handler);
+      const request = post('{"id":"evt_123"}');
+
+      const response = await fetchAdapter(router, { verifier: okVerifier })(request);
+
+      expect(response.status).toBe(200);
+      expect(handler).toHaveBeenCalledWith(testEvent, request);
+    });
+
+    it('passes the value built by createContext(request) to handlers', async () => {
+      const router = new WebhookRouter<Record<string, WebhookEvent>, { tenant: string }>();
+      const handler = vi.fn(async () => {});
+      router.on('test.event', handler);
+      const request = post('{"id":"evt_123"}', { 'x-tenant': 'acme' });
+      const createContext = vi.fn(async (req: Request) => ({ tenant: req.headers.get('x-tenant') ?? '' }));
+
+      const response = await fetchAdapter(router, { verifier: okVerifier, createContext })(request);
+
+      expect(response.status).toBe(200);
+      expect(createContext).toHaveBeenCalledWith(request);
+      expect(handler).toHaveBeenCalledWith(testEvent, { tenant: 'acme' });
+    });
+
+    it('exposes Workers bindings when the handler is created inside fetch(request, env)', async () => {
+      const router = new WebhookRouter<Record<string, WebhookEvent>, { db: string }>();
+      const handler = vi.fn(async () => {});
+      router.on('test.event', handler);
+      const worker = {
+        fetch: (request: Request, env: { DB: string }) =>
+          fetchAdapter(router, { verifier: okVerifier, createContext: () => ({ db: env.DB }) })(request),
+      };
+
+      const response = await worker.fetch(post('{"id":"evt_123"}'), { DB: 'd1' });
+
+      expect(response.status).toBe(200);
+      expect(handler).toHaveBeenCalledWith(testEvent, { db: 'd1' });
+    });
+
+    it('responds 500 and calls onError when createContext throws, without dispatching', async () => {
+      const router = new WebhookRouter<Record<string, WebhookEvent>, { tenant: string }>();
+      const handler = vi.fn(async () => {});
+      router.on('test.event', handler);
+      const onError = vi.fn();
+      const error = new Error('no tenant');
+
+      const response = await fetchAdapter(router, {
+        verifier: okVerifier,
+        onError,
+        createContext: () => {
+          throw error;
+        },
+      })(post('{"id":"evt_123"}'));
+
+      expect(response.status).toBe(500);
+      expect(handler).not.toHaveBeenCalled();
+      expect(onError).toHaveBeenCalledWith(error, testEvent);
+    });
   });
 });

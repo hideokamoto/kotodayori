@@ -9,7 +9,7 @@ This guide shows how to keep the router and its handlers at **module scope** (re
 
 ## `wrangler.jsonc` configuration
 
-The Stripe SDK requires Node.js compatibility APIs. Enable them with the `nodejs_compat` flag, which also activates `nodejs_als` (AsyncLocalStorage) used later for the `contextStorage()` pattern:
+The Stripe SDK requires Node.js compatibility APIs. Enable them with the `nodejs_compat` flag, which also activates `nodejs_als` (AsyncLocalStorage) used by the optional `contextStorage()` pattern:
 
 ```jsonc
 {
@@ -102,16 +102,11 @@ export default app;
 
 ## Accessing `env` inside handlers
 
-Kotodayori handlers receive only `event` — they have no `c` parameter. When a handler needs to reach bindings (write to D1, post to Slack, read a secret), you have two options.
-
-### Recommended: Hono `contextStorage()` + `getContext()`
-
-Hono ships `contextStorage()` middleware (backed by AsyncLocalStorage) that stores the current `Context` for the lifetime of each request. Any code that runs during that request — including Kotodayori handlers — can call `getContext()` to retrieve it, with no need to thread `c` through every function.
+Handlers receive the Hono context `c` as their **second argument**, so they can read per-request bindings (write to D1, post to Slack, read a secret) while the router itself stays at module scope. Declare the context type on the router to get `c.env` fully typed:
 
 ```typescript
 import Stripe from 'stripe';
-import { Hono } from 'hono';
-import { contextStorage, getContext } from 'hono/context-storage';
+import { Hono, type Context } from 'hono';
 import { honoAdapter } from '@kotodayori/hono';
 import { StripeWebhookRouter, createStripeVerifier } from '@kotodayori/stripe';
 
@@ -122,35 +117,28 @@ interface Bindings {
   DB: D1Database;
 }
 
-type AppContext = { Bindings: Bindings };
+type AppEnv = { Bindings: Bindings };
 
-const router = new StripeWebhookRouter();
+// Registered once at module scope; `c` arrives per request as the second argument
+const router = new StripeWebhookRouter<Context<AppEnv>>();
 
-router.on('checkout.session.completed', async (event) => {
-  // getContext() retrieves the Hono context stored by contextStorage().
-  // No need to pass `c` down into this handler.
-  const { env } = getContext<AppContext>();
-
+router.on('checkout.session.completed', async (event, c) => {
   // Write to D1
-  await env.DB.prepare(
+  await c.env.DB.prepare(
     'INSERT INTO orders (session_id, amount) VALUES (?, ?)'
   )
     .bind(event.data.object.id, event.data.object.amount_total)
     .run();
 
   // Post to Slack
-  await fetch(env.SLACK_WEBHOOK_URL, {
+  await fetch(c.env.SLACK_WEBHOOK_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ text: `New order: ${event.data.object.id}` }),
   });
 });
 
-const app = new Hono<AppContext>();
-
-// Register contextStorage() BEFORE the webhook route so that
-// getContext() is available during handler execution.
-app.use(contextStorage());
+const app = new Hono<AppEnv>();
 
 app.post('/webhook', (c) => {
   const stripe = new Stripe(c.env.STRIPE_API_KEY, {
@@ -164,7 +152,42 @@ app.post('/webhook', (c) => {
 export default app;
 ```
 
-`contextStorage()` requires AsyncLocalStorage, which is enabled by the `nodejs_compat` (or `nodejs_als`) compatibility flag you already added for the Stripe SDK. It is portable across all Hono deployment targets (Workers, Node.js, Bun, Deno).
+`honoAdapter` passes `c` to `router.dispatch(event, c)`, which forwards it to every handler, `fanout()` handler and middleware (as the third argument).
+
+### Passing only what handlers need: `createContext`
+
+To keep handlers independent of Hono (easier to unit-test, reusable from other adapters), give the router a context type of your own and build it with `createContext`. When the router's context is not something Hono's `Context` satisfies, `createContext` is **required by the types**, so you cannot forget it:
+
+```typescript
+interface WebhookContext {
+  db: D1Database;
+  slackUrl: string;
+}
+
+const router = new StripeWebhookRouter<WebhookContext>();
+
+router.on('checkout.session.completed', async (event, { db }) => {
+  await db.prepare('INSERT INTO orders (session_id) VALUES (?)')
+    .bind(event.data.object.id)
+    .run();
+});
+
+app.post('/webhook', (c) => {
+  const stripe = new Stripe(c.env.STRIPE_API_KEY, {
+    httpClient: Stripe.createFetchHttpClient(),
+  });
+  return honoAdapter(router, {
+    verifier: createStripeVerifier(stripe, c.env.STRIPE_WEBHOOK_SECRET),
+    createContext: () => ({ db: c.env.DB, slackUrl: c.env.SLACK_WEBHOOK_URL }),
+  })(c);
+});
+```
+
+`createContext` may be async. If it throws, the adapter responds with 500 and calls `onError`, the same as a handler error.
+
+### Alternative: Hono `contextStorage()` + `getContext()`
+
+If code deep inside your handlers (not the handlers themselves) needs the context, Hono's `contextStorage()` middleware (backed by AsyncLocalStorage) stores the current `Context` for the lifetime of each request, and `getContext()` retrieves it anywhere during that request. Register `app.use(contextStorage())` before the webhook route, then call `getContext<AppEnv>()`. Note that the type parameter of `getContext()` is asserted by you rather than inferred from the router. This requires the `nodejs_compat` (or `nodejs_als`) compatibility flag.
 
 ### Alternative: `cloudflare:workers` env import
 
@@ -187,10 +210,6 @@ router.on('checkout.session.completed', async (event) => {
 ```
 
 This requires a recent `compatibility_date`. Check your Worker's compatibility date in Wrangler and the [Cloudflare compatibility flags docs](https://developers.cloudflare.com/workers/configuration/compatibility-dates/) to confirm support. This approach is Workers-only and does not port to Node.js, Express, or Lambda.
-
-### Why `hono/adapter`'s `env(c)` does not help here
-
-Hono's `env(c)` helper from `hono/adapter` is a convenience wrapper that accepts a `Context` object (`c`) and returns platform-specific environment variables. Because Kotodayori handlers receive only `event` — not `c` — you cannot use `env(c)` inside them. Use `getContext()` from `hono/context-storage` instead.
 
 ## Local development and testing
 
@@ -216,5 +235,5 @@ stripe trigger payment_intent.succeeded
 
 - **Do not rebuild the router on every request.** The router holds only handler registrations — it is safe (and intended) to create it once at module scope. Creating a new router per request wastes memory and loses any handler setup work.
 - **Do not hand-write a signature verifier.** `createStripeVerifier` from `@kotodayori/stripe` handles Workers' async Web Crypto requirement automatically. See the [Stripe Webhooks guide](/guides/stripe-webhooks) for full details.
-- **Do not forget `nodejs_compat`.** The Stripe SDK needs Node.js-compatible APIs. Omitting `"compatibility_flags": ["nodejs_compat"]` in `wrangler.jsonc` causes runtime errors. This flag also enables the `nodejs_als` flag required by Hono's `contextStorage()`.
+- **Do not forget `nodejs_compat`.** The Stripe SDK needs Node.js-compatible APIs. Omitting `"compatibility_flags": ["nodejs_compat"]` in `wrangler.jsonc` causes runtime errors. This flag also enables the `nodejs_als` flag required by Hono's `contextStorage()`, if you use it.
 - **Do not build the Stripe client at module scope.** `c.env` only exists inside a request context. Build `new Stripe(c.env.STRIPE_API_KEY, ...)` inside the route handler.

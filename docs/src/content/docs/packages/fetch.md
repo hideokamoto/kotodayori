@@ -80,6 +80,7 @@ function fetchAdapter<TEvent extends WebhookEvent>(
     verifier: Verifier<TEvent>;
     onError?: (error: Error, event: TEvent) => Promise<void> | void;
     logger?: Logger; // defaults to consoleLogger
+    createContext?: (request: Request) => TContext | Promise<TContext>; // defaults to the Request
   }
 ): (request: Request) => Promise<Response>
 ```
@@ -87,5 +88,6 @@ function fetchAdapter<TEvent extends WebhookEvent>(
 - **verifier** — Required. Verifies the request and returns the event (e.g. `createStripeVerifier`).
 - **onError** — Optional. Called when a handler throws; errors thrown by `onError` itself are ignored and the response stays 500.
 - **logger** — Optional. Receives adapter diagnostics, currently verification failures. Defaults to `consoleLogger`, which writes to `console`. Pass `silentLogger` from `@kotodayori/core` or any object with `warn` and `error`.
+- **createContext** — Optional. Builds the per-request context passed to handlers as their second argument (defaults to the `Request`). Required by the types when the router's context is not something `Request` satisfies. On Cloudflare Workers, create the handler inside `fetch(request, env)` and build the context from `env`, e.g. `createContext: () => ({ db: env.DB })`.
 
 The adapter reads the raw body with `request.text()` (required for signature verification) and returns a JSON `Response`: 200 on success, 400 for an empty body or failed verification, 500 for handler errors, and 405 (`Allow: POST`) for non-POST methods.

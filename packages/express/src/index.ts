@@ -1,17 +1,42 @@
 import type { Request, Response, NextFunction } from 'express';
-import { handleWebhook, type Logger, type WebhookDispatcher, type WebhookEvent, type Verifier } from '@kotodayori/core';
+import {
+  contextProvider,
+  handleWebhook,
+  type ContextFactory,
+  type ContextFactoryOption,
+  type Logger,
+  type WebhookDispatcher,
+  type WebhookEvent,
+  type Verifier,
+} from '@kotodayori/core';
 
 /**
  * Options for the Express adapter
  */
-export interface ExpressAdapterOptions<T extends WebhookEvent = WebhookEvent> {
+export interface ExpressAdapterOptions<T extends WebhookEvent = WebhookEvent, TContext = Request> {
   /** Webhook verifier function for signature validation and event parsing */
   verifier: Verifier<T>;
   /** Custom error handler */
   onError?: (error: Error, event: T) => Promise<void> | void;
   /** Logger for adapter diagnostics such as verification failures. Defaults to `consoleLogger`. */
   logger?: Logger;
+  /**
+   * Builds the per-request context passed to handlers as their second argument.
+   * Defaults to passing the Express `req` itself. Required when the router's context
+   * type is not satisfied by `Request`. Errors are handled like handler errors.
+   */
+  createContext?: ContextFactory<[req: Request, res: Response], TContext>;
 }
+
+/**
+ * Express adapter options for a router with context `TContext`: `createContext` is
+ * optional when `Request` already satisfies `TContext`, and required otherwise.
+ */
+export type ExpressAdapterOptionsFor<T extends WebhookEvent, TContext> = Omit<
+  ExpressAdapterOptions<T, TContext>,
+  'createContext'
+> &
+  ContextFactoryOption<Request, TContext, [req: Request, res: Response]>;
 
 /**
  * Creates an Express middleware for handling webhooks
@@ -42,10 +67,13 @@ export interface ExpressAdapterOptions<T extends WebhookEvent = WebhookEvent> {
  */
 export function expressAdapter<
   TEvent extends WebhookEvent = WebhookEvent,
+  TContext = unknown,
 >(
-  router: WebhookDispatcher<TEvent>,
-  options: ExpressAdapterOptions<TEvent>
+  router: WebhookDispatcher<NoInfer<TEvent>, TContext>,
+  options: ExpressAdapterOptionsFor<TEvent, NoInfer<TContext>>
 ): (req: Request, res: Response, next: NextFunction) => Promise<void> {
+  const { createContext } = options as ExpressAdapterOptions<TEvent, TContext>;
+
   return async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
     // Validate request body exists and is the correct type
     if (req.body == null) {
@@ -72,8 +100,17 @@ export function expressAdapter<
       headers[key] = Array.isArray(value) ? value[0] : value;
     }
 
-    const { status, body } = await handleWebhook(router, options, rawBody, headers);
-    res.status(status).json(body);
+    const { status, body } = await handleWebhook(
+      router,
+      options,
+      rawBody,
+      headers,
+      contextProvider(createContext, [req, res], req)
+    );
+    // User code (createContext, or a handler via `req.res`) may have responded already
+    if (!res.headersSent) {
+      res.status(status).json(body);
+    }
   };
 }
 
