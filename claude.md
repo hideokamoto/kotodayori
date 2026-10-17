@@ -334,7 +334,7 @@ interface ExpressAdapterOptions {
 **CRITICAL**: Requires `express.raw({ type: 'application/json' })` middleware before the adapter to get raw body for signature verification.
 
 **Key Implementation Details**:
-- Validates raw body is Buffer or string
+- Validates raw body is Buffer or string (a `Buffer` is passed to the verifier as a `Uint8Array`)
 - Throws error if body is already parsed (common mistake)
 - Error handling follows same pattern as Hono adapter
 
@@ -765,7 +765,7 @@ git push -u origin claude/feature-name-SESSION_ID
 
 **Correct Pattern**:
 ```typescript
-// 1. Get raw body (Buffer or string)
+// 1. Get raw body (string or Uint8Array / Buffer)
 const rawBody = await getRawRequestBody(request);
 
 // 2. Verify signature BEFORE parsing
@@ -980,7 +980,8 @@ function createGitHubVerifier(secret: string): Verifier {
       throw new Error('Invalid signature');
     }
 
-    const body = JSON.parse(payload.toString());
+    const text = typeof payload === 'string' ? payload : new TextDecoder().decode(payload);
+    const body = JSON.parse(text);
     return {
       event: {
         id: headers['x-github-delivery'] ?? crypto.randomUUID(),
@@ -1077,13 +1078,13 @@ app.post('/webhook', honoAdapter(router, {
 All verifiers must implement this contract:
 ```typescript
 type Verifier = (
-  payload: Buffer | string,
+  payload: string | Uint8Array,
   headers: Record<string, string | undefined>
 ) => { event: WebhookEvent } | Promise<{ event: WebhookEvent }>;
 ```
 
 **Requirements**:
-- Accept raw payload (Buffer or string, NOT parsed JSON)
+- Accept raw payload (string or Uint8Array, NOT parsed JSON). Node `Buffer` is a `Uint8Array`, but never call `payload.toString()` on it: on a plain `Uint8Array` that returns comma-separated numbers. Decode with `new TextDecoder().decode(payload)`
 - Accept headers as key-value map
 - Verify signature/authenticity
 - Parse payload into WebhookEvent

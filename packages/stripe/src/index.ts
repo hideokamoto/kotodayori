@@ -459,7 +459,7 @@ export function createStripeVerifier(
   warnIfUnsupportedStripeVersion(stripe);
 
   return async (
-    payload: string | Buffer,
+    payload: string | Uint8Array,
     headers: Record<string, string | undefined>
   ): Promise<VerifyResult<Stripe.Event>> => {
     const signature = headers['stripe-signature'];

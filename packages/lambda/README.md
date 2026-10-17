@@ -77,7 +77,8 @@ type MyEventMap = {
 // Create a custom verifier
 const myVerifier: Verifier = (payload, headers) => {
   // Verify signature and parse payload
-  const body = JSON.parse(payload.toString());
+  const text = typeof payload === 'string' ? payload : new TextDecoder().decode(payload);
+  const body = JSON.parse(text);
   return {
     event: {
       id: body.id,

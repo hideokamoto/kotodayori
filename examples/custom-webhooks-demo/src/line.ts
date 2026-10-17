@@ -1,6 +1,6 @@
 import type { Verifier, WebhookDispatcher, WebhookEvent } from '@kotodayori/core';
 import type { webhook } from '@line/bot-sdk';
-import { base64ToBytes, verifyHmacSha256 } from './hmac.js';
+import { base64ToBytes, payloadToText, verifyHmacSha256 } from './hmac.js';
 
 /*
  * LINE Messaging API webhooks
@@ -49,7 +49,7 @@ export function createLineVerifier(channelSecret: string): Verifier<LineCallback
       throw new Error('Invalid signature');
     }
 
-    const body = JSON.parse(payload.toString()) as webhook.CallbackRequest;
+    const body = JSON.parse(payloadToText(payload)) as webhook.CallbackRequest;
     return { event: { id: crypto.randomUUID(), type: 'line.callback', data: { object: body } } };
   };
 }

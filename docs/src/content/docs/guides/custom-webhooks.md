@@ -26,7 +26,7 @@ async function verifyHmacSha256(secret: string, body: string | Uint8Array, signa
 }
 ```
 
-Always verify the raw body (`string` or `Buffer`) exactly as received. Parsing and re-serializing the JSON first changes the bytes and breaks the signature. Never log secrets.
+Always verify the raw body (`string` or `Uint8Array`; a Node.js `Buffer` is a `Uint8Array`) exactly as received. Parsing and re-serializing the JSON first changes the bytes and breaks the signature. Never log secrets.
 
 ## One event per request: CircleCI
 
@@ -90,7 +90,8 @@ function createCircleCIVerifier(secret: string): Verifier {
     const type = headers['circleci-event-type'];
     if (!type) throw new Error('Missing circleci-event-type header');
 
-    const body = JSON.parse(payload.toString());
+    const text = typeof payload === 'string' ? payload : new TextDecoder().decode(payload);
+    const body = JSON.parse(text);
     return { event: { id: body.id, type, data: { object: body } } };
   };
 }
@@ -171,7 +172,8 @@ function createLineVerifier(channelSecret: string): Verifier<LineCallbackEvent> 
       throw new Error('Invalid signature');
     }
 
-    const body = JSON.parse(payload.toString()) as webhook.CallbackRequest;
+    const text = typeof payload === 'string' ? payload : new TextDecoder().decode(payload);
+    const body = JSON.parse(text) as webhook.CallbackRequest;
     return { event: { id: crypto.randomUUID(), type: 'line.callback', data: { object: body } } };
   };
 }

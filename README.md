@@ -216,7 +216,8 @@ function createGitHubVerifier(secret: string): Verifier {
       throw new Error('Invalid signature');
     }
 
-    const body = JSON.parse(payload.toString());
+    const text = typeof payload === 'string' ? payload : new TextDecoder().decode(payload);
+    const body = JSON.parse(text);
     return {
       event: {
         id: headers['x-github-delivery'] ?? crypto.randomUUID(),

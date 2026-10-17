@@ -4,7 +4,7 @@ Kotodayori is a pnpm monorepo of TypeScript packages for type-safe webhook routi
 
 ## Always do
 
-- Preserve the **Verifier** contract: raw body (`Buffer` or `string`) before signature verification; never verify a parsed JSON object.
+- Preserve the **Verifier** contract: raw body (`string` or `Uint8Array`; a Node `Buffer` is a `Uint8Array`) before signature verification; never verify a parsed JSON object.
 - **Express**: register `express.raw({ type: 'application/json' })` on the webhook route before `expressAdapter`.
 - Run checks from the repo root when changing packages: `pnpm build`, `pnpm typecheck`, `pnpm lint`, `pnpm test`.
 
