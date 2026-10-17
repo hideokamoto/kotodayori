@@ -43,7 +43,7 @@ export interface ExpressAdapterOptions<T extends WebhookEvent = WebhookEvent> {
 export function expressAdapter<
   TEvent extends WebhookEvent = WebhookEvent,
 >(
-  router: WebhookDispatcher<TEvent>,
+  router: WebhookDispatcher<NoInfer<TEvent>>,
   options: ExpressAdapterOptions<TEvent>
 ): (req: Request, res: Response, next: NextFunction) => Promise<void> {
   const { verifier, onError, logger = consoleLogger } = options;

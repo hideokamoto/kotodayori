@@ -40,7 +40,7 @@ export interface HonoAdapterOptions<T extends WebhookEvent = WebhookEvent> {
 export function honoAdapter<
   TEvent extends WebhookEvent = WebhookEvent,
 >(
-  router: WebhookDispatcher<TEvent>,
+  router: WebhookDispatcher<NoInfer<TEvent>>,
   options: HonoAdapterOptions<TEvent>
 ): (c: Context) => Promise<Response> {
   const { verifier, onError, logger = consoleLogger } = options;
