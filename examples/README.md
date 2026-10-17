@@ -1,6 +1,6 @@
 # Examples
 
-このディレクトリは `create-kotodayori` の CLI（`npx create-kotodayori` と同等）から生成したサンプルアプリを置いています。モノレポ内の `@kotodayori/*` を `workspace:*` で参照するため、ルートで `pnpm install` したあと各例の `pnpm dev` で動かせます。
+`stackblitz-demo` を除き、このディレクトリは `create-kotodayori` の CLI（`npx create-kotodayori` と同等）から生成したサンプルアプリを置いています。モノレポ内の `@kotodayori/*` を `workspace:*` で参照するため、ルートで `pnpm install` したあと各例の `pnpm dev` で動かせます。
 
 ## 含まれる例
 
@@ -8,6 +8,7 @@
 | --- | --- |
 | `sample-hono-stripe` | Hono + Stripe 署名検証 + `StripeWebhookRouter` |
 | `sample-express-stripe` | Express + `express.raw` + `expressAdapter` |
+| `stackblitz-demo` | ブラウザ（StackBlitz）で動くデモ。npm 公開版に依存し、Stripe アカウント不要。詳細は [README](./stackblitz-demo/README.md) |
 
 ## 再生成する場合
 

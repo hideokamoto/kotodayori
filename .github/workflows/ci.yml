@@ -118,6 +118,33 @@ jobs:
       - name: Build packages
         run: pnpm build
 
+  stackblitz-demo:
+    name: StackBlitz Demo
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: examples/stackblitz-demo
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: examples/stackblitz-demo/package-lock.json
+
+      # The demo depends on the published @kotodayori/* packages, not the workspace
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Smoke test
+        run: npm run smoke
+
   check-stripe-events:
     name: Check Stripe Events Sync
     runs-on: ubuntu-latest
