@@ -77,7 +77,7 @@ Express の場合は、Verifier が生のボディを受け取れるよう、ア
 
 ## ピア依存関係
 
-- **Stripe アダプター** (`@kotodayori/stripe`): `stripe` >= 17.0.0
+- **Stripe アダプター** (`@kotodayori/stripe`): `stripe` >= 23.0.0
 - **Hono アダプター** (`@kotodayori/hono`): `hono` >= 4.0.0
 - **Express アダプター** (`@kotodayori/express`): `express` >= 4.0.0
 - **Zod 連携** (`@kotodayori/zod`): `zod` ^4.0.0

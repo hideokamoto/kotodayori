@@ -78,7 +78,10 @@ export interface VerifyResult<T extends WebhookEvent = WebhookEvent> {
  * 1. Validating the webhook signature/authenticity
  * 2. Parsing the payload into a typed event object
  *
- * @param payload - Raw request body (string or Buffer)
+ * @param payload - Raw request body (string or Uint8Array). Node.js `Buffer` is a `Uint8Array`
+ *   subclass, so adapters may pass one, but do not rely on `Buffer` methods: call
+ *   `new TextDecoder().decode(payload)` rather than `payload.toString()`, which on a plain
+ *   `Uint8Array` returns comma-separated numbers instead of the text.
  * @param headers - Request headers for signature verification
  * @returns The verified event wrapped in a VerifyResult
  * @throws Error if verification fails
@@ -95,13 +98,14 @@ export interface VerifyResult<T extends WebhookEvent = WebhookEvent> {
  * // GitHub verifier
  * const verifier: Verifier = (payload, headers) => {
  *   const signature = headers['x-hub-signature-256'];
- *   // Verify HMAC signature...
- *   return { event: JSON.parse(payload) };
+ *   // Verify HMAC signature over the raw payload...
+ *   const text = typeof payload === 'string' ? payload : new TextDecoder().decode(payload);
+ *   return { event: JSON.parse(text) };
  * };
  * ```
  */
 export type Verifier<T extends WebhookEvent = WebhookEvent> = (
-  payload: string | Buffer,
+  payload: string | Uint8Array,
   headers: Record<string, string | undefined>
 ) => VerifyResult<T> | Promise<VerifyResult<T>>;
 
@@ -551,7 +555,7 @@ export type WebhookHandlerResult =
  *
  * @param router - A WebhookDispatcher (any object with a `dispatch(event)` method, e.g. WebhookRouter)
  * @param options - Verifier and optional error handler
- * @param rawBody - Raw request body (string or Buffer)
+ * @param rawBody - Raw request body (string or Uint8Array; a Node.js Buffer is accepted)
  * @param headers - Request headers; keys are lowercased before reaching the verifier
  * @param getContext - Builds the per-request context forwarded to handlers (see
  *   {@link contextProvider}); only called after verification succeeds. Omit it to
@@ -560,7 +564,7 @@ export type WebhookHandlerResult =
 export async function handleWebhook<TEvent extends WebhookEvent = WebhookEvent, TContext = unknown>(
   router: WebhookDispatcher<TEvent, TContext>,
   options: WebhookHandlerOptions<TEvent>,
-  rawBody: string | Buffer,
+  rawBody: string | Uint8Array,
   headers: Record<string, string | undefined>,
   getContext?: () => TContext | Promise<TContext>
 ): Promise<WebhookHandlerResult> {

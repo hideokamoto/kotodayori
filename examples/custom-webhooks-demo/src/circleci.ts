@@ -1,5 +1,5 @@
 import type { Verifier, WebhookEvent } from '@kotodayori/core';
-import { hexToBytes, verifyHmacSha256 } from './hmac.js';
+import { hexToBytes, payloadToText, verifyHmacSha256 } from './hmac.js';
 
 /*
  * CircleCI outbound webhooks
@@ -90,7 +90,7 @@ export function createCircleCIVerifier(secret: string): Verifier {
       throw new Error('Missing circleci-event-type header');
     }
 
-    const body = JSON.parse(payload.toString()) as { id: string };
+    const body = JSON.parse(payloadToText(payload)) as { id: string };
     // Event types without a registered handler are acknowledged and ignored by the router
     return { event: { id: body.id, type, data: { object: body } } };
   };

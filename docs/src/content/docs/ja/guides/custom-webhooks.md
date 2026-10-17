@@ -26,7 +26,7 @@ async function verifyHmacSha256(secret: string, body: string | Uint8Array, signa
 }
 ```
 
-署名は、受け取ったままの生のボディ（`string` または `Buffer`）に対して検証してください。先に JSON をパースして再シリアライズするとバイト列が変わり、署名が一致しなくなります。シークレットはログに出力しないでください。
+署名は、受け取ったままの生のボディ（`string` または `Uint8Array`。Node.js の `Buffer` は `Uint8Array` です）に対して検証してください。先に JSON をパースして再シリアライズするとバイト列が変わり、署名が一致しなくなります。シークレットはログに出力しないでください。
 
 ## 1 リクエストに 1 イベント: CircleCI
 
@@ -90,7 +90,8 @@ function createCircleCIVerifier(secret: string): Verifier {
     const type = headers['circleci-event-type'];
     if (!type) throw new Error('Missing circleci-event-type header');
 
-    const body = JSON.parse(payload.toString());
+    const text = typeof payload === 'string' ? payload : new TextDecoder().decode(payload);
+    const body = JSON.parse(text);
     return { event: { id: body.id, type, data: { object: body } } };
   };
 }
@@ -171,7 +172,8 @@ function createLineVerifier(channelSecret: string): Verifier<LineCallbackEvent> 
       throw new Error('Invalid signature');
     }
 
-    const body = JSON.parse(payload.toString()) as webhook.CallbackRequest;
+    const text = typeof payload === 'string' ? payload : new TextDecoder().decode(payload);
+    const body = JSON.parse(text) as webhook.CallbackRequest;
     return { event: { id: crypto.randomUUID(), type: 'line.callback', data: { object: body } } };
   };
 }

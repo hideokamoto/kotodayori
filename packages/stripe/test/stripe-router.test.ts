@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, it, expect, vi } from 'vitest';
 import crypto from 'node:crypto';
 import { syncBuiltinESMExports } from 'node:module';
@@ -787,7 +788,7 @@ describe('createStripeVerifier Stripe SDK version warning', () => {
     } as unknown as Stripe;
   }
 
-  it('warns once per process for Stripe SDK older than v23', async () => {
+  it('warns once per process for an unsupported Stripe SDK (older than v23)', async () => {
     const { createStripeVerifier: create } = await loadFreshModule();
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     try {
@@ -796,10 +797,20 @@ describe('createStripeVerifier Stripe SDK version warning', () => {
 
       expect(warn).toHaveBeenCalledTimes(1);
       expect(warn.mock.calls[0][0]).toContain('Stripe SDK v22.2.0');
-      expect(warn.mock.calls[0][0]).toContain('stripe >= 23.0.0');
+      expect(warn.mock.calls[0][0]).toContain('requires stripe >= 23.0.0');
+      // This is the major release that raised the minimum, so it is no longer a forward-looking notice
+      expect(warn.mock.calls[0][0]).not.toContain('next major');
+      expect(warn.mock.calls[0][0]).not.toContain('deprecated');
     } finally {
       warn.mockRestore();
     }
+  });
+
+  it('declares a stripe peer dependency whose floor matches the runtime minimum', () => {
+    const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as {
+      peerDependencies: Record<string, string>;
+    };
+    expect(pkg.peerDependencies['stripe']).toBe('>=23.0.0');
   });
 
   it.each([['23.0.0'], ['24.1.0'], [undefined], ['not-a-version']])(

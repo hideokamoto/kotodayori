@@ -60,7 +60,7 @@ More detail: [`skills/README.md`](https://github.com/hideokamoto/kotodayori/blob
 ## Mental model
 
 1. **Core** (`@kotodayori/core`): `WebhookRouter` dispatches typed events; middleware and grouping behave like a small Hono-style stack.
-2. **Verification**: A `Verifier` receives the **raw** payload and headers, verifies authenticity, then returns `{ event }` as `WebhookEvent`. Adapters must not parse JSON before the verifier runs.
+2. **Verification**: A `Verifier` receives the **raw** payload (`string | Uint8Array`; decode with `new TextDecoder().decode(payload)`, not `payload.toString()`) and headers, verifies authenticity, then returns `{ event }` as `WebhookEvent`. Adapters must not parse JSON before the verifier runs.
 3. **Adapters** bridge HTTP or AWS event shapes to `router.dispatch(event)` and map errors to 400 (bad signature) / 500 (handler) as documented in each package.
 
 ## Repository layout (when hacking on Kotodayori itself)

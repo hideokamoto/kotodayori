@@ -69,7 +69,7 @@ const stripe = new Stripe(apiKey, {
 });
 ```
 
-The third is to pass the raw request body to the verifier. The signature is computed over the exact bytes Stripe sent. Any framework that parses the JSON and re-serialises it changes those bytes — key order, whitespace, number formatting — and the signature will no longer match. The body handed to `constructEventAsync` must be the unmodified request payload as a string or `Buffer`.
+The third is to pass the raw request body to the verifier. The signature is computed over the exact bytes Stripe sent. Any framework that parses the JSON and re-serialises it changes those bytes — key order, whitespace, number formatting — and the signature will no longer match. The body handed to `constructEventAsync` must be the unmodified request payload as a `string` or `Uint8Array` (a Node.js `Buffer` is one).
 
 ## How `createStripeVerifier` resolves the first requirement
 

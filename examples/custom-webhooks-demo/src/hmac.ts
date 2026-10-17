@@ -12,6 +12,11 @@ function importKey(secret: string, usage: 'sign' | 'verify'): Promise<CryptoKey>
   return crypto.subtle.importKey('raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, [usage]);
 }
 
+/** Decodes a raw payload (string or bytes, e.g. a Node.js Buffer) as UTF-8 text. */
+export function payloadToText(payload: string | Uint8Array): string {
+  return typeof payload === 'string' ? payload : new TextDecoder().decode(payload);
+}
+
 export async function hmacSha256(secret: string, data: string | Uint8Array): Promise<Uint8Array> {
   return new Uint8Array(await crypto.subtle.sign('HMAC', await importKey(secret, 'sign'), toBytes(data)));
 }

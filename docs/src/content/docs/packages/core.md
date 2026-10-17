@@ -81,3 +81,21 @@ router.use(async (event, next) => {
 ```
 
 See [Middleware](/guides/middleware/) for more patterns.
+
+## Migrating custom verifiers to `Uint8Array` (breaking in the next major release)
+
+`Verifier` now takes `payload: string | Uint8Array` instead of `string | Buffer`, so the published types no longer need `@types/node` (Cloudflare Workers, Deno). Node.js `Buffer` is a `Uint8Array` subclass, so Express and Lambda behave the same at runtime. Two things in your own verifiers may need changes:
+
+1. **Type annotations.** `(payload: string | Buffer, headers) => ...` is no longer assignable to `Verifier`, because function parameters are contravariant. Drop the annotation and let `Verifier` infer it, or write `string | Uint8Array`.
+2. **`payload.toString()` / `payload.toString('utf8')`.** On a plain `Uint8Array`, `toString()` returns comma-separated numbers such as `"123,34,105,100"`, not the text, and `toString('utf8')` does not compile. Decode explicitly instead:
+
+```typescript
+// Before
+const body = JSON.parse(payload.toString());
+
+// After: works for string, Uint8Array and Buffer, on every runtime
+const text = typeof payload === 'string' ? payload : new TextDecoder().decode(payload);
+const body = JSON.parse(text);
+```
+
+Verify the signature over the raw `payload` (Web Crypto and `node:crypto` HMAC both accept `Uint8Array`), not over the decoded and re-serialized text. `createStripeVerifier` needs no change.

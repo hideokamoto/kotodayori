@@ -462,7 +462,7 @@ export function createStripeVerifier(
   warnIfUnsupportedStripeVersion(stripe);
 
   return async (
-    payload: string | Buffer,
+    payload: string | Uint8Array,
     headers: Record<string, string | undefined>
   ): Promise<VerifyResult<Stripe.Event>> => {
     const signature = headers['stripe-signature'];
@@ -490,15 +490,16 @@ export function createStripeVerifier(
   };
 }
 
-/** The lowest `stripe` major version the next major release of this package will support */
-const NEXT_MAJOR_MIN_STRIPE_VERSION = 23;
+/** The lowest `stripe` major version this package supports (also the floor of the `stripe` peer dependency) */
+const MIN_STRIPE_VERSION = 23;
 
 let hasWarnedUnsupportedStripeVersion = false;
 
 /**
- * Warns once per process when the Stripe SDK is older than the version the next major release
- * will require. `stripe.VERSION` exists on instances from Stripe SDK v17 onward; when it is
- * missing or unparseable (for example a mocked instance), nothing is logged.
+ * Warns once per process when the Stripe SDK is older than the minimum supported version, for
+ * example when peer dependency warnings were ignored. `stripe.VERSION` exists on instances from
+ * Stripe SDK v17 onward; when it is missing or unparseable (for example a mocked instance),
+ * nothing is logged.
  */
 function warnIfUnsupportedStripeVersion(stripe: Stripe): void {
   if (hasWarnedUnsupportedStripeVersion) {
@@ -509,14 +510,14 @@ function warnIfUnsupportedStripeVersion(stripe: Stripe): void {
     return;
   }
   const major = Number.parseInt(version, 10);
-  if (Number.isNaN(major) || major >= NEXT_MAJOR_MIN_STRIPE_VERSION) {
+  if (Number.isNaN(major) || major >= MIN_STRIPE_VERSION) {
     return;
   }
   hasWarnedUnsupportedStripeVersion = true;
   console.warn(
-    `[@kotodayori/stripe] Stripe SDK v${version} is deprecated for use with @kotodayori/stripe. ` +
-      `The next major release will require stripe >= ${NEXT_MAJOR_MIN_STRIPE_VERSION}.0.0. ` +
-      `Event types added in Stripe SDK v${NEXT_MAJOR_MIN_STRIPE_VERSION} are already missing from older SDKs.`
+    `[@kotodayori/stripe] Stripe SDK v${version} is not supported by this version of @kotodayori/stripe, ` +
+      `which requires stripe >= ${MIN_STRIPE_VERSION}.0.0. ` +
+      `Event types added in Stripe SDK v${MIN_STRIPE_VERSION} are missing from older SDKs.`
   );
 }
 

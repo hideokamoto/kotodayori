@@ -92,7 +92,8 @@ function createCircleCIVerifier(secret: string): Verifier {
       throw new Error('Missing circleci-event-type header');
     }
 
-    const body = JSON.parse(payload.toString());
+    const text = typeof payload === 'string' ? payload : new TextDecoder().decode(payload);
+    const body = JSON.parse(text);
     return { event: { id: body.id, type, data: { object: body } } };
   };
 }
@@ -237,10 +238,28 @@ Webhook 署名を検証し、ペイロードを解析するための関数型で
 
 ```typescript
 type Verifier<T extends WebhookEvent> = (
-  payload: string | Buffer,
+  payload: string | Uint8Array,
   headers: Record<string, string | undefined>
 ) => VerifyResult<T> | Promise<VerifyResult<T>>;
 ```
+
+### カスタム Verifier の `Uint8Array` 対応（次のメジャーリリースでの破壊的変更）
+
+`Verifier` の `payload` 型は `string | Buffer` から `string | Uint8Array` に変わりました。公開型が `@types/node` に依存しなくなり、Cloudflare Workers や Deno でも型が解決できます。Node.js の `Buffer` は `Uint8Array` のサブクラスなので、Express や Lambda の実行時の動作は変わりません。自作の Verifier では次の 2 点を確認してください。
+
+1. **型注釈。** `(payload: string | Buffer, headers) => ...` と書いた関数は、引数の反変性により `Verifier` に代入できなくなります。注釈を外して `Verifier` から推論させるか、`string | Uint8Array` と書いてください。
+2. **`payload.toString()` / `payload.toString('utf8')`。** 素の `Uint8Array` に対する `toString()` は本文ではなく `"123,34,105,100"` のようなカンマ区切りの数値列を返し、`toString('utf8')` は型エラーになります。明示的にデコードしてください。
+
+```typescript
+// 変更前
+const body = JSON.parse(payload.toString());
+
+// 変更後: string・Uint8Array・Buffer のどれでも、どのランタイムでも動作します
+const text = typeof payload === 'string' ? payload : new TextDecoder().decode(payload);
+const body = JSON.parse(text);
+```
+
+署名検証は、デコードして再シリアライズした文字列ではなく、生の `payload` に対して行ってください（Web Crypto も `node:crypto` の HMAC も `Uint8Array` を受け取れます）。`createStripeVerifier` は変更不要です。
 
 ### ロガー
 

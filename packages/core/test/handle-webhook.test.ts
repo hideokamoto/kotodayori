@@ -49,6 +49,20 @@ describe('handleWebhook', () => {
     expect(verifier.mock.calls[0]?.[0]).toBe(rawBody);
   });
 
+  it('passes a plain Uint8Array to the verifier untouched and lets it decode with TextDecoder', async () => {
+    const rawBody = new TextEncoder().encode('{"id":"evt_こんにちは"}');
+    let decoded = '';
+    const verifier: Verifier = (payload) => {
+      decoded = typeof payload === 'string' ? payload : new TextDecoder().decode(payload);
+      return { event: testEvent };
+    };
+
+    const result = await handleWebhook(new WebhookRouter(), { verifier }, rawBody, {});
+
+    expect(result.status).toBe(200);
+    expect(decoded).toBe('{"id":"evt_こんにちは"}');
+  });
+
   it('lowercases header keys before passing them to the verifier', async () => {
     const verifier = vi.fn(okVerifier);
 

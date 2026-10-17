@@ -216,7 +216,8 @@ function createGitHubVerifier(secret: string): Verifier {
       throw new Error('Invalid signature');
     }
 
-    const body = JSON.parse(payload.toString());
+    const text = typeof payload === 'string' ? payload : new TextDecoder().decode(payload);
+    const body = JSON.parse(text);
     return {
       event: {
         id: headers['x-github-delivery'] ?? crypto.randomUUID(),
@@ -434,7 +435,7 @@ See [MAINTAINING_STRIPE_EVENTMAP.md](packages/stripe/MAINTAINING_STRIPE_EVENTMAP
 
 - Node.js >= 18
 - TypeScript >= 5.3
-- Stripe SDK >= 17.0.0 (for `@kotodayori/stripe`)
+- Stripe SDK >= 23.0.0 (for `@kotodayori/stripe`)
 
 ## License
 
