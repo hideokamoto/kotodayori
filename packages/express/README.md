@@ -178,7 +178,11 @@ router.on('invoice.paid', async (event, { tenantId }) => { /* ... */ });
 
 app.post('/webhook', express.raw({ type: 'application/json' }), expressAdapter(router, {
   verifier,
-  createContext: (req) => ({ tenantId: String(req.headers['x-tenant-id']) }),
+  createContext: (req) => {
+    const tenantId = req.get('x-tenant-id');
+    if (!tenantId) throw new Error('missing x-tenant-id');
+    return { tenantId };
+  },
 }));
 ```
 
