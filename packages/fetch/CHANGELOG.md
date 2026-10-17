@@ -1,5 +1,11 @@
 # @kotodayori/fetch
 
+## 0.1.1
+
+### Patch Changes
+
+- e94cd4d: Document the `logger` option and the `onError` behavior in the README. No code changes.
+
 ## 0.1.0
 
 ### Minor Changes
