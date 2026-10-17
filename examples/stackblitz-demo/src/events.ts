@@ -54,7 +54,7 @@ export function buildEventPayload(type: string): string {
     {
       id: `evt_demo_${Date.now()}`,
       object: 'event',
-      api_version: '2026-05-27.dahlia',
+      api_version: '2026-09-30.endive',
       created: Math.floor(Date.now() / 1000),
       livemode: false,
       type,

@@ -23,6 +23,11 @@ export type StripeEventMap = {
   'application_fee.refund.updated': Stripe.ApplicationFeeRefundUpdatedEvent;
   'application_fee.refunded': Stripe.ApplicationFeeRefundedEvent;
 
+  // Apps events
+  'apps.install.created': Stripe.AppsInstallCreatedEvent;
+  'apps.install.deleted': Stripe.AppsInstallDeletedEvent;
+  'apps.install.updated': Stripe.AppsInstallUpdatedEvent;
+
   // Balance events
   'balance.available': Stripe.BalanceAvailableEvent;
   'balance_settings.updated': Stripe.BalanceSettingsUpdatedEvent;
@@ -121,11 +126,16 @@ export type StripeEventMap = {
   'financial_connections.account.created': Stripe.FinancialConnectionsAccountCreatedEvent;
   'financial_connections.account.deactivated': Stripe.FinancialConnectionsAccountDeactivatedEvent;
   'financial_connections.account.disconnected': Stripe.FinancialConnectionsAccountDisconnectedEvent;
+  'financial_connections.account.expected_deactivation_date_updated': Stripe.FinancialConnectionsAccountExpectedDeactivationDateUpdatedEvent;
   'financial_connections.account.reactivated': Stripe.FinancialConnectionsAccountReactivatedEvent;
   'financial_connections.account.refreshed_balance': Stripe.FinancialConnectionsAccountRefreshedBalanceEvent;
   'financial_connections.account.refreshed_ownership': Stripe.FinancialConnectionsAccountRefreshedOwnershipEvent;
   'financial_connections.account.refreshed_transactions': Stripe.FinancialConnectionsAccountRefreshedTransactionsEvent;
+  'financial_connections.account.supported_payment_method_types_updated': Stripe.FinancialConnectionsAccountSupportedPaymentMethodTypesUpdatedEvent;
   'financial_connections.account.upcoming_account_number_expiry': Stripe.FinancialConnectionsAccountUpcomingAccountNumberExpiryEvent;
+  'financial_connections.account.upcoming_deactivation': Stripe.FinancialConnectionsAccountUpcomingDeactivationEvent;
+  'financial_connections.authorization.expected_deactivation_date_updated': Stripe.FinancialConnectionsAuthorizationExpectedDeactivationDateUpdatedEvent;
+  'financial_connections.authorization.upcoming_deactivation': Stripe.FinancialConnectionsAuthorizationUpcomingDeactivationEvent;
 
   // Identity events
   'identity.verification_session.canceled': Stripe.IdentityVerificationSessionCanceledEvent;
