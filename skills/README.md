@@ -7,6 +7,7 @@
 | ディレクトリ | `name` (frontmatter) | 用途 |
 | --- | --- | --- |
 | [`kotodayori-webhooks/`](./kotodayori-webhooks/SKILL.md) | `kotodayori-webhooks` | Kotodayori / Stripe Webhook / アダプター / `create-kotodayori` |
+| [`create-kotodayori/`](./create-kotodayori/SKILL.md) | `create-kotodayori` | `create-kotodayori` CLI での新規プロジェクト生成（対話なしの実行、事前プレビュー、npm・Stripe に触れる操作の承認） |
 
 ## インストール（`npx skills add`）
 
@@ -15,6 +16,9 @@
 ```bash
 # このリポジトリから kotodayori-webhooks だけをプロジェクトに入れる
 npx skills add hideokamoto/kotodayori --skill kotodayori-webhooks -y
+
+# create-kotodayori CLI 用のスキル
+npx skills add hideokamoto/kotodayori --skill create-kotodayori -y
 ```
 
 サブツリー URLで指定する場合:
@@ -48,3 +52,14 @@ rm -rf /tmp/kotodayori
 ## `skills.sh.json`
 
 [skills.sh](https://skills.sh/) 向けのメタデータ用にルートに `skills.sh.json` を置いています（任意）。
+
+## メンテナンス
+
+- `create-kotodayori` の CLI（オプション、受け付ける値、Node.js の要件、`--help` に書いた挙動）を変えたら、同じ PR で [`create-kotodayori/SKILL.md`](./create-kotodayori/SKILL.md) も更新してください。値がずれると `packages/create-kotodayori/src/skill.test.ts` が失敗します。
+- `kotodayori-webhooks/SKILL.md` は create-kotodayori の `--skill` 用に `packages/create-kotodayori/templates/skill/SKILL.md` へコピーされます（`prebuild` の `scripts/sync-skill.mjs`）。編集したらビルドしてコピーも更新してください。
+- 変更後は [Agent Skills 仕様](https://agentskills.io/specification) の検証ツールで確認します。
+
+```bash
+uvx --from skills-ref agentskills validate skills/create-kotodayori
+uvx --from skills-ref agentskills validate skills/kotodayori-webhooks
+```

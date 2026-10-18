@@ -53,9 +53,14 @@ Runnable sample apps live under [`examples/`](./examples/README.md): `sample-hon
 - Root [`AGENTS.md`](./AGENTS.md) — short always-on context when working in this repository.
 - **Distributable skill `kotodayori-webhooks`**: lives under [`skills/kotodayori-webhooks/SKILL.md`](./skills/kotodayori-webhooks/SKILL.md) in the [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) layout so you can install it with the official CLI or `gh` — see [`skills/README.md`](./skills/README.md).
 
+- **Distributable skill `create-kotodayori`**: [`skills/create-kotodayori/SKILL.md`](./skills/create-kotodayori/SKILL.md) teaches agents to run the scaffolding CLI without prompts, preview before writing, and ask before any command that reaches npm or Stripe.
+
 ```bash
 npx skills add hideokamoto/kotodayori --skill kotodayori-webhooks -y
+npx skills add hideokamoto/kotodayori --skill create-kotodayori -y
 ```
+
+When you change the `create-kotodayori` CLI (options, accepted values, Node.js requirement), update `skills/create-kotodayori/SKILL.md` in the same pull request. `packages/create-kotodayori/src/skill.test.ts` fails when they disagree.
 
 ## Getting Started
 

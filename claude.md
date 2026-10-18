@@ -1260,6 +1260,7 @@ When working on this codebase:
 
 - Read the repository root **`AGENTS.md`** for a compact map of packages and non-negotiable rules (raw body, Express `express.raw`, verification order).
 - For webhook-specific workflows, use the distributable **`kotodayori-webhooks`** skill under `skills/kotodayori-webhooks/SKILL.md`. Install into an agent with `npx skills add hideokamoto/kotodayori --skill kotodayori-webhooks -y` (see `skills/README.md` for `gh` / sparse-checkout). It complements this file with CLI usage, example paths, and verification commands.
+- For scaffolding with the CLI, the **`create-kotodayori`** skill lives under `skills/create-kotodayori/SKILL.md`. When the CLI changes, update that skill in the same change (`packages/create-kotodayori/src/skill.test.ts` checks the values it states).
 
 **Key Files to Review Before Changes**:
 - `packages/core/src/index.ts` - Core routing logic (290 lines)

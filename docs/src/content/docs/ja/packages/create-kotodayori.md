@@ -46,6 +46,16 @@ npx create-kotodayori my-webhook-handler --fw=hono --pm=pnpm
 
 `--skill` を指定すると、新しいプロジェクト内の `.claude/skills/kotodayori-webhooks/`（Claude Code）や `.cursor/skills/kotodayori-webhooks/`（Cursor）に `SKILL.md` を書き出します。
 
+## この CLI 用のエージェントスキル
+
+リポジトリでは、AI コーディングエージェントがこの CLI を対話なしで実行し、本番の生成前に出力をプレビューし、npm や Stripe に触れるコマンドの前に確認を取るための `create-kotodayori` スキルも配布しています。[`skills` CLI](https://www.npmjs.com/package/skills) でインストールできます。
+
+```bash
+npx skills add hideokamoto/kotodayori --skill create-kotodayori
+```
+
+スキルは CLI と同じリポジトリで管理しています。CLI のオプションや要件を変えるときは同じ PR で [`skills/create-kotodayori/SKILL.md`](https://github.com/hideokamoto/kotodayori/blob/main/skills/create-kotodayori/SKILL.md) も更新し、両者がずれるとテストが失敗します。
+
 ## 対応フレームワーク
 
 フレームワークごとにテンプレート（`hono`・`express`・`lambda`・`eventbridge`）があり、どれから生成したプロジェクトもそのままインストール・型チェック・ビルドが通ります。
