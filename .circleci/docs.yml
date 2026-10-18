@@ -19,4 +19,5 @@ workflows:
           mapping: |
             \.circleci/docs-release\.yml run-docs-deploy true
             docs/.* run-docs-deploy true
+            skills/.* run-docs-deploy true
             packages/[^/]+/CHANGELOG\.md run-docs-deploy true
