@@ -7,6 +7,9 @@
 | ディレクトリ | `name` (frontmatter) | 用途 |
 | --- | --- | --- |
 | [`kotodayori-webhooks/`](./kotodayori-webhooks/SKILL.md) | `kotodayori-webhooks` | Kotodayori / Stripe Webhook / アダプター / `create-kotodayori` |
+| [`create-kotodayori/`](./create-kotodayori/SKILL.md) | `create-kotodayori` | `create-kotodayori` CLI でのプロジェクト生成（プレビュー → 承認 → 実行の手順、Stripe CLI の制約） |
+
+`create-kotodayori` CLI を変更したら（フラグ・受け付ける値・`engines.node`・生成物）、同じ PR で `create-kotodayori/SKILL.md` も更新してください。ずれると `packages/create-kotodayori/src/skill.test.ts` が失敗します。docs サイトはビルド時にこのファイルを読み込んで `/skill.md` と `/.well-known/agent-skills/` で配信します（コピーは持ちません）。
 
 ## インストール（`npx skills add`）
 
@@ -15,6 +18,9 @@
 ```bash
 # このリポジトリから kotodayori-webhooks だけをプロジェクトに入れる
 npx skills add hideokamoto/kotodayori --skill kotodayori-webhooks -y
+
+# create-kotodayori スキル
+npx skills add hideokamoto/kotodayori --skill create-kotodayori -y
 ```
 
 サブツリー URLで指定する場合:
