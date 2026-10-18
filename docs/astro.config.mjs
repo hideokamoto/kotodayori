@@ -5,9 +5,21 @@ import starlightChangelogs, { makeChangelogsSidebarLinks } from 'starlight-chang
 import starlightLlmsTxt from 'starlight-llms-txt';
 import starlightTypeDoc, { typeDocSidebarGroup } from 'starlight-typedoc';
 import { remarkMermaid } from './src/lib/remark-mermaid.mjs';
+import { PRIMARY_SKILL, loadAgentSkills, skillUrl } from './src/lib/agent-skills.mjs';
+
+const site = 'https://tayori-docs.wp-kyoto.workers.dev';
+
+const llmsTxtDetails = [
+  'Agent skills for AI coding agents are published in the repository and served from this site as raw `SKILL.md` files (Agent Skills format). The discovery index is ' +
+    `${site}/.well-known/agent-skills/index.json, and ${site}/skill.md is the \`${PRIMARY_SKILL}\` skill.`,
+  loadAgentSkills()
+    .map(({ name, description }) => `- [${name}](${site}${skillUrl(name)}): ${description}`)
+    .join('\n'),
+  'Install a skill into a project with the `skills` CLI: `npx skills add hideokamoto/kotodayori --skill <name>` (for example `--skill create-kotodayori`).',
+].join('\n\n');
 
 export default defineConfig({
-  site: 'https://tayori-docs.wp-kyoto.workers.dev',
+  site,
   markdown: {
     remarkPlugins: [remarkMermaid],
   },
@@ -24,6 +36,8 @@ export default defineConfig({
         ja:   { label: '日本語',  lang: 'ja' },
       },
       head: [
+        // llms.txt v2: point every page at the llms.txt that covers it (https://llmstxt.org/).
+        { tag: 'link', attrs: { rel: 'describedby', href: '/llms.txt' } },
         {
           tag: 'script',
           content: `(function(){try{if(localStorage.getItem('lang-preference'))return;var lang=(navigator.language||'').toLowerCase();var path=location.pathname;var isJa=/^\\/ja(\\/|$)/.test(path);var pref=lang.startsWith('ja')?'ja':'en';localStorage.setItem('lang-preference',pref);if(pref==='ja'&&!isJa){location.replace('/ja'+path+location.search+location.hash);}}catch(e){}})();`,
@@ -41,7 +55,7 @@ export default defineConfig({
           },
         }),
         starlightChangelogs(),
-        starlightLlmsTxt(),
+        starlightLlmsTxt({ details: llmsTxtDetails }),
         starlightTypeDoc({
           entryPoints: [
             '../packages/core/src/index.ts',

@@ -87,6 +87,9 @@ importers:
       wrangler:
         specifier: ^4.98.0
         version: 4.98.0
+      yaml:
+        specifier: ^2.9.0
+        version: 2.9.0
 
   examples/sample-express-stripe:
     dependencies:

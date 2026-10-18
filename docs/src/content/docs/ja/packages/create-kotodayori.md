@@ -54,6 +54,8 @@ npx create-kotodayori my-webhook-handler --fw=hono --pm=pnpm
 npx skills add hideokamoto/kotodayori --skill create-kotodayori
 ```
 
+このサイトでもリポジトリと同じスキルファイルを配信しています。[`/skill.md`](/skill.md) が `create-kotodayori` スキル、各スキルは `/.well-known/agent-skills/<name>/SKILL.md`、一覧と SHA-256 ダイジェストは [`/.well-known/agent-skills/index.json`](/.well-known/agent-skills/index.json) にあります。[`/llms.txt`](/llms.txt) からもリンクしています。
+
 スキルは CLI と同じリポジトリで管理しています。CLI のオプションや要件を変えるときは同じ PR で [`skills/create-kotodayori/SKILL.md`](https://github.com/hideokamoto/kotodayori/blob/main/skills/create-kotodayori/SKILL.md) も更新し、両者がずれるとテストが失敗します。
 
 ## 対応フレームワーク

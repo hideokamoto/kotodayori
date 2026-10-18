@@ -54,6 +54,8 @@ The repository also publishes a `create-kotodayori` skill that teaches AI coding
 npx skills add hideokamoto/kotodayori --skill create-kotodayori
 ```
 
+This site also serves the skill files as they are in the repository: [`/skill.md`](/skill.md) is the `create-kotodayori` skill, every skill is at `/.well-known/agent-skills/<name>/SKILL.md`, and [`/.well-known/agent-skills/index.json`](/.well-known/agent-skills/index.json) lists them with their SHA-256 digests. [`/llms.txt`](/llms.txt) links to them as well.
+
 The skill is maintained next to the CLI: a change to the CLI's options or requirements updates [`skills/create-kotodayori/SKILL.md`](https://github.com/hideokamoto/kotodayori/blob/main/skills/create-kotodayori/SKILL.md) in the same pull request, and a test fails if the two disagree.
 
 ## Supported frameworks
