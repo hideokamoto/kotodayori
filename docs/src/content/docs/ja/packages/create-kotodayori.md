@@ -53,6 +53,16 @@ npx create-kotodayori my-webhook-handler --fw=hono --pm=pnpm
 - **AWS Lambda**（`--fw=lambda`）
 - **AWS EventBridge**（`--fw=eventbridge`）
 
+## この CLI 用のエージェントスキル
+
+コーディングエージェントがこの CLI を安全に実行するための [Agent Skill](https://agentskills.io/specification)（先にプレビューし、インストールや Stripe CLI の実行前に承認を得る）を [`skills/create-kotodayori/`](https://github.com/hideokamoto/kotodayori/tree/main/skills/create-kotodayori) に置いています。インストール方法：
+
+```bash
+npx skills add hideokamoto/kotodayori --skill create-kotodayori -y
+```
+
+このサイトでも [`/skill.md`](/skill.md) で配信し、[`/.well-known/agent-skills/index.json`](/.well-known/agent-skills/index.json) に載せています。コントリビューターの方へ：CLI を変更したら、同じ PR でスキルも更新してください。Node.js の範囲やオプション一覧がずれると `packages/create-kotodayori` のテストが失敗します。
+
 ## 生成される構成（Hono の場合）
 
 Hono テンプレートには以下が含まれます：

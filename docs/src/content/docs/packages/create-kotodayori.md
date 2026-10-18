@@ -53,6 +53,16 @@ Behavior:
 - **AWS Lambda** (`--fw=lambda`)
 - **AWS EventBridge** (`--fw=eventbridge`)
 
+## Agent skill for this CLI
+
+An [Agent Skill](https://agentskills.io/specification) that teaches coding agents to run this CLI safely (preview first, ask before installing or calling the Stripe CLI) lives in [`skills/create-kotodayori/`](https://github.com/hideokamoto/kotodayori/tree/main/skills/create-kotodayori). Install it with:
+
+```bash
+npx skills add hideokamoto/kotodayori --skill create-kotodayori -y
+```
+
+This site also serves it at [`/skill.md`](/skill.md) and lists it in [`/.well-known/agent-skills/index.json`](/.well-known/agent-skills/index.json). Contributors: when you change the CLI, update the skill in the same pull request. A test in `packages/create-kotodayori` fails when the Node.js range or the option list drifts.
+
 ## Generated structure (Hono)
 
 The Hono template includes:
