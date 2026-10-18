@@ -8,7 +8,6 @@ description: >
   framework adapters, or the create-kotodayori CLI. Keywords: WebhookRouter,
   StripeWebhookRouter, createStripeVerifier, honoAdapter, fetchAdapter, expressAdapter,
   express.raw, create-kotodayori, kotodayori.
-user-invocable: true
 metadata:
   author: kotodayori
   version: "1.0.0"
