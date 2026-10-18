@@ -25,16 +25,35 @@ npx create-kotodayori my-webhook-handler --fw=hono --pm=pnpm
 
 | オプション | 短縮形 | 説明 |
 |--------|-------|-------------|
-| `--framework` | `--fw` | フレームワーク: `hono`・`express`・`lambda`・`eventbridge` |
-| `--package-manager` | `--pm` | パッケージマネージャー: `pnpm`・`npm`・`yarn`・`bun` |
-| `--skip-install` | — | スキャフォールド後の依存関係インストールをスキップ |
+| `--framework <framework>` | `--fw` | `hono`・`express`・`lambda`・`eventbridge`。それ以外の値はファイルを書き出す前にエラーになります |
+| `--package-manager <pm>` | `--pm` | `pnpm`・`npm`・`yarn`・`bun`。`<pm> install` の実行と、表示される次の手順に使われます |
+| `--skip-install` | — | `<pm> install` を実行しません。確認なしでインストールさせるには `--no-skip-install` を渡します |
+| `--skill <agents>` | — | `kotodayori-webhooks` エージェントスキルをプロジェクトにコピーします。`claude-code`（別名 `claude`）・`cursor`・`all`・`none` をカンマ区切りで指定。知らない名前は無視されます |
+| `--no-skill` | — | `--skill none` と同じ |
+| `--help` | `-h` | ヘルプを表示して終了 |
+| `--version` | `-v` | バージョンを表示して終了 |
+
+- オプションで渡さなかった値は対話形式で尋ねられます。対話なしで実行するには（CI や AI エージェントから使う場合など）、プロジェクト名・`--fw`・`--pm`・`--skip-install` か `--no-skip-install`・`--skill` か `--no-skill` をすべて渡してください。
+- `[project-name]` はカレントディレクトリからのパスとして解決されます。そのディレクトリが既にあり空でない場合は、何も書き出さずに終了コード 1 で終わります。
+- ドライランモードはありません。未定義のオプションはエラーになります。
+
+## 動作要件
+
+- Node.js >= 20.19.0（パッケージの `engines`。依存している CLI ライブラリ `cac` 7 も同じ下限を宣言しています）
+- pnpm・npm・yarn・bun のいずれか
+
+## エージェントスキル
+
+`--skill` を指定すると、新しいプロジェクト内の `.claude/skills/kotodayori-webhooks/`（Claude Code）や `.cursor/skills/kotodayori-webhooks/`（Cursor）に `SKILL.md` を書き出します。
 
 ## 対応フレームワーク
 
-- **Hono** — 完全対応。Webhook ルートとサンプルハンドラーを含む Hono アプリを生成
-- **Express** — 近日公開予定
-- **Lambda** — 近日公開予定
-- **EventBridge** — 近日公開予定
+フレームワークごとにテンプレート（`hono`・`express`・`lambda`・`eventbridge`）があり、どれから生成したプロジェクトもそのままインストール・型チェック・ビルドが通ります。
+
+- **Hono** — Webhook ルートとサンプルハンドラーを含む Hono アプリ
+- **Express** — Webhook ルートで `express.raw()` を使う Express アプリ
+- **Lambda** — AWS Lambda の HTTP ハンドラー（Lambda 関数 URL または API Gateway）
+- **EventBridge** — Amazon EventBridge 経由で届く Stripe イベント用の AWS Lambda ハンドラー
 
 ## 生成される構成（Hono の場合）
 

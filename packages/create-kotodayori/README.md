@@ -56,19 +56,28 @@ npx create-kotodayori --fw=hono --no-skill
 
 ### All Options
 
-```bash
-npx create-kotodayori [project-name] [options]
+This is the output of `npx create-kotodayori --help`:
+
+```text
+Usage:
+  $ create-kotodayori [project-name] [options]
 
 Options:
-  --fw, --framework <framework>     Framework to use (hono, express, lambda, eventbridge)
-  --pm, --package-manager <pm>      Package manager to use (pnpm, npm, yarn, bun)
-  --skip-install                    Skip installing dependencies
-  --skill <agents>                  Add the kotodayori-webhooks agent skill
-                                    (claude-code, cursor, all, none; comma-separated)
-  --no-skill                        Skip adding the agent skill
-  -h, --help                        Display help message
-  -v, --version                     Display version number
+  -v, --version                  Display version number
+  --fw, --framework <framework>  Framework to use (hono, express, lambda, eventbridge)
+  --pm, --package-manager <pm>   Package manager to use (pnpm, npm, yarn, bun)
+  --skip-install                 Do not run "<pm> install" after creating the project (--no-skip-install: install without asking)
+  --skill <agents>               Copy the kotodayori-webhooks agent skill into the project for: claude-code (alias: claude), cursor, all, none. Comma-separated; unknown names are ignored. --no-skill is the same as none
+  -h, --help                     Display this message
 ```
+
+- Any value you do not pass as an option is asked interactively. To run without
+  prompts (CI, AI agents), pass the project name, `--fw`, `--pm`,
+  `--skip-install` or `--no-skip-install`, and `--skill` or `--no-skill`.
+- `[project-name]` is resolved from the current directory. If that directory
+  exists and is not empty, nothing is written and the command exits with code 1.
+- `--fw` / `--pm` values outside the lists above, and unknown options, are
+  rejected before anything is written. There is no dry-run mode.
 
 ## Agent skill
 
@@ -85,10 +94,13 @@ agent's project-local skills directory:
 
 ## Supported Frameworks
 
-- ✅ **Hono** - Modern web framework for edge computing
-- 🚧 **Express** - Coming soon
-- 🚧 **AWS Lambda** - Coming soon
-- 🚧 **AWS EventBridge** - Coming soon
+Each framework has its own template. A project generated from any of them
+installs, type-checks and builds as is.
+
+- **Hono** (`--fw hono`) - Hono app with a webhook route and example handlers
+- **Express** (`--fw express`) - Express app using `express.raw()` on the webhook route
+- **AWS Lambda** (`--fw lambda`) - Lambda HTTP handler (function URL or API Gateway)
+- **AWS EventBridge** (`--fw eventbridge`) - Lambda handler for Stripe events delivered through Amazon EventBridge
 
 ## What Gets Created
 
@@ -129,7 +141,7 @@ Next steps:
   Then edit .env with your Stripe API keys
 
   3. Start the development server:
-  pnpm dev
+  pnpm run dev
 
   4. Test webhooks with Stripe CLI:
   stripe listen --forward-to localhost:3000/webhook
@@ -138,8 +150,12 @@ Next steps:
 
 ## Requirements
 
-- Node.js >= 18
+- Node.js >= 20.19.0 (`engines` in package.json; the `cac` 7 dependency declares the same minimum)
 - pnpm, npm, yarn, or bun
+
+## Documentation
+
+https://tayori-docs.wp-kyoto.workers.dev/packages/create-kotodayori/
 
 ## License
 

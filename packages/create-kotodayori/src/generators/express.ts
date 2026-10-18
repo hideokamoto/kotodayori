@@ -1,5 +1,6 @@
 import path from 'node:path';
 import pc from 'picocolors';
+import { DOCS_URL } from '../cli.js';
 import { copyTemplate } from '../utils/files.js';
 import { installDependencies, type PackageManager } from '../utils/install.js';
 import { logger } from '../utils/logger.js';
@@ -62,13 +63,13 @@ export async function generateExpressProject(
   console.log(pc.dim('     Then edit .env with your Stripe API keys\n'));
 
   console.log(pc.dim(`  ${shouldInstall ? '3' : '4'}. Start the development server:`));
-  console.log(pc.cyan(`  ${packageManager} dev\n`));
+  console.log(pc.cyan(`  ${packageManager} run dev\n`));
 
   console.log(pc.dim(`  ${shouldInstall ? '4' : '5'}. Test webhooks with Stripe CLI:`));
   console.log(pc.cyan('  stripe listen --forward-to localhost:3000/webhook'));
   console.log(pc.cyan('  stripe trigger payment_intent.succeeded\n'));
 
   console.log(pc.dim('📚 Documentation:'));
-  console.log(pc.cyan('  https://github.com/hideokamoto/stripe-webhook-router'));
+  console.log(pc.cyan(`  ${DOCS_URL}`));
   console.log();
 }

@@ -26,7 +26,7 @@ Then edit `.env` and add your Stripe API keys:
 ### 3. Build the Handler
 
 ```bash
-{{PACKAGE_MANAGER}} build
+{{PACKAGE_MANAGER}} run build
 ```
 
 The compiled handler will be in `dist/index.cjs`.

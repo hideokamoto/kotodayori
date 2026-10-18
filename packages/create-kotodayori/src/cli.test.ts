@@ -1,5 +1,24 @@
-import { describe, it, expect } from 'vitest';
-import { parseCli, parseSkillOption } from './cli.js';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { readFileSync } from 'node:fs';
+import {
+  parseCli,
+  parseSkillOption,
+  DOCS_URL,
+  FRAMEWORKS,
+  NODE_REQUIREMENT,
+  PACKAGE_MANAGERS,
+} from './cli.js';
+
+const packageJson = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf-8'));
+
+function captureHelp(): string {
+  const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+  const result = parseCli(['node', 'create-kotodayori', '--help']);
+  const output = info.mock.calls.map((call) => call.join(' ')).join('\n');
+  info.mockRestore();
+  expect(result).toEqual({ exit: true });
+  return output;
+}
 
 describe('CLI Parser', () => {
   describe('Project Name', () => {
@@ -31,6 +50,19 @@ describe('CLI Parser', () => {
       expect(options.framework).toBe('hono');
     });
 
+    it('should reject the same flag given more than once', () => {
+      // cac collects a repeated flag into an array, which is not a single framework.
+      expect(() =>
+        parseCli(['node', 'create-kotodayori', '--fw', 'hono', '--fw', 'express'])
+      ).toThrow(/Invalid value for --framework/);
+    });
+
+    it('should reject an unsupported framework before anything is created', () => {
+      expect(() => parseCli(['node', 'create-kotodayori', '--fw', 'next'])).toThrow(
+        'Invalid value for --framework: "next". Expected one of: hono, express, lambda, eventbridge.'
+      );
+    });
+
     it('should return undefined when no framework is specified', () => {
       const options = parseCli(['node', 'create-kotodayori']);
       expect(options.framework).toBeUndefined();
@@ -57,6 +89,12 @@ describe('CLI Parser', () => {
       });
     });
 
+    it('should reject an unsupported package manager', () => {
+      expect(() => parseCli(['node', 'create-kotodayori', '--pm', 'deno'])).toThrow(
+        /Invalid value for --package-manager: "deno"/
+      );
+    });
+
     it('should return undefined when no package manager is specified', () => {
       const options = parseCli(['node', 'create-kotodayori']);
       expect(options.packageManager).toBeUndefined();
@@ -72,6 +110,11 @@ describe('CLI Parser', () => {
     it('should default to undefined when flag is not provided', () => {
       const options = parseCli(['node', 'create-kotodayori']);
       expect(options.skipInstall).toBeUndefined();
+    });
+
+    it('should parse --no-skip-install as an explicit install', () => {
+      const options = parseCli(['node', 'create-kotodayori', '--no-skip-install']);
+      expect(options.skipInstall).toBe(false);
     });
   });
 
@@ -168,6 +211,54 @@ describe('CLI Parser', () => {
       expect(options.framework).toBe('lambda');
       expect(options.packageManager).toBe('npm');
       expect(options.skipInstall).toBe(true);
+    });
+  });
+
+  describe('Unknown options', () => {
+    it('should reject options that are not defined', () => {
+      expect(() => parseCli(['node', 'create-kotodayori', 'app', '--dry-run'])).toThrow(
+        /Unknown option --dryRun/
+      );
+    });
+  });
+
+  describe('--help and --version', () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('should stop after printing the version', () => {
+      const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+      expect(parseCli(['node', 'create-kotodayori', '--version'])).toEqual({ exit: true });
+      expect(info.mock.calls[0]?.[0]).toContain(`create-kotodayori/${packageJson.version}`);
+    });
+
+    it('should list every option the parser accepts', () => {
+      const help = captureHelp();
+      for (const flag of [
+        '--fw, --framework <framework>',
+        '--pm, --package-manager <pm>',
+        '--skip-install',
+        '--no-skip-install',
+        '--skill <agents>',
+        '--no-skill',
+        '-h, --help',
+        '-v, --version',
+      ]) {
+        expect(help).toContain(flag);
+      }
+      expect(help).toContain(FRAMEWORKS.join(', '));
+      expect(help).toContain(PACKAGE_MANAGERS.join(', '));
+    });
+
+    it('should state the Node.js requirement from package.json engines', () => {
+      expect(NODE_REQUIREMENT).toBe(packageJson.engines.node);
+      expect(captureHelp()).toContain(`Node.js ${packageJson.engines.node}`);
+    });
+
+    it('should end with the documentation URL', () => {
+      const help = captureHelp().trimEnd();
+      expect(help.endsWith(DOCS_URL)).toBe(true);
     });
   });
 });

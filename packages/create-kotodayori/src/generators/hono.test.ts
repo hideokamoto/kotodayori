@@ -185,7 +185,7 @@ describe('Hono Generator', () => {
       expect(output).toContain('Next steps:');
       expect(output).toContain('pnpm install');
       expect(output).toContain('cp .env.example .env');
-      expect(output).toContain('pnpm dev');
+      expect(output).toContain('pnpm run dev');
       expect(output).toContain('stripe listen');
     });
 
@@ -214,7 +214,7 @@ describe('Hono Generator', () => {
       const output = consoleLogSpy.mock.calls.map((c: unknown[]) => c.join(' ')).join('\n');
 
       expect(output).toContain('yarn install');
-      expect(output).toContain('yarn dev');
+      expect(output).toContain('yarn run dev');
     });
   });
 });

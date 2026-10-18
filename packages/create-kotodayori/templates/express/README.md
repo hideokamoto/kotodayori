@@ -26,7 +26,7 @@ Then edit `.env` and add your Stripe API keys:
 ### 3. Run the Development Server
 
 ```bash
-{{PACKAGE_MANAGER}} dev
+{{PACKAGE_MANAGER}} run dev
 ```
 
 The server will start on `http://localhost:3000`.
@@ -78,7 +78,7 @@ All Stripe event types are fully typed for TypeScript autocomplete and type safe
 ### Build for Production
 
 ```bash
-{{PACKAGE_MANAGER}} build
+{{PACKAGE_MANAGER}} run build
 ```
 
 ### Deploy to a Node.js Server
@@ -86,7 +86,7 @@ All Stripe event types are fully typed for TypeScript autocomplete and type safe
 Start the production server:
 
 ```bash
-{{PACKAGE_MANAGER}} start
+{{PACKAGE_MANAGER}} run start
 ```
 
 ### Deploy with Docker

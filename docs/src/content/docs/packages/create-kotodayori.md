@@ -25,16 +25,35 @@ npx create-kotodayori my-webhook-handler --fw=hono --pm=pnpm
 
 | Option | Short | Description |
 |--------|-------|-------------|
-| `--framework` | `--fw` | Framework: `hono`, `express`, `lambda`, `eventbridge` |
-| `--package-manager` | `--pm` | Package manager: `pnpm`, `npm`, `yarn`, `bun` |
-| `--skip-install` | — | Skip dependency installation after scaffolding |
+| `--framework <framework>` | `--fw` | `hono`, `express`, `lambda` or `eventbridge`. Any other value is rejected before anything is written |
+| `--package-manager <pm>` | `--pm` | `pnpm`, `npm`, `yarn` or `bun`. Used to run `<pm> install` and in the printed next steps |
+| `--skip-install` | — | Do not run `<pm> install`. Pass `--no-skip-install` to install without being asked |
+| `--skill <agents>` | — | Copy the `kotodayori-webhooks` agent skill into the project for `claude-code` (alias `claude`), `cursor`, `all` or `none`. Comma-separated; unknown names are ignored |
+| `--no-skill` | — | Same as `--skill none` |
+| `--help` | `-h` | Print the help and exit |
+| `--version` | `-v` | Print the version and exit |
+
+- Any value you do not pass as an option is asked interactively. To run without prompts (for example in CI or from an AI agent), pass the project name, `--fw`, `--pm`, `--skip-install` or `--no-skip-install`, and `--skill` or `--no-skill`.
+- `[project-name]` is resolved from the current directory. If that directory already exists and is not empty, nothing is written and the command exits with code 1.
+- There is no dry-run mode. Unknown options are rejected with an error.
+
+## Requirements
+
+- Node.js >= 20.19.0 (the `engines` range of the package; its CLI dependency `cac` 7 declares the same minimum)
+- One of pnpm, npm, yarn or bun
+
+## Agent skill
+
+`--skill` writes `SKILL.md` to `.claude/skills/kotodayori-webhooks/` (Claude Code) and/or `.cursor/skills/kotodayori-webhooks/` (Cursor) inside the new project.
 
 ## Supported frameworks
 
-- **Hono** — Full support; generates a Hono app with webhook route and example handlers
-- **Express** — Coming soon
-- **Lambda** — Coming soon
-- **EventBridge** — Coming soon
+Each framework has its own template (`hono`, `express`, `lambda`, `eventbridge`). A project generated from any of them installs, type-checks and builds as is.
+
+- **Hono** — Hono app with a webhook route and example handlers
+- **Express** — Express app using `express.raw()` on the webhook route
+- **Lambda** — AWS Lambda HTTP handler (Lambda function URL or API Gateway)
+- **EventBridge** — AWS Lambda handler for Stripe events delivered through Amazon EventBridge
 
 ## Generated structure (Hono)
 

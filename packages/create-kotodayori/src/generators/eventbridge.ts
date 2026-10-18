@@ -1,5 +1,6 @@
 import path from 'node:path';
 import pc from 'picocolors';
+import { DOCS_URL } from '../cli.js';
 import { copyTemplate } from '../utils/files.js';
 import { installDependencies, type PackageManager } from '../utils/install.js';
 import { logger } from '../utils/logger.js';
@@ -58,7 +59,7 @@ export async function generateEventBridgeProject(
   }
 
   console.log(pc.dim(`  ${shouldInstall ? '2' : '3'}. Build the handler:`));
-  console.log(pc.cyan(`  ${packageManager} build\n`));
+  console.log(pc.cyan(`  ${packageManager} run build\n`));
 
   console.log(pc.dim(`  ${shouldInstall ? '3' : '4'}. Deploy to AWS Lambda:`));
   console.log(pc.cyan('  sam deploy --guided'));
@@ -68,6 +69,6 @@ export async function generateEventBridgeProject(
   console.log(pc.cyan('  https://stripe.com/docs/event-destinations/eventbridge\n'));
 
   console.log(pc.dim('📚 Documentation:'));
-  console.log(pc.cyan('  https://github.com/hideokamoto/stripe-webhook-router'));
+  console.log(pc.cyan(`  ${DOCS_URL}`));
   console.log();
 }

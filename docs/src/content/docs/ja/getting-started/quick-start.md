@@ -11,7 +11,7 @@ description: create-kotodayori でゼロから新規 Kotodayori プロジェク�
 
 ## 前提条件
 
-- **Node.js** >= 18
+- **Node.js** >= 20.19.0
 - **パッケージマネージャー**: pnpm・npm・yarn・bun のいずれか
 
 ## プロジェクトを生成する
@@ -22,7 +22,7 @@ description: create-kotodayori でゼロから新規 Kotodayori プロジェク�
 npx create-kotodayori
 ```
 
-オプションを直接指定して、対話をスキップすることもできます：
+オプションを直接指定することもできます。指定したオプションの質問だけが省略され、指定しなかった値は引き続き尋ねられます：
 
 ```bash
 # Hono ベースの Webhook ハンドラーを新規作成
@@ -32,13 +32,7 @@ npx create-kotodayori my-webhook-handler --fw=hono
 npx create-kotodayori my-webhook-handler --fw=hono --pm=pnpm
 ```
 
-### オプション
-
-| オプション | 短縮形 | 説明 |
-|--------|-------|-------------|
-| `--framework` | `--fw` | フレームワーク: `hono`・`express`・`lambda`・`eventbridge` |
-| `--package-manager` | `--pm` | パッケージマネージャー: `pnpm`・`npm`・`yarn`・`bun` |
-| `--skip-install` | — | 生成後の依存インストールをスキップ |
+すべてのオプションと、対話なしで実行する方法は [create-kotodayori](/ja/packages/create-kotodayori/) を参照してください。
 
 ## 生成される内容（Hono）
 
@@ -50,7 +44,7 @@ Hono テンプレートには次が含まれます：
 - TypeScript・tsup・開発サーバーのセットアップ
 - `.env.example` とテンプレート変数を記載した README
 
-> **その他のフレームワーク**: Express・Lambda・EventBridge のテンプレートは近日対応予定です。現時点では Hono で生成するか、[既存アプリへの追加](/ja/getting-started/add-to-existing-app/) を参照してください。
+> **その他のフレームワーク**: `--fw express`・`--fw lambda`・`--fw eventbridge` でそれぞれのプロジェクトを生成できます。[create-kotodayori](/ja/packages/create-kotodayori/#対応フレームワーク) を参照してください。
 
 ## プロジェクトを実行する
 
@@ -59,7 +53,7 @@ Hono テンプレートには次が含まれます：
 ```bash
 cd my-webhook-handler
 cp .env.example .env   # STRIPE_API_KEY と STRIPE_WEBHOOK_SECRET を設定
-pnpm dev
+pnpm run dev
 ```
 
 あとは必要に応じてハンドラーをカスタマイズし、イベントを追加してください。
