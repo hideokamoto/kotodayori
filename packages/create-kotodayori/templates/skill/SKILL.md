@@ -8,7 +8,6 @@ description: >
   framework adapters, or the create-kotodayori CLI. Keywords: WebhookRouter,
   StripeWebhookRouter, createStripeVerifier, honoAdapter, fetchAdapter, expressAdapter,
   express.raw, create-kotodayori, kotodayori.
-user-invocable: true
 metadata:
   author: kotodayori
   version: "1.0.0"
@@ -93,13 +92,13 @@ If the workspace is the **kotodayori monorepo**:
 
 ## Scaffolding (`create-kotodayori`)
 
-Non-interactive usage:
+Non-interactive usage (pass every value, or the CLI prompts for the missing ones):
 
 ```bash
-npx create-kotodayori my-app --fw=hono --pm=pnpm --skip-install
+npx create-kotodayori my-app --fw=hono --pm=pnpm --skip-install --no-skill
 ```
 
-Frameworks: `hono`, `express`, `lambda`, `eventbridge`.
+Frameworks: `hono`, `express`, `lambda`, `eventbridge`. For the full scaffolding procedure (preview, approval, Stripe CLI testing), use the `create-kotodayori` skill from the same repository.
 
 Inside the **kotodayori** monorepo you can also run the workspace CLI after `pnpm --filter create-kotodayori build`, then point `node packages/create-kotodayori/dist/index.js ...` at a target directory. After generating samples there, set `@kotodayori/*` to `workspace:*` and `"private": true` when appropriate.
 
