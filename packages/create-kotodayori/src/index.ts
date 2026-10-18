@@ -13,14 +13,17 @@ import { logger } from './utils/logger.js';
 import { pathExists, isEmpty, copyAgentSkill } from './utils/files.js';
 
 async function main() {
-  console.log();
-  console.log(pc.bold(pc.cyan('create-kotodayori')));
-  console.log(pc.dim('Scaffolding tool for Kotodayori webhook handlers'));
-  console.log();
-
   try {
     // Parse CLI arguments
     const cliOptions = parseCli();
+    if (cliOptions.exitEarly) {
+      return;
+    }
+
+    console.log();
+    console.log(pc.bold(pc.cyan('create-kotodayori')));
+    console.log(pc.dim('Scaffolding tool for Kotodayori webhook handlers'));
+    console.log();
 
     // Get full configuration (prompting for missing values)
     const configInput: Partial<ProjectConfig> = {};

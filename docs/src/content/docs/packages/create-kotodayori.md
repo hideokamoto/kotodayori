@@ -25,16 +25,33 @@ npx create-kotodayori my-webhook-handler --fw=hono --pm=pnpm
 
 | Option | Short | Description |
 |--------|-------|-------------|
-| `--framework` | `--fw` | Framework: `hono`, `express`, `lambda`, `eventbridge` |
-| `--package-manager` | `--pm` | Package manager: `pnpm`, `npm`, `yarn`, `bun` |
-| `--skip-install` | — | Skip dependency installation after scaffolding |
+| `--framework <framework>` | `--fw` | Framework: `hono`, `express`, `lambda`, `eventbridge` |
+| `--package-manager <pm>` | `--pm` | Package manager: `pnpm`, `npm`, `yarn`, `bun`. Used to run `<pm> install` and in the printed next steps |
+| `--skip-install` | — | Do not run `<pm> install` after the files are written |
+| `--skill <agents>` | — | Write the `kotodayori-webhooks` agent skill for `claude-code` (alias `claude`), `cursor`, `all`, or `none`. Comma-separated; unknown names are ignored, and if none remain no skill is written |
+| `--no-skill` | — | Do not write the agent skill (and do not ask) |
+| `--help` | `-h` | Print help and exit |
+| `--version` | `-v` | Print the version and exit |
+
+Behavior:
+
+- Anything not given on the command line (project name, framework, package manager, install, agent skill) is asked interactively.
+- Files are written to `<project-name>` relative to the current directory. It must not exist yet or must be an empty directory.
+- An unsupported `--framework` / `--package-manager` value stops the CLI with an error before anything is written.
+- The agent skill is written to `.claude/skills/kotodayori-webhooks/SKILL.md` (Claude Code) and/or `.cursor/skills/kotodayori-webhooks/SKILL.md` (Cursor).
+- Unknown options are ignored.
+
+## Requirements
+
+- Node.js `>=20.19.0` (the package's `engines` field; required by the `cac` 7 argument parser)
+- pnpm, npm, yarn, or bun. The CLI only runs `<pm> install`.
 
 ## Supported frameworks
 
-- **Hono** — Full support; generates a Hono app with webhook route and example handlers
-- **Express** — Coming soon
-- **Lambda** — Coming soon
-- **EventBridge** — Coming soon
+- **Hono** (`--fw=hono`)
+- **Express** (`--fw=express`)
+- **AWS Lambda** (`--fw=lambda`)
+- **AWS EventBridge** (`--fw=eventbridge`)
 
 ## Generated structure (Hono)
 
