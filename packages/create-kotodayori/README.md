@@ -122,10 +122,11 @@ $ npx create-kotodayori
 
 Creating Kotodayori + Hono project...
 
+ℹ Copying template files...
 ✔ Template files created
 ✔ Dependencies installed successfully
+
 ✔ Project created successfully! 🎉
-✔ Added agent skill: .claude/skills/kotodayori-webhooks/SKILL.md
 
 Next steps:
 
@@ -134,14 +135,19 @@ Next steps:
 
   2. Set up environment variables:
   cp .env.example .env
-  Then edit .env with your Stripe API keys
+     Then edit .env with your Stripe API keys
 
   3. Start the development server:
-  pnpm dev
+  pnpm run dev
 
   4. Test webhooks with Stripe CLI:
   stripe listen --forward-to localhost:3000/webhook
   stripe trigger payment_intent.succeeded
+
+📚 Documentation:
+  https://tayori-docs.workers.dev/packages/create-kotodayori/
+
+✔ Added agent skill: .claude/skills/kotodayori-webhooks/SKILL.md
 ```
 
 ## Requirements
