@@ -7,7 +7,7 @@ import starlightTypeDoc, { typeDocSidebarGroup } from 'starlight-typedoc';
 import { remarkMermaid } from './src/lib/remark-mermaid.mjs';
 
 export default defineConfig({
-  site: 'https://tayori-docs.workers.dev',
+  site: 'https://tayori-docs.wp-kyoto.workers.dev',
   markdown: {
     remarkPlugins: [remarkMermaid],
   },
