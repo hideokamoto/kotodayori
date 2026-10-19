@@ -42,15 +42,15 @@ metadata:
 
 1. **Collect the inputs.** Ask the user for the project directory, the framework, the package manager, whether to install dependencies now, and whether to add the agent skill. Do not guess the framework.
 2. **Check the environment.** Run `node --version` and `<pm> --version`. Check that the target directory does not exist or is empty (`ls -A <dir>`). If it is not empty, stop and ask; never delete or move files to get past the check.
-3. **Dry run (preview).** Generate the project into a throwaway directory without installing anything, and show the user what would be created:
+3. **Dry run (preview).** The CLI has no dry-run option, so the preview generates the project into a throwaway directory without installing anything. Running it still downloads and executes the `create-kotodayori` package through `npx`, so ask the user to approve that first, and run the preview only after they agree. Pass the same `--skill` value you will use for the real run, so the file list includes `.claude/skills/` or `.cursor/skills/` when the user chose a skill:
 
    ```bash
    preview="$(mktemp -d)"
-   (cd "$preview" && npx create-kotodayori@latest app --fw <framework> --pm <pm> --skip-install --no-skill)
+   (cd "$preview" && npx create-kotodayori@latest app --fw <framework> --pm <pm> --skip-install --skill <agents|none>)
    find "$preview/app" -type f | sort
    ```
 
-   This still downloads the CLI through `npx`, but it writes only inside the temporary directory and runs no install. Remove the directory afterwards.
+   The preview writes only inside the temporary directory and runs no `<pm> install`. Remove the directory afterwards.
 4. **Ask for approval.** Show the exact command for the real run and say what it will do (the directory it writes, whether it runs `<pm> install`). Run it only after the user agrees:
 
    ```bash
@@ -68,7 +68,7 @@ metadata:
 ## Safety rules
 
 - Operations with effects outside the working directory are: `npx` / `<pm> install` (downloads and runs package install scripts), `stripe login`, `stripe listen`, `stripe trigger`, creating webhook endpoints or event destinations in Stripe, and deploy commands such as `sam deploy` or `wrangler deploy`.
-- For each of them: first show a preview that has no external effect where one exists (step 3 for scaffolding), then state the exact command and what it changes, and run it only after the user approves. Approval for one command does not cover the next.
+- For each of them: state the exact command and what it changes, and run it only after the user approves. Approval for one command does not cover the next. Where a lower-impact preview exists, show that first, but running the preview is also one of these operations: the scaffolding preview in step 3 executes `npx`, so it needs its own approval.
 - Do not deploy, and do not create Stripe webhook endpoints, unless the user asked for it.
 - Never pass `--live` to the Stripe CLI. Never print, log or commit `sk_…` or `whsec_…` values.
 
