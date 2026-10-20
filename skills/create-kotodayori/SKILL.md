@@ -47,8 +47,9 @@ create-kotodayori [project-name] [options]
 
 ## Safety rules
 
-1. **Preview first, then ask.** The CLI has no `--dry-run` flag. Use the preview in step 2 below, show the user the exact command you intend to run, and wait for approval before the real run.
+1. **Preview first, then ask again.** The CLI has no `--dry-run` flag. Use the preview in step 2 below, show the user the exact command you intend to run together with the file list the preview produced, and wait for approval before the real run.
 2. **Ask before every step with external effects**, each time:
+   - `npx create-kotodayori`, including the preview: it downloads the package from the npm registry and runs its code on the user's machine. `-y` only skips npx's own confirmation, so your question to the user is the only one they get.
    - `<pm> install`: downloads packages and runs their install scripts.
    - `stripe listen` and `stripe trigger`: they act on the user's Stripe account (see the Stripe CLI section below).
    - Any deployment (for example `sam deploy` for the Lambda/EventBridge templates).
@@ -60,7 +61,7 @@ create-kotodayori [project-name] [options]
 
 1. **Collect choices** from the user: project name (the new directory), framework, package manager, and whether to add the agent skill for Claude Code and/or Cursor.
 
-2. **Preview (dry run).** Generate into a throwaway directory without installing anything, list the files, and then remove it:
+2. **Preview (dry run), after approval to fetch and run the CLI.** Tell the user that the preview downloads `create-kotodayori` from npm and runs it (`npm view create-kotodayori version` shows the version that `npx` will pick), and wait for a yes. Then generate into a throwaway directory without installing anything, list the files, and remove it:
 
    ```bash
    preview_dir="$(mktemp -d)"
@@ -69,7 +70,7 @@ create-kotodayori [project-name] [options]
    rm -rf "$preview_dir"
    ```
 
-   This only writes local files under the temporary directory. Running `npx` still downloads the CLI from npm.
+   Besides the CLI download and run that the user approved, this only writes local files under the temporary directory.
 
 3. **Real run, after approval**, in the directory the user chose:
 
