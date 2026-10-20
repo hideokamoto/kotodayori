@@ -5,7 +5,7 @@
     {
       "title": "Kotodayori",
       "description": "Type-safe webhook routing for TypeScript (Stripe, Hono, Express, Lambda, EventBridge).",
-      "skills": ["kotodayori-webhooks"]
+      "skills": ["kotodayori-webhooks", "create-kotodayori"]
     }
   ]
 }

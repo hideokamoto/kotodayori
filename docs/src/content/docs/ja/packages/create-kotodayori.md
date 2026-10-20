@@ -25,16 +25,43 @@ npx create-kotodayori my-webhook-handler --fw=hono --pm=pnpm
 
 | オプション | 短縮形 | 説明 |
 |--------|-------|-------------|
-| `--framework` | `--fw` | フレームワーク: `hono`・`express`・`lambda`・`eventbridge` |
-| `--package-manager` | `--pm` | パッケージマネージャー: `pnpm`・`npm`・`yarn`・`bun` |
-| `--skip-install` | — | スキャフォールド後の依存関係インストールをスキップ |
+| `--framework <framework>` | `--fw` | フレームワーク: `hono`・`express`・`lambda`・`eventbridge` |
+| `--package-manager <pm>` | `--pm` | パッケージマネージャー: `pnpm`・`npm`・`yarn`・`bun`。`<pm> install` の実行と、最後に表示する次の手順に使われます |
+| `--skip-install` | — | ファイル生成後に `<pm> install` を実行しない |
+| `--skill <agents>` | — | `kotodayori-webhooks` エージェントスキルを書き出す対象。`claude-code`（別名 `claude`）・`cursor`・`all`・`none` をカンマ区切りで指定。未知の名前は無視され、有効な名前が残らなければスキルは書き出されません |
+| `--no-skill` | — | エージェントスキルを書き出さない（質問もしない） |
+| `--help` | `-h` | ヘルプを表示して終了 |
+| `--version` | `-v` | バージョンを表示して終了 |
+
+動作:
+
+- コマンドラインで指定しなかった項目（プロジェクト名・フレームワーク・パッケージマネージャー・インストール有無・エージェントスキル）は対話形式で質問されます。
+- ファイルはカレントディレクトリ基準の `<project-name>` に書き出されます。存在しないか、空のディレクトリである必要があります。
+- `--framework` / `--package-manager` に未対応の値を渡すと、何も書き出さずにエラー終了します。
+- エージェントスキルは `.claude/skills/kotodayori-webhooks/SKILL.md`（Claude Code）や `.cursor/skills/kotodayori-webhooks/SKILL.md`（Cursor）に書き出されます。
+- 未知のオプションは無視されます。
+
+## 動作要件
+
+- Node.js `>=20.19.0`（パッケージの `engines`。引数パーサー `cac` 7 の要件）
+- pnpm・npm・yarn・bun のいずれか。CLI が実行するのは `<pm> install` のみです。
 
 ## 対応フレームワーク
 
-- **Hono** — 完全対応。Webhook ルートとサンプルハンドラーを含む Hono アプリを生成
-- **Express** — 近日公開予定
-- **Lambda** — 近日公開予定
-- **EventBridge** — 近日公開予定
+- **Hono**（`--fw=hono`）
+- **Express**（`--fw=express`）
+- **AWS Lambda**（`--fw=lambda`）
+- **AWS EventBridge**（`--fw=eventbridge`）
+
+## この CLI 用のエージェントスキル
+
+コーディングエージェントがこの CLI を安全に実行するための [Agent Skill](https://agentskills.io/specification)（先にプレビューし、インストールや Stripe CLI の実行前に承認を得る）を [`skills/create-kotodayori/`](https://github.com/hideokamoto/kotodayori/tree/main/skills/create-kotodayori) に置いています。インストール方法：
+
+```bash
+npx skills add hideokamoto/kotodayori --skill create-kotodayori -y
+```
+
+このサイトでも [`/skill.md`](/skill.md) で配信し、[`/.well-known/agent-skills/index.json`](/.well-known/agent-skills/index.json) に載せています。コントリビューターの方へ：CLI を変更したら、同じ PR でスキルも更新してください。Node.js の範囲やオプション一覧がずれると `packages/create-kotodayori` のテストが失敗します。
 
 ## 生成される構成（Hono の場合）
 

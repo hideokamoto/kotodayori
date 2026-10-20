@@ -1,5 +1,18 @@
-import { describe, it, expect } from 'vitest';
-import { parseCli, parseSkillOption } from './cli.js';
+import { describe, it, expect, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { DOCS_URL, FRAMEWORKS, PACKAGE_MANAGERS, parseCli, parseSkillOption } from './cli.js';
+
+const packageJson = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf-8'));
+
+function captureHelp(): string {
+  const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+  try {
+    parseCli(['node', 'create-kotodayori', '--help']);
+    return info.mock.calls.map((call) => call.join(' ')).join('\n');
+  } finally {
+    info.mockRestore();
+  }
+}
 
 describe('CLI Parser', () => {
   describe('Project Name', () => {
@@ -130,6 +143,50 @@ describe('CLI Parser', () => {
 
     it('is case and whitespace insensitive', () => {
       expect(parseSkillOption(' Claude-Code , CURSOR ')).toEqual(['claude-code', 'cursor']);
+    });
+  });
+
+  describe('Help and version', () => {
+    it('signals the caller to exit after --help', () => {
+      const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+      expect(parseCli(['node', 'create-kotodayori', '--help', 'my-app'])).toEqual({ exitEarly: true });
+      info.mockRestore();
+    });
+
+    it('signals the caller to exit after --version', () => {
+      const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+      expect(parseCli(['node', 'create-kotodayori', '-v'])).toEqual({ exitEarly: true });
+      info.mockRestore();
+    });
+
+    it('lists every framework, package manager and the skill agents', () => {
+      const help = captureHelp();
+      for (const value of [...FRAMEWORKS, ...PACKAGE_MANAGERS, 'claude-code', 'cursor', 'all', 'none', '--no-skill']) {
+        expect(help).toContain(value);
+      }
+    });
+
+    it('shows the Node.js requirement from package.json engines', () => {
+      expect(captureHelp()).toContain(`Node.js ${packageJson.engines.node}`);
+    });
+
+    it('ends with the documentation URL', () => {
+      expect(captureHelp().trimEnd().endsWith(DOCS_URL)).toBe(true);
+    });
+  });
+
+  describe('Value validation', () => {
+    it('rejects an unsupported framework', () => {
+      expect(() => parseCli(['node', 'create-kotodayori', '--fw', 'deno'])).toThrow(/--framework.*hono, express, lambda, eventbridge/);
+    });
+
+    it('rejects an empty --framework / --package-manager value instead of falling back to the prompts', () => {
+      expect(() => parseCli(['node', 'create-kotodayori', '--fw', ''])).toThrow(/--framework/);
+      expect(() => parseCli(['node', 'create-kotodayori', '--pm', ''])).toThrow(/--package-manager/);
+    });
+
+    it('rejects an unsupported package manager', () => {
+      expect(() => parseCli(['node', 'create-kotodayori', '--pm', 'deno'])).toThrow(/--package-manager.*pnpm, npm, yarn, bun/);
     });
   });
 

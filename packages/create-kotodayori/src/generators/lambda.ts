@@ -3,6 +3,7 @@ import pc from 'picocolors';
 import { copyTemplate } from '../utils/files.js';
 import { installDependencies, type PackageManager } from '../utils/install.js';
 import { logger } from '../utils/logger.js';
+import { DOCS_URL } from '../cli.js';
 
 export interface LambdaGeneratorOptions {
   projectName: string;
@@ -62,13 +63,13 @@ export async function generateLambdaProject(
   console.log(pc.dim('     Then add STRIPE_API_KEY and STRIPE_WEBHOOK_SECRET\n'));
 
   console.log(pc.dim(`  ${shouldInstall ? '3' : '4'}. Build the handler:`));
-  console.log(pc.cyan(`  ${packageManager} build\n`));
+  console.log(pc.cyan(`  ${packageManager} run build\n`));
 
   console.log(pc.dim(`  ${shouldInstall ? '4' : '5'}. Deploy to AWS Lambda:`));
   console.log(pc.cyan('  sam deploy --guided'));
   console.log(pc.dim('     Or use AWS CDK / Serverless Framework\n'));
 
   console.log(pc.dim('📚 Documentation:'));
-  console.log(pc.cyan('  https://github.com/hideokamoto/stripe-webhook-router'));
+  console.log(pc.cyan(`  ${DOCS_URL}`));
   console.log();
 }

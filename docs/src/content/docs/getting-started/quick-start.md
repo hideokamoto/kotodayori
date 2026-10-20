@@ -11,7 +11,7 @@ To try Kotodayori before installing anything, open the [StackBlitz demo](https:/
 
 ## Prerequisites
 
-- **Node.js** >= 18
+- **Node.js** >= 20.19.0
 - **Package manager**: pnpm, npm, yarn, or bun
 
 ## Scaffold a project
@@ -34,11 +34,7 @@ npx create-kotodayori my-webhook-handler --fw=hono --pm=pnpm
 
 ### Options
 
-| Option | Short | Description |
-|--------|-------|-------------|
-| `--framework` | `--fw` | Framework: `hono`, `express`, `lambda`, `eventbridge` |
-| `--package-manager` | `--pm` | Package manager: `pnpm`, `npm`, `yarn`, `bun` |
-| `--skip-install` | — | Skip dependency installation after scaffolding |
+Besides `--fw` and `--pm`, the CLI accepts `--skip-install`, `--skill <agents>` / `--no-skill`, `--help`, and `--version`. See the [create-kotodayori reference](/packages/create-kotodayori/) for every option and how values are checked.
 
 ## What gets generated (Hono)
 
@@ -50,7 +46,7 @@ The Hono template includes:
 - TypeScript, tsup, and a dev server setup
 - `.env.example` and a README with the template variables
 
-> **Other frameworks**: Express, Lambda, and EventBridge templates are coming soon. For now, scaffold with Hono or follow [Add to an Existing App](/getting-started/add-to-existing-app/).
+> **Other frameworks**: `--fw=express`, `--fw=lambda`, and `--fw=eventbridge` generate the matching templates.
 
 ## Run the project
 

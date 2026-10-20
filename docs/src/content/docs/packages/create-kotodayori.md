@@ -25,16 +25,43 @@ npx create-kotodayori my-webhook-handler --fw=hono --pm=pnpm
 
 | Option | Short | Description |
 |--------|-------|-------------|
-| `--framework` | `--fw` | Framework: `hono`, `express`, `lambda`, `eventbridge` |
-| `--package-manager` | `--pm` | Package manager: `pnpm`, `npm`, `yarn`, `bun` |
-| `--skip-install` | — | Skip dependency installation after scaffolding |
+| `--framework <framework>` | `--fw` | Framework: `hono`, `express`, `lambda`, `eventbridge` |
+| `--package-manager <pm>` | `--pm` | Package manager: `pnpm`, `npm`, `yarn`, `bun`. Used to run `<pm> install` and in the printed next steps |
+| `--skip-install` | — | Do not run `<pm> install` after the files are written |
+| `--skill <agents>` | — | Write the `kotodayori-webhooks` agent skill for `claude-code` (alias `claude`), `cursor`, `all`, or `none`. Comma-separated; unknown names are ignored, and if none remain no skill is written |
+| `--no-skill` | — | Do not write the agent skill (and do not ask) |
+| `--help` | `-h` | Print help and exit |
+| `--version` | `-v` | Print the version and exit |
+
+Behavior:
+
+- Anything not given on the command line (project name, framework, package manager, install, agent skill) is asked interactively.
+- Files are written to `<project-name>` relative to the current directory. It must not exist yet or must be an empty directory.
+- An unsupported `--framework` / `--package-manager` value stops the CLI with an error before anything is written.
+- The agent skill is written to `.claude/skills/kotodayori-webhooks/SKILL.md` (Claude Code) and/or `.cursor/skills/kotodayori-webhooks/SKILL.md` (Cursor).
+- Unknown options are ignored.
+
+## Requirements
+
+- Node.js `>=20.19.0` (the package's `engines` field; required by the `cac` 7 argument parser)
+- pnpm, npm, yarn, or bun. The CLI only runs `<pm> install`.
 
 ## Supported frameworks
 
-- **Hono** — Full support; generates a Hono app with webhook route and example handlers
-- **Express** — Coming soon
-- **Lambda** — Coming soon
-- **EventBridge** — Coming soon
+- **Hono** (`--fw=hono`)
+- **Express** (`--fw=express`)
+- **AWS Lambda** (`--fw=lambda`)
+- **AWS EventBridge** (`--fw=eventbridge`)
+
+## Agent skill for this CLI
+
+An [Agent Skill](https://agentskills.io/specification) that teaches coding agents to run this CLI safely (preview first, ask before installing or calling the Stripe CLI) lives in [`skills/create-kotodayori/`](https://github.com/hideokamoto/kotodayori/tree/main/skills/create-kotodayori). Install it with:
+
+```bash
+npx skills add hideokamoto/kotodayori --skill create-kotodayori -y
+```
+
+This site also serves it at [`/skill.md`](/skill.md) and lists it in [`/.well-known/agent-skills/index.json`](/.well-known/agent-skills/index.json). Contributors: when you change the CLI, update the skill in the same pull request. A test in `packages/create-kotodayori` fails when the Node.js range or the option list drifts.
 
 ## Generated structure (Hono)
 

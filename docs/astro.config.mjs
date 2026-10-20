@@ -5,13 +5,17 @@ import starlightChangelogs, { makeChangelogsSidebarLinks } from 'starlight-chang
 import starlightLlmsTxt from 'starlight-llms-txt';
 import starlightTypeDoc, { typeDocSidebarGroup } from 'starlight-typedoc';
 import { remarkMermaid } from './src/lib/remark-mermaid.mjs';
+import agentSkills, { llmsTxtSkillDetails } from './src/integrations/agent-skills.mjs';
+
+const site = 'https://tayori-docs.workers.dev';
 
 export default defineConfig({
-  site: 'https://tayori-docs.workers.dev',
+  site,
   markdown: {
     remarkPlugins: [remarkMermaid],
   },
   integrations: [
+    agentSkills(),
     starlight({
       title: 'Kotodayori',
       description: 'A Hono-inspired, type-safe webhook routing library for TypeScript.',
@@ -24,6 +28,9 @@ export default defineConfig({
         ja:   { label: '日本語',  lang: 'ja' },
       },
       head: [
+        // llms.txt v2: rel="describedby" points every page at the llms.txt that covers it.
+        // https://llmstxt.org/ ("To help clients find these files ...")
+        { tag: 'link', attrs: { rel: 'describedby', href: '/llms.txt' } },
         {
           tag: 'script',
           content: `(function(){try{if(localStorage.getItem('lang-preference'))return;var lang=(navigator.language||'').toLowerCase();var path=location.pathname;var isJa=/^\\/ja(\\/|$)/.test(path);var pref=lang.startsWith('ja')?'ja':'en';localStorage.setItem('lang-preference',pref);if(pref==='ja'&&!isJa){location.replace('/ja'+path+location.search+location.hash);}}catch(e){}})();`,
@@ -41,7 +48,7 @@ export default defineConfig({
           },
         }),
         starlightChangelogs(),
-        starlightLlmsTxt(),
+        starlightLlmsTxt({ details: llmsTxtSkillDetails(site) }),
         starlightTypeDoc({
           entryPoints: [
             '../packages/core/src/index.ts',
