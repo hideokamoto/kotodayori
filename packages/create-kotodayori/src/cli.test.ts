@@ -180,6 +180,11 @@ describe('CLI Parser', () => {
       expect(() => parseCli(['node', 'create-kotodayori', '--fw', 'deno'])).toThrow(/--framework.*hono, express, lambda, eventbridge/);
     });
 
+    it('rejects an empty --framework / --package-manager value instead of falling back to the prompts', () => {
+      expect(() => parseCli(['node', 'create-kotodayori', '--fw', ''])).toThrow(/--framework/);
+      expect(() => parseCli(['node', 'create-kotodayori', '--pm', ''])).toThrow(/--package-manager/);
+    });
+
     it('rejects an unsupported package manager', () => {
       expect(() => parseCli(['node', 'create-kotodayori', '--pm', 'deno'])).toThrow(/--package-manager.*pnpm, npm, yarn, bun/);
     });

@@ -133,13 +133,14 @@ export function parseCli(argv?: string[]): CliOptions {
     options.projectName = projectNameArg;
   }
 
-  const framework = parsed.options['framework'] || parsed.options['fw'];
-  if (framework) {
+  // `??` keeps an empty value (`--fw ""`) so it is rejected instead of silently falling back to the prompts.
+  const framework = parsed.options['framework'] ?? parsed.options['fw'];
+  if (framework !== undefined) {
     options.framework = assertOneOf('--framework', framework, FRAMEWORKS);
   }
 
-  const packageManager = parsed.options['packageManager'] || parsed.options['pm'];
-  if (packageManager) {
+  const packageManager = parsed.options['packageManager'] ?? parsed.options['pm'];
+  if (packageManager !== undefined) {
     options.packageManager = assertOneOf('--package-manager', packageManager, PACKAGE_MANAGERS);
   }
 
