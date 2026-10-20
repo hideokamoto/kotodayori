@@ -1,5 +1,13 @@
 # create-kotodayori
 
+## 1.1.4
+
+### Patch Changes
+
+- bc36e5b: `--help` / `--version` now exit after printing instead of continuing into the interactive prompts. The help text lists every accepted value, the `--skill` aliases and fallbacks, where files are written, the Node.js requirement (from `engines`), and a link to the documentation. Unsupported `--framework` / `--package-manager` values, including an empty one such as `--fw ""`, now stop the CLI with an error before any directory is created instead of falling back to the prompts.
+- 4cc8773: The "Next steps" printed after scaffolding now use `<pm> run dev` / `<pm> run build`, which work with npm as well (`npm dev` and `npm build` fail with "Unknown command"). The Hono template's Stripe CLI step is numbered correctly when installation is skipped, and the documentation link points to the docs site instead of the old repository URL.
+- a1b9e1e: The bundled `kotodayori-webhooks` agent skill no longer sets `user-invocable` in its frontmatter. The Agent Skills specification allows only `name`, `description`, `license`, `compatibility`, `metadata`, and `allowed-tools`, so `skills-ref validate` rejected the file. Claude Code's default for `user-invocable` is already `true`, so behavior there is unchanged.
+
 ## 1.1.3
 
 ### Patch Changes
