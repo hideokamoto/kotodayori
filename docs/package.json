@@ -22,9 +22,9 @@
     "yaml": "^2.9.0"
   },
   "devDependencies": {
-    "@types/node": "^25.9.2",
-    "typescript": "^6.0.0",
-    "wrangler": "^4.98.0"
+    "@types/node": "^26.6.5",
+    "typescript": "^7.0.2",
+    "wrangler": "^4.151.2"
   },
   "engines": {
     "node": ">=18"
