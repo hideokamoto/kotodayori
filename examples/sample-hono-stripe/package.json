@@ -12,8 +12,8 @@
   "dependencies": {
     "@kotodayori/hono": "workspace:*",
     "@kotodayori/stripe": "workspace:*",
-    "hono": "^4.13.13",
-    "stripe": "^23.0.0"
+    "hono": "^4.13.14",
+    "stripe": "^23.0.1"
   },
   "devDependencies": {
     "@types/node": "^25.0.0",
