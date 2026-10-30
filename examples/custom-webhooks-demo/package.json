@@ -15,9 +15,9 @@
   },
   "dependencies": {
     "@hono/node-server": "^2.1.5",
-    "@kotodayori/core": "^1.2.1",
-    "@kotodayori/hono": "^1.1.2",
-    "hono": "^4.12.23"
+    "@kotodayori/core": "^2.0.0",
+    "@kotodayori/hono": "^2.0.0",
+    "hono": "^4.13.14"
   },
   "devDependencies": {
     "@line/bot-sdk": "^11.3.0",
