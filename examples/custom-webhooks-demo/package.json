@@ -14,14 +14,14 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@hono/node-server": "^2.1.5",
-    "@kotodayori/core": "^1.2.1",
-    "@kotodayori/hono": "^1.1.2",
-    "hono": "^4.12.23"
+    "@hono/node-server": "^2.1.6",
+    "@kotodayori/core": "^2.0.0",
+    "@kotodayori/hono": "^2.0.0",
+    "hono": "^4.13.16"
   },
   "devDependencies": {
-    "@line/bot-sdk": "^11.3.0",
-    "@types/node": "^26.6.5",
+    "@line/bot-sdk": "^11.4.0",
+    "@types/node": "^26.6.6",
     "tsx": "^4.22.4",
     "typescript": "^7.0.2"
   },
