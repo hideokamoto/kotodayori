@@ -30,10 +30,10 @@
     "@kotodayori/core": "workspace:^"
   },
   "devDependencies": {
-    "hono": "^4.12.23",
+    "hono": "^4.13.17",
     "tsup": "^8.5.1",
-    "typescript": "^6.0.0",
-    "vitest": "^4.1.8"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.12"
   },
   "peerDependencies": {
     "hono": ">=4.0.0"
