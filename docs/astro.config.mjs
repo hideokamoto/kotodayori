@@ -1,5 +1,6 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import { unified } from '@astrojs/markdown-remark';
 import starlightBlog from 'starlight-blog';
 import starlightChangelogs, { makeChangelogsSidebarLinks } from 'starlight-changelogs';
 import starlightLlmsTxt from 'starlight-llms-txt';
@@ -12,7 +13,9 @@ const site = 'https://tayori-docs.workers.dev';
 export default defineConfig({
   site,
   markdown: {
-    remarkPlugins: [remarkMermaid],
+    processor: unified({
+      remarkPlugins: [remarkMermaid],
+    }),
   },
   integrations: [
     agentSkills(),
