@@ -28,10 +28,10 @@
     "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json"
   },
   "devDependencies": {
-    "@types/node": "^25.9.9",
-    "tsup": "^8.5.1",
-    "typescript": "^6.0.3",
-    "vitest": "^4.1.12"
+    "@types/node": "^26.6.6",
+    "tsup": "^9.0.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
   },
   "keywords": [
     "webhook",
