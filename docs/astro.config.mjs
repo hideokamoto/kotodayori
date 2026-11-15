@@ -8,7 +8,7 @@ import starlightTypeDoc, { typeDocSidebarGroup } from 'starlight-typedoc';
 import { remarkMermaid } from './src/lib/remark-mermaid.mjs';
 import agentSkills, { llmsTxtSkillDetails } from './src/integrations/agent-skills.mjs';
 
-const site = 'https://tayori-docs.workers.dev';
+const site = 'https://kotodayori.hidetaka.dev';
 
 export default defineConfig({
   site,

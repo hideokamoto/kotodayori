@@ -18,7 +18,7 @@ export const PACKAGE_MANAGERS = ['pnpm', 'npm', 'yarn', 'bun'] as const satisfie
 /** Minimum Node.js version, taken from `engines.node` in package.json. */
 export const NODE_VERSION_RANGE: string = packageJson.engines.node;
 
-export const DOCS_URL = 'https://tayori-docs.workers.dev/packages/create-kotodayori/';
+export const DOCS_URL = 'https://kotodayori.hidetaka.dev/packages/create-kotodayori/';
 
 export interface CliOptions {
   /** True when --help or --version was handled; the caller should exit. */
