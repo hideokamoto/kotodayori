@@ -1,5 +1,17 @@
 # create-kotodayori
 
+## 1.2.1
+
+### Patch Changes
+
+- 003a5ff: fix(create-kotodayori): point the documentation URL at https://kotodayori.hidetaka.dev
+
+  The docs site moves from the (unresolvable) tayori-docs.workers.dev address to the custom domain kotodayori.hidetaka.dev. Updates the URL the CLI prints after scaffolding, the README links, and the bundled skill.
+
+- 5820522: fix(create-kotodayori): stop pinning `apiVersion` in scaffold templates
+
+  The hono/express/lambda templates hardcoded `apiVersion: '2026-09-30.endive'`, which fails `npm run typecheck` as soon as the installed `stripe` package pins a newer API version. The `Stripe` client is now created without `apiVersion`, so the SDK default applies and the generated project stays in sync with whatever stripe version it installs.
+
 ## 1.2.0
 
 ### Minor Changes
