@@ -45,10 +45,40 @@ describe('template package.json', () => {
 
     it.each(kotodayoriDeps)('%s range follows the current workspace major (%s)', (name, range) => {
       const workspacePkg = readJson(path.join(packagesDir, name.replace('@kotodayori/', ''), 'package.json'));
-      const major = Number.parseInt(workspacePkg.version ?? '', 10);
+      const [major, minor] = (workspacePkg.version ?? '').split('.').map(Number);
 
       expect(Number.isNaN(major)).toBe(false);
-      expect(range).toBe(`^${major}.0.0`);
+      // ^0.x.y pins the minor as well (>=0.x.y <0.(x+1).0), so pre-1.0 packages
+      // must carry their minor in the range.
+      expect(range).toBe(major === 0 ? `^0.${minor}.0` : `^${major}.0.0`);
     });
+  });
+});
+
+describe('workers template (Cloudflare Workers)', () => {
+  const workersDir = path.join(templatesDir, 'workers');
+
+  it('has a src/index.ts that serves webhooks through the fetch adapter', () => {
+    const indexPath = path.join(workersDir, 'src', 'index.ts');
+    expect(fs.existsSync(indexPath)).toBe(true);
+    const source = fs.readFileSync(indexPath, 'utf8');
+    expect(source).toContain('@kotodayori/fetch');
+    expect(source).toContain('fetchAdapter');
+    expect(source).toMatch(/export\s+default/);
+  });
+
+  it('runs wrangler dev from the dev script', () => {
+    const pkg = readJson(path.join(workersDir, 'package.json')) as PackageJson & {
+      scripts?: Record<string, string>;
+    };
+    expect(pkg.scripts?.['dev']).toContain('wrangler dev');
+    expect(pkg.devDependencies?.['wrangler']).toBeDefined();
+    expect(pkg.dependencies?.['@kotodayori/fetch']).toBeDefined();
+  });
+
+  it('ships a wrangler config pointing at src/index.ts', () => {
+    const wranglerPath = path.join(workersDir, 'wrangler.jsonc');
+    expect(fs.existsSync(wranglerPath)).toBe(true);
+    expect(fs.readFileSync(wranglerPath, 'utf8')).toContain('src/index.ts');
   });
 });

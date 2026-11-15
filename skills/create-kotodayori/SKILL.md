@@ -31,7 +31,7 @@ metadata:
 ```text
 create-kotodayori [project-name] [options]
 
---fw, --framework <framework>  hono | express | lambda | eventbridge
+--fw, --framework <framework>  hono | express | lambda | eventbridge | workers
 --pm, --package-manager <pm>   pnpm | npm | yarn | bun
 --skip-install                 do not run "<pm> install"
 --skill <agents>               claude-code (alias: claude) | cursor | all | none, comma-separated
@@ -82,12 +82,12 @@ create-kotodayori [project-name] [options]
 
 4. **Install, after approval:** `cd my-webhook-handler && pnpm install` (use the chosen package manager).
 
-5. **Run the project.** The scripts are `dev` (Hono/Express: `tsx watch src/index.ts`) and `build` (all templates: `tsup`). Run them with `<pm> run dev` / `<pm> run build`. See "Known gaps" below before you start the dev server.
+5. **Run the project.** The scripts are `dev` (Hono: `tsx watch src/server.ts`; Express: `tsx watch src/index.ts`; Cloudflare Workers: `wrangler dev`) and `build` (all templates: `tsup`). Run them with `<pm> run dev` / `<pm> run build`. See "Known gaps" below before you start the dev server.
 
-6. **Test with the Stripe CLI** (Hono/Express, after approval). The webhook route is `POST /webhook`, and the Express template listens on `PORT` (default `3000`):
+6. **Test with the Stripe CLI** (Hono/Express/Workers, after approval). The webhook route is `POST /webhook`; Hono/Express listen on `PORT` (default `3000`), the Workers template listens on wrangler dev's default `8787`:
 
    ```bash
-   stripe listen --forward-to localhost:3000/webhook
+   stripe listen --forward-to localhost:3000/webhook   # or localhost:8787 for Workers
    stripe trigger payment_intent.succeeded
    ```
 
@@ -97,8 +97,7 @@ create-kotodayori [project-name] [options]
 
 These were reproduced with Node.js 22.22.0, tsx 4.23.15, and pnpm. Re-check them after upgrading the CLI.
 
-- **`.env` is not loaded.** The Hono and Express templates read `process.env` and stop with `STRIPE_API_KEY environment variable is required` when the variables are only in `.env`. Either export the variables in the shell, or start the dev server with `<pm> exec tsx watch --env-file=.env src/index.ts`.
-- **The Hono template does not start a Node.js HTTP server.** `src/index.ts` ends with `export default app`, so `<pm> run dev` listens on no port. Serving it needs a runtime adapter, such as Cloudflare Workers or a Node.js server adapter. Tell the user about this instead of assuming port 3000 is up.
+- **`.env` is not loaded.** The Hono and Express templates read `process.env` and stop with `STRIPE_API_KEY environment variable is required` when the variables are only in `.env`. Either export the variables in the shell, or start the dev server with `--env-file=.env` (`<pm> exec tsx watch --env-file=.env src/server.ts` for Hono, `src/index.ts` for Express). The Workers template reads secrets from `.dev.vars` instead — `wrangler dev` loads it automatically, so it does not share this gap.
 
 ## Stripe CLI constraints (from docs.stripe.com)
 

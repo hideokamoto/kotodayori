@@ -25,7 +25,7 @@ npx create-kotodayori my-webhook-handler --fw=hono --pm=pnpm
 
 | オプション | 短縮形 | 説明 |
 |--------|-------|-------------|
-| `--framework <framework>` | `--fw` | フレームワーク: `hono`・`express`・`lambda`・`eventbridge` |
+| `--framework <framework>` | `--fw` | フレームワーク: `hono`・`express`・`lambda`・`eventbridge`・`workers` |
 | `--package-manager <pm>` | `--pm` | パッケージマネージャー: `pnpm`・`npm`・`yarn`・`bun`。`<pm> install` の実行と、最後に表示する次の手順に使われます |
 | `--skip-install` | — | ファイル生成後に `<pm> install` を実行しない |
 | `--skill <agents>` | — | `kotodayori-webhooks` エージェントスキルを書き出す対象。`claude-code`（別名 `claude`）・`cursor`・`all`・`none` をカンマ区切りで指定。未知の名前は無視され、有効な名前が残らなければスキルは書き出されません |
@@ -52,6 +52,7 @@ npx create-kotodayori my-webhook-handler --fw=hono --pm=pnpm
 - **Express**（`--fw=express`）
 - **AWS Lambda**（`--fw=lambda`）
 - **AWS EventBridge**（`--fw=eventbridge`）
+- **Cloudflare Workers**（`--fw=workers`）
 
 ## この CLI 用のエージェントスキル
 

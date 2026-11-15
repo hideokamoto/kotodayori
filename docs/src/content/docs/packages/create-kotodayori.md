@@ -25,7 +25,7 @@ npx create-kotodayori my-webhook-handler --fw=hono --pm=pnpm
 
 | Option | Short | Description |
 |--------|-------|-------------|
-| `--framework <framework>` | `--fw` | Framework: `hono`, `express`, `lambda`, `eventbridge` |
+| `--framework <framework>` | `--fw` | Framework: `hono`, `express`, `lambda`, `eventbridge`, `workers` |
 | `--package-manager <pm>` | `--pm` | Package manager: `pnpm`, `npm`, `yarn`, `bun`. Used to run `<pm> install` and in the printed next steps |
 | `--skip-install` | — | Do not run `<pm> install` after the files are written |
 | `--skill <agents>` | — | Write the `kotodayori-webhooks` agent skill for `claude-code` (alias `claude`), `cursor`, `all`, or `none`. Comma-separated; unknown names are ignored, and if none remain no skill is written |
@@ -52,6 +52,7 @@ Behavior:
 - **Express** (`--fw=express`)
 - **AWS Lambda** (`--fw=lambda`)
 - **AWS EventBridge** (`--fw=eventbridge`)
+- **Cloudflare Workers** (`--fw=workers`)
 
 ## Agent skill for this CLI
 

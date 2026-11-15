@@ -37,6 +37,7 @@ export async function promptForConfig(
         { title: 'Express', value: 'express' },
         { title: 'AWS Lambda', value: 'lambda' },
         { title: 'AWS EventBridge', value: 'eventbridge' },
+        { title: 'Cloudflare Workers', value: 'workers' },
       ],
       initial: 0,
     });
