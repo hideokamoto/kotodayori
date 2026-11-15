@@ -52,6 +52,60 @@ describe('WebhookRouter', () => {
       expect(handler).toHaveBeenCalledWith(event);
     });
 
+    it('should log at debug level when no handlers are registered for the event type', async () => {
+      const logger: Logger = { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+      const router = new WebhookRouter({ logger });
+
+      await router.dispatch({
+        id: 'evt_unhandled',
+        type: 'payment_intent.canceled',
+        data: { object: {} },
+      });
+
+      expect(logger.debug).toHaveBeenCalledWith(
+        'No handlers registered for event type "payment_intent.canceled" (id: evt_unhandled)'
+      );
+      expect(logger.info).not.toHaveBeenCalled();
+      expect(logger.warn).not.toHaveBeenCalled();
+    });
+
+    it('should not log when a handler is registered for the event type', async () => {
+      const logger: Logger = { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+      const router = new WebhookRouter({ logger });
+      router.on('payment_intent.succeeded', vi.fn());
+
+      await router.dispatch({
+        id: 'evt_handled',
+        type: 'payment_intent.succeeded',
+        data: { object: {} },
+      });
+
+      expect(logger.debug).not.toHaveBeenCalled();
+      expect(logger.info).not.toHaveBeenCalled();
+      expect(logger.warn).not.toHaveBeenCalled();
+    });
+
+    it('should fall back to info, then warn, for loggers without debug', async () => {
+      const infoOnly: Logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+      const infoRouter = new WebhookRouter({ logger: infoOnly });
+
+      await infoRouter.dispatch({ id: 'evt_1', type: 'a.b', data: { object: {} } });
+
+      expect(infoOnly.info).toHaveBeenCalledWith(
+        'No handlers registered for event type "a.b" (id: evt_1)'
+      );
+      expect(infoOnly.warn).not.toHaveBeenCalled();
+
+      const minimal: Logger = { warn: vi.fn(), error: vi.fn() };
+      const minimalRouter = new WebhookRouter({ logger: minimal });
+
+      await minimalRouter.dispatch({ id: 'evt_2', type: 'c.d', data: { object: {} } });
+
+      expect(minimal.warn).toHaveBeenCalledWith(
+        'No handlers registered for event type "c.d" (id: evt_2)'
+      );
+    });
+
     it('should not call handlers for non-matching event types', async () => {
       const router = new WebhookRouter();
       const handler = vi.fn().mockResolvedValue(undefined);
