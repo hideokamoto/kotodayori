@@ -18,7 +18,7 @@ metadata:
 
 # create-kotodayori (scaffolding playbook)
 
-`create-kotodayori` generates a Stripe webhook handler project that uses Kotodayori. This skill covers running the CLI safely and the first steps in the generated project. CLI reference: https://tayori-docs.workers.dev/packages/create-kotodayori/
+`create-kotodayori` generates a Stripe webhook handler project that uses Kotodayori. This skill covers running the CLI safely and the first steps in the generated project. CLI reference: https://kotodayori.hidetaka.dev/packages/create-kotodayori/
 
 ## Prerequisites
 

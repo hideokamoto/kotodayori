@@ -1,8 +1,11 @@
 {
-  "name": "tayori-docs",
+  "name": "kotodayori-docs",
   "compatibility_date": "2026-02-20",
   "assets": {
     "directory": "./dist",
     "not_found_handling": "404-page"
-  }
+  },
+  "routes": [
+    { "pattern": "kotodayori.hidetaka.dev", "custom_domain": true }
+  ]
 }
