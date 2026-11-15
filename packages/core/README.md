@@ -294,6 +294,21 @@ interface Logger {
 }
 ```
 
+### Unhandled events
+
+When an event type has no registered handlers, `dispatch()` still runs the middleware
+chain, logs a `No handlers registered` line, and returns 200. Pass `onUnhandled` to run
+your own logic for those events — metrics, dead-letter queues, targeted alerts — inside
+the same middleware and error-handling path as regular handlers.
+
+```typescript
+const router = new WebhookRouter<MyEventMap>({
+  onUnhandled: async (event, context) => {
+    metrics.increment('webhook.unhandled', { type: event.type });
+  },
+});
+```
+
 ### Per-dispatch context
 
 `dispatch(event, context)` takes an optional second argument that is forwarded to every
