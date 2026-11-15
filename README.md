@@ -129,6 +129,16 @@ app.post('/webhook', honoAdapter(router, {
 export default app;
 ```
 
+On Cloudflare Workers, Bun, and Deno the `export default app` module *is* the server entry point. On Node.js nothing listens until you hand `app.fetch` to [`@hono/node-server`](https://github.com/honojs/node-server):
+
+```typescript
+// src/server.ts — run with `tsx src/server.ts` or `node dist/server.js`
+import { serve } from '@hono/node-server';
+import app from './index.js';
+
+serve({ fetch: app.fetch, port: Number(process.env.PORT ?? 3000) });
+```
+
 ### With Express
 
 ```typescript

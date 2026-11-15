@@ -91,3 +91,28 @@ describe('template Stripe client', () => {
     expect(source).not.toMatch(/apiVersion:\s*['"]20/);
   });
 });
+
+describe('hono template Node.js entry point', () => {
+  const honoDir = path.join(templatesDir, 'hono');
+
+  it('has a src/server.ts that serves the app with @hono/node-server', () => {
+    const serverPath = path.join(honoDir, 'src', 'server.ts');
+    expect(fs.existsSync(serverPath)).toBe(true);
+    const source = fs.readFileSync(serverPath, 'utf8');
+    expect(source).toContain('@hono/node-server');
+    expect(source).toContain('serve(');
+  });
+
+  it('declares @hono/node-server as a dependency', () => {
+    const pkg = readJson(path.join(honoDir, 'package.json'));
+    expect(pkg.dependencies?.['@hono/node-server']).toBeDefined();
+  });
+
+  it('runs the Node entry point from dev/start scripts', () => {
+    const pkg = readJson(path.join(honoDir, 'package.json')) as PackageJson & {
+      scripts?: Record<string, string>;
+    };
+    expect(pkg.scripts?.['dev']).toContain('src/server.ts');
+    expect(pkg.scripts?.['start']).toContain('dist/server.js');
+  });
+});
