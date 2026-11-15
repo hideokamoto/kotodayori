@@ -49,7 +49,8 @@ stripe trigger payment_intent.succeeded
 
 ```
 src/
-├── index.ts              # Main application entry point
+├── index.ts              # Hono app (routes); the entry point on Workers/Bun/Deno
+├── server.ts             # Node.js entry point (@hono/node-server); `npm run dev` runs this
 └── handlers/
     ├── payment.ts        # Payment-related event handlers
     └── subscription.ts   # Subscription-related event handlers
