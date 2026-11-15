@@ -10,7 +10,7 @@ const packageJson = JSON.parse(
   readFileSync(path.join(__dirname, '../package.json'), 'utf-8')
 );
 
-export const FRAMEWORKS = ['hono', 'express', 'lambda', 'eventbridge'] as const;
+export const FRAMEWORKS = ['hono', 'express', 'lambda', 'eventbridge', 'workers'] as const;
 export type Framework = (typeof FRAMEWORKS)[number];
 
 export const PACKAGE_MANAGERS = ['pnpm', 'npm', 'yarn', 'bun'] as const satisfies readonly PackageManager[];

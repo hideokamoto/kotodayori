@@ -9,6 +9,7 @@ import { generateHonoProject } from './generators/hono.js';
 import { generateExpressProject } from './generators/express.js';
 import { generateLambdaProject } from './generators/lambda.js';
 import { generateEventBridgeProject } from './generators/eventbridge.js';
+import { generateWorkersProject } from './generators/workers.js';
 import { logger } from './utils/logger.js';
 import { pathExists, isEmpty, copyAgentSkill } from './utils/files.js';
 
@@ -80,6 +81,14 @@ async function main() {
         break;
       case 'eventbridge':
         await generateEventBridgeProject({
+          projectName: config.projectName,
+          targetDir,
+          packageManager: config.packageManager,
+          shouldInstall: config.shouldInstall,
+        });
+        break;
+      case 'workers':
+        await generateWorkersProject({
           projectName: config.projectName,
           targetDir,
           packageManager: config.packageManager,
