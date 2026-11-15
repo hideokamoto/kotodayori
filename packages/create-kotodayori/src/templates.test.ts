@@ -54,7 +54,6 @@ describe('template package.json', () => {
     });
   });
 });
-
 describe('workers template (Cloudflare Workers)', () => {
   const workersDir = path.join(templatesDir, 'workers');
 
@@ -80,5 +79,15 @@ describe('workers template (Cloudflare Workers)', () => {
     const wranglerPath = path.join(workersDir, 'wrangler.jsonc');
     expect(fs.existsSync(wranglerPath)).toBe(true);
     expect(fs.readFileSync(wranglerPath, 'utf8')).toContain('src/index.ts');
+  });
+});
+describe('template Stripe client', () => {
+  it.each(templates)('%s does not pin apiVersion (drifts as stripe releases)', (template) => {
+    const indexPath = path.join(templatesDir, template, 'src', 'index.ts');
+    if (!fs.existsSync(indexPath)) {
+      return;
+    }
+    const source = fs.readFileSync(indexPath, 'utf8');
+    expect(source).not.toMatch(/apiVersion:\s*['"]20/);
   });
 });
