@@ -17,16 +17,15 @@ if (!process.env.STRIPE_WEBHOOK_SECRET) {
 }
 
 // Initialize Stripe
-const stripe = new Stripe(process.env.STRIPE_API_KEY, {
-  apiVersion: '2026-09-30.endive',
-});
+// apiVersion is left to the SDK default so this file stays in sync with the
+// installed stripe package. Pin it explicitly if you need a specific version.
+const stripe = new Stripe(process.env.STRIPE_API_KEY);
 
 // --- Cloudflare Workers / Edge runtimes ---
 // On Workers there is no `process.env`; read secrets from the `env` bindings
 // inside the request handler instead, and use the fetch-based HTTP client:
 //
 //   const stripe = new Stripe(c.env.STRIPE_API_KEY, {
-//     apiVersion: '2026-09-30.endive',
 //     httpClient: Stripe.createFetchHttpClient(),
 //   });
 //
