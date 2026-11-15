@@ -415,6 +415,18 @@ export class WebhookRouter<
     ...args: ContextArgs<TContext>
   ): Promise<void> {
     const handlers = this.handlers.get(event.type) ?? [];
+    if (handlers.length === 0) {
+      // Stripe delivers every event the endpoint is subscribed to, so an
+      // unhandled type is routine — keep it at debug/info rather than warn.
+      const message = `No handlers registered for event type "${event.type}" (id: ${event.id})`;
+      if (this.logger.debug) {
+        this.logger.debug(message);
+      } else if (this.logger.info) {
+        this.logger.info(message);
+      } else {
+        this.logger.warn(message);
+      }
+    }
     // Forward exactly the arguments we were given, so a context-less dispatch keeps
     // calling handlers with the event alone.
     const runHandlers = async (): Promise<void> => {
