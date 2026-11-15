@@ -21,6 +21,23 @@ updates:
         dependency-type: "production"
       development:
         dependency-type: "development"
+    # Versions intentionally rolled back in #133 (commit f41c1b6). Without these entries every
+    # weekly group PR re-proposes them and fails, which also blocks the safe updates in the group.
+    # Remove an entry once its blocker below is gone.
+    ignore:
+      # astro >=7.4 requires Node >=22.23.4, but the docs deploy on CircleCI
+      # (.circleci/docs-release.yml) runs on Node 22.21. Raise that Node version first.
+      - dependency-name: "astro"
+        versions: [">=7.4.0"]
+      # tsup 9 requires Node ^22.18 || ^24.11 || >=26 and vitest 5 requires Node ^22.12 || ^24 || >=26,
+      # so the packages could no longer be built and tested on Node 20.
+      - dependency-name: "tsup"
+        versions: [">=9.0.0"]
+      - dependency-name: "vitest"
+        versions: [">=5.0.0"]
+      # Must stay on the same major as vitest.
+      - dependency-name: "@vitest/coverage-v8"
+        versions: [">=5.0.0"]
 
   # Standalone StackBlitz demo (npm, depends on published @kotodayori/* packages)
   - package-ecosystem: "npm"
