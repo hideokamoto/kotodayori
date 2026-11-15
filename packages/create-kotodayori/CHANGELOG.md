@@ -1,5 +1,13 @@
 # create-kotodayori
 
+## 1.2.0
+
+### Minor Changes
+
+- 9e09417: feat(create-kotodayori): add a Cloudflare Workers template (`--fw=workers`)
+
+  New framework option scaffolding a Worker entry point (`export default { fetch }`) that serves `POST /webhook` through `@kotodayori/fetch` + `@kotodayori/stripe` with `constructEventAsync`-compatible signature verification. Ships `wrangler.jsonc`, `.dev.vars.example`, typed `Env` bindings, and `wrangler dev`/`wrangler deploy` scripts.
+
 ## 1.1.4
 
 ### Patch Changes
