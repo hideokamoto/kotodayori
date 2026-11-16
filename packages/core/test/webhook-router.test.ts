@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { WebhookRouter, consoleLogger, silentLogger, dispatchWithContext, contextProvider, type Logger, type WebhookEvent } from '../src/index.js';
+import { WebhookRouter, consoleLogger, silentLogger, dispatchWithContext, contextProvider, type DefaultEventMap, type Logger, type WebhookEvent } from '../src/index.js';
 
 describe('WebhookRouter', () => {
   describe('instantiation', () => {
@@ -83,6 +83,64 @@ describe('WebhookRouter', () => {
       expect(logger.debug).not.toHaveBeenCalled();
       expect(logger.info).not.toHaveBeenCalled();
       expect(logger.warn).not.toHaveBeenCalled();
+    });
+
+    it('should call onUnhandled when no handlers are registered for the event type', async () => {
+      const onUnhandled = vi.fn().mockResolvedValue(undefined);
+      const router = new WebhookRouter({ logger: silentLogger, onUnhandled });
+
+      const event = { id: 'evt_u1', type: 'unhandled.type', data: { object: { a: 1 } } };
+      await router.dispatch(event);
+
+      expect(onUnhandled).toHaveBeenCalledOnce();
+      expect(onUnhandled).toHaveBeenCalledWith(event);
+    });
+
+    it('should not call onUnhandled when a handler is registered', async () => {
+      const onUnhandled = vi.fn().mockResolvedValue(undefined);
+      const router = new WebhookRouter({ logger: silentLogger, onUnhandled });
+      const handler = vi.fn().mockResolvedValue(undefined);
+      router.on('payment_intent.succeeded', handler);
+
+      await router.dispatch({ id: 'evt_u2', type: 'payment_intent.succeeded', data: { object: {} } });
+
+      expect(handler).toHaveBeenCalledOnce();
+      expect(onUnhandled).not.toHaveBeenCalled();
+    });
+
+    it('should still log when onUnhandled is provided', async () => {
+      const onUnhandled = vi.fn().mockResolvedValue(undefined);
+      const logger: Logger = { debug: vi.fn(), warn: vi.fn(), error: vi.fn() };
+      const router = new WebhookRouter({ logger, onUnhandled });
+
+      await router.dispatch({ id: 'evt_u3', type: 'unhandled.type', data: { object: {} } });
+
+      expect(logger.debug).toHaveBeenCalledWith(
+        'No handlers registered for event type "unhandled.type" (id: evt_u3)'
+      );
+      expect(onUnhandled).toHaveBeenCalledOnce();
+    });
+
+    it('should forward the dispatch context to onUnhandled', async () => {
+      const onUnhandled = vi.fn().mockResolvedValue(undefined);
+      const router = new WebhookRouter<DefaultEventMap, { requestId: string }>({
+        logger: silentLogger,
+        onUnhandled,
+      });
+
+      const event = { id: 'evt_u4', type: 'unhandled.type', data: { object: {} } };
+      await router.dispatch(event, { requestId: 'req_1' });
+
+      expect(onUnhandled).toHaveBeenCalledWith(event, { requestId: 'req_1' });
+    });
+
+    it('should propagate errors thrown by onUnhandled to the dispatch caller', async () => {
+      const onUnhandled = vi.fn().mockRejectedValue(new Error('unhandled sink failed'));
+      const router = new WebhookRouter({ logger: silentLogger, onUnhandled });
+
+      await expect(
+        router.dispatch({ id: 'evt_u5', type: 'unhandled.type', data: { object: {} } })
+      ).rejects.toThrow('unhandled sink failed');
     });
 
     it('should fall back to info, then warn, for loggers without debug', async () => {
