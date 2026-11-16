@@ -1,0 +1,52 @@
+---
+import DefaultHero from '@astrojs/starlight/components/Hero.astro';
+import YouTubeEmbed from './YouTubeEmbed.astro';
+
+// Show the launch video inside the hero on the landing pages only.
+const isIndex = ['', 'ja'].includes(Astro.locals.starlightRoute.id);
+const isJa = Astro.locals.starlightRoute.locale === 'ja';
+
+const video = isJa
+	? {
+			id: 'v1-5XBNlgtU',
+			title: 'kotodayori — すべてのランタイムで動く型安全な webhook ルーティング（60秒デモ）',
+		}
+	: {
+			id: 'l638u4C9kOI',
+			title: 'kotodayori — type-safe webhook routing for every runtime (60s demo)',
+		};
+---
+
+{isIndex ? (
+	<div class="hero-with-video">
+		<DefaultHero />
+		<div class="hero-video">
+			<YouTubeEmbed id={video.id} title={video.title} />
+		</div>
+	</div>
+) : (
+	<DefaultHero />
+)}
+
+<style>
+	.hero-with-video {
+		display: grid;
+		gap: 1rem;
+		align-items: center;
+	}
+
+	/* The stock hero reserves a right-hand column for an image on wide
+	   screens; the video takes that space instead. */
+	.hero-with-video :global(.hero) {
+		grid-template-columns: 100%;
+		padding-block: 1.5rem 1rem;
+	}
+
+	@media (min-width: 50rem) {
+		.hero-with-video {
+			grid-template-columns: 5fr 7fr;
+			gap: 3%;
+			padding-block: clamp(1.5rem, calc(0.5rem + 6vmin), 6rem);
+		}
+	}
+</style>
