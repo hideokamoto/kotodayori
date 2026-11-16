@@ -31,7 +31,7 @@ Before contributing, please:
 
 ### Prerequisites
 
-- **Node.js**: >= 18.0.0
+- **Node.js**: >= 22.23.4 for development (the docs site's Astro refuses to start on older versions, and `pnpm build` builds the docs too). This is the development requirement only; the runtime requirements of the published packages are documented in each package's README.
 - **pnpm**: 8.15.0 (exact version enforced by `packageManager` in package.json)
 - **TypeScript**: 5.3.0 or higher
 
