@@ -1,6 +1,6 @@
 # {{PROJECT_NAME}}
 
-A Stripe webhook handler built with [Kotodayori](https://github.com/hideokamoto/stripe-webhook-router) and [Hono](https://hono.dev).
+A Stripe webhook handler built with [Kotodayori](https://github.com/hideokamoto/kotodayori) and [Hono](https://hono.dev).
 
 ## Getting Started
 
@@ -117,7 +117,7 @@ See the [Hono deployment docs](https://hono.dev/getting-started/basic#starter) f
 
 ## Resources
 
-- [Kotodayori Documentation](https://github.com/hideokamoto/stripe-webhook-router)
+- [Kotodayori Documentation](https://github.com/hideokamoto/kotodayori)
 - [Hono Documentation](https://hono.dev)
 - [Stripe Webhooks Guide](https://stripe.com/docs/webhooks)
 - [Stripe Event Types Reference](https://stripe.com/docs/api/events/types)

@@ -1,6 +1,6 @@
 # {{PROJECT_NAME}}
 
-A Stripe webhook handler built with [Kotodayori](https://github.com/hideokamoto/stripe-webhook-router) and [AWS EventBridge](https://aws.amazon.com/eventbridge).
+A Stripe webhook handler built with [Kotodayori](https://github.com/hideokamoto/kotodayori) and [AWS EventBridge](https://aws.amazon.com/eventbridge).
 
 ## Architecture
 
@@ -106,7 +106,7 @@ All Stripe event types are fully typed for TypeScript autocomplete and type safe
 
 ## Resources
 
-- [Kotodayori Documentation](https://github.com/hideokamoto/stripe-webhook-router)
+- [Kotodayori Documentation](https://github.com/hideokamoto/kotodayori)
 - [Stripe EventBridge Integration](https://stripe.com/docs/event-destinations/eventbridge)
 - [AWS EventBridge Documentation](https://docs.aws.amazon.com/eventbridge)
 - [Stripe Event Types Reference](https://stripe.com/docs/api/events/types)

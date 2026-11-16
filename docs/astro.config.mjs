@@ -75,7 +75,7 @@ export default defineConfig({
         }),
       ],
       social: [
-        { icon: 'github', label: 'GitHub', href: 'https://github.com/hideokamoto/stripe-webhook-router' },
+        { icon: 'github', label: 'GitHub', href: 'https://github.com/hideokamoto/kotodayori' },
       ],
       sidebar: [
         {
