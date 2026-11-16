@@ -9,6 +9,12 @@ overrides:
   '@typescript-eslint/typescript-estree>minimatch': ^11.0.5
   mermaid>katex: ^0.18.2
   tsup>esbuild: ^0.28.2
+  typedoc>minimatch: ^11.0.5
+
+patchedDependencies:
+  typedoc@0.28.20:
+    hash: wpnupvq2rpyof7zgfxuxntctpi
+    path: patches/typedoc@0.28.20.patch
 
 importers:
 
@@ -76,13 +82,13 @@ importers:
         version: 0.12.0(@astrojs/markdown-remark@7.3.6)(@astrojs/markdown-satteri@0.4.7)(@astrojs/starlight@0.42.10(@astrojs/markdown-remark@7.3.6)(astro@7.4.12(@astrojs/markdown-remark@7.3.6)(@types/node@25.9.9)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))(typescript@6.0.3))(astro@7.4.12(@astrojs/markdown-remark@7.3.6)(@types/node@25.9.9)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))
       starlight-typedoc:
         specifier: ^0.23.2
-        version: 0.23.2(@astrojs/starlight@0.42.10(@astrojs/markdown-remark@7.3.6)(astro@7.4.12(@astrojs/markdown-remark@7.3.6)(@types/node@25.9.9)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))(typescript@6.0.3))(astro@7.4.12(@astrojs/markdown-remark@7.3.6)(@types/node@25.9.9)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))(typedoc-plugin-markdown@4.14.1(typedoc@0.28.20(typescript@6.0.3)))(typedoc@0.28.20(typescript@6.0.3))
+        version: 0.23.2(@astrojs/starlight@0.42.10(@astrojs/markdown-remark@7.3.6)(astro@7.4.12(@astrojs/markdown-remark@7.3.6)(@types/node@25.9.9)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))(typescript@6.0.3))(astro@7.4.12(@astrojs/markdown-remark@7.3.6)(@types/node@25.9.9)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))(typedoc-plugin-markdown@4.14.1(typedoc@0.28.20(patch_hash=wpnupvq2rpyof7zgfxuxntctpi)(typescript@6.0.3)))(typedoc@0.28.20(patch_hash=wpnupvq2rpyof7zgfxuxntctpi)(typescript@6.0.3))
       typedoc:
         specifier: ^0.28.20
-        version: 0.28.20(typescript@6.0.3)
+        version: 0.28.20(patch_hash=wpnupvq2rpyof7zgfxuxntctpi)(typescript@6.0.3)
       typedoc-plugin-markdown:
         specifier: ^4.14.1
-        version: 4.14.1(typedoc@0.28.20(typescript@6.0.3))
+        version: 4.14.1(typedoc@0.28.20(patch_hash=wpnupvq2rpyof7zgfxuxntctpi)(typescript@6.0.3))
       yaml:
         specifier: ^2.9.1
         version: 2.9.1
@@ -3399,10 +3405,6 @@ packages:
   miniflare@5.20261104.0-beta:
     resolution: {integrity: sha512-pYZ2n85+FYUb7s0oIVcQxO63/+wgaknm+A/kQjctJqshvHPJs3UtnzaIZ7xrrHMOk8atD7yAfauf6G9VAv7Upg==}
     engines: {node: '>=22.0.0'}
-
-  minimatch@10.2.6:
-    resolution: {integrity: sha512-vpLQEs+VLCr1nU0BXS07maYoFwlDAH0gngQuuttxIwutDFEMHq2blX+8vpgxDdK3J1PwjCJiep77OitTZ4Ll1A==}
-    engines: {node: 18 || 20 || >=22}
 
   minimatch@11.0.5:
     resolution: {integrity: sha512-snPlVppFcYWfLLFQGhDxUyBcHNtMlWmn3jtj7pEaO+DP8pqL0IvAzXhMYmn1z9ASNtgmwLBdFxSf4tMUB0OTKA==}
@@ -8199,10 +8201,6 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  minimatch@10.2.6:
-    dependencies:
-      brace-expansion: 5.0.12
-
   minimatch@11.0.5:
     dependencies:
       '@isaacs/nonrecursive-glob-match': 1.1.0
@@ -9016,13 +9014,13 @@ snapshots:
       - '@astrojs/markdown-satteri'
       - supports-color
 
-  starlight-typedoc@0.23.2(@astrojs/starlight@0.42.10(@astrojs/markdown-remark@7.3.6)(astro@7.4.12(@astrojs/markdown-remark@7.3.6)(@types/node@25.9.9)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))(typescript@6.0.3))(astro@7.4.12(@astrojs/markdown-remark@7.3.6)(@types/node@25.9.9)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))(typedoc-plugin-markdown@4.14.1(typedoc@0.28.20(typescript@6.0.3)))(typedoc@0.28.20(typescript@6.0.3)):
+  starlight-typedoc@0.23.2(@astrojs/starlight@0.42.10(@astrojs/markdown-remark@7.3.6)(astro@7.4.12(@astrojs/markdown-remark@7.3.6)(@types/node@25.9.9)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))(typescript@6.0.3))(astro@7.4.12(@astrojs/markdown-remark@7.3.6)(@types/node@25.9.9)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))(typedoc-plugin-markdown@4.14.1(typedoc@0.28.20(patch_hash=wpnupvq2rpyof7zgfxuxntctpi)(typescript@6.0.3)))(typedoc@0.28.20(patch_hash=wpnupvq2rpyof7zgfxuxntctpi)(typescript@6.0.3)):
     dependencies:
       '@astrojs/starlight': 0.42.10(@astrojs/markdown-remark@7.3.6)(astro@7.4.12(@astrojs/markdown-remark@7.3.6)(@types/node@25.9.9)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))(typescript@6.0.3)
       astro: 7.4.12(@astrojs/markdown-remark@7.3.6)(@types/node@25.9.9)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1)
       github-slugger: 2.0.0
-      typedoc: 0.28.20(typescript@6.0.3)
-      typedoc-plugin-markdown: 4.14.1(typedoc@0.28.20(typescript@6.0.3))
+      typedoc: 0.28.20(patch_hash=wpnupvq2rpyof7zgfxuxntctpi)(typescript@6.0.3)
+      typedoc-plugin-markdown: 4.14.1(typedoc@0.28.20(patch_hash=wpnupvq2rpyof7zgfxuxntctpi)(typescript@6.0.3))
 
   statuses@2.0.2: {}
 
@@ -9204,16 +9202,16 @@ snapshots:
       media-typer: 1.1.1
       mime-types: 3.0.2
 
-  typedoc-plugin-markdown@4.14.1(typedoc@0.28.20(typescript@6.0.3)):
+  typedoc-plugin-markdown@4.14.1(typedoc@0.28.20(patch_hash=wpnupvq2rpyof7zgfxuxntctpi)(typescript@6.0.3)):
     dependencies:
-      typedoc: 0.28.20(typescript@6.0.3)
+      typedoc: 0.28.20(patch_hash=wpnupvq2rpyof7zgfxuxntctpi)(typescript@6.0.3)
 
-  typedoc@0.28.20(typescript@6.0.3):
+  typedoc@0.28.20(patch_hash=wpnupvq2rpyof7zgfxuxntctpi)(typescript@6.0.3):
     dependencies:
       '@gerrit0/mini-shiki': 3.23.0
       lunr: 2.3.9
       markdown-it: 14.3.3
-      minimatch: 10.2.6
+      minimatch: 11.0.5
       typescript: 6.0.3
       yaml: 2.9.1
 
