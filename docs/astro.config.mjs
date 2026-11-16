@@ -24,6 +24,7 @@ export default defineConfig({
       description: 'A Hono-inspired, type-safe webhook routing library for TypeScript.',
       components: {
         Head: './src/components/Head.astro',
+        Hero: './src/components/Hero.astro',
       },
       defaultLocale: 'root',
       locales: {
