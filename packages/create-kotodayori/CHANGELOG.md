@@ -1,5 +1,11 @@
 # create-kotodayori
 
+## 1.2.3
+
+### Patch Changes
+
+- 69489a4: テンプレ README 内の旧リポジトリ名 (`hideokamoto/stripe-webhook-router`) へのリンクを `hideokamoto/kotodayori` に修正。
+
 ## 1.2.2
 
 ### Patch Changes
