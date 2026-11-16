@@ -1,6 +1,6 @@
 # {{PROJECT_NAME}}
 
-A Stripe webhook handler built with [Kotodayori](https://github.com/hideokamoto/stripe-webhook-router) running on [Cloudflare Workers](https://workers.cloudflare.com).
+A Stripe webhook handler built with [Kotodayori](https://github.com/hideokamoto/kotodayori) running on [Cloudflare Workers](https://workers.cloudflare.com).
 
 ## Getting Started
 
@@ -92,7 +92,7 @@ Point your Stripe webhook endpoint at `https://<your-worker>.<your-subdomain>.wo
 
 ## Resources
 
-- [Kotodayori Documentation](https://github.com/hideokamoto/stripe-webhook-router)
+- [Kotodayori Documentation](https://github.com/hideokamoto/kotodayori)
 - [Cloudflare Workers Documentation](https://developers.cloudflare.com/workers/)
 - [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/)
 - [Stripe Webhooks Guide](https://stripe.com/docs/webhooks)
