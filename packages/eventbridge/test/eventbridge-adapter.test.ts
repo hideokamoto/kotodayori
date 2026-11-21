@@ -414,9 +414,7 @@ describe('eventBridgeAdapter', () => {
         detail: { id: 'evt_bad_data', type: 'test.event', data: null },
       };
 
-      const err = await lambdaHandler(event, mockContext).catch((e: unknown) => e);
-      expect(err).toBeInstanceOf(Error);
-      expect((err as Error).message).toBe(
+      await expect(lambdaHandler(event, mockContext)).rejects.toThrow(
         'Invalid event detail: missing or invalid "data" field'
       );
     });
