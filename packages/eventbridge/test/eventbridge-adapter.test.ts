@@ -273,9 +273,192 @@ describe('eventBridgeAdapter', () => {
         detail: null,
       };
 
-      // With null detail, dispatch throws because it cannot read event.type
-      await expect(lambdaHandler(event, mockContext)).rejects.toThrow();
+      await expect(lambdaHandler(event, mockContext)).rejects.toThrow(
+        'Invalid event detail: must be an object'
+      );
       expect(handler).not.toHaveBeenCalled();
+    });
+
+    it('should reject a non-object detail', async () => {
+      const lambdaHandler = eventBridgeAdapter(router);
+
+      const event = {
+        version: '0',
+        id: 'evt_string_detail',
+        'detail-type': 'test.event',
+        source: 'stripe',
+        account: '123456789012',
+        time: '2021-01-01T00:00:00Z',
+        region: 'us-east-1',
+        resources: [],
+        detail: 'not-an-object',
+      } as unknown as EventBridgeEvent<string, unknown>;
+
+      await expect(lambdaHandler(event, mockContext)).rejects.toThrow(
+        'Invalid event detail: must be an object'
+      );
+    });
+
+    it('should reject detail missing a string id', async () => {
+      const lambdaHandler = eventBridgeAdapter(router);
+
+      const event: EventBridgeEvent<string, unknown> = {
+        version: '0',
+        id: 'evt_bad_id',
+        'detail-type': 'test.event',
+        source: 'stripe',
+        account: '123456789012',
+        time: '2021-01-01T00:00:00Z',
+        region: 'us-east-1',
+        resources: [],
+        detail: { type: 'test.event', data: { object: {} } },
+      };
+
+      await expect(lambdaHandler(event, mockContext)).rejects.toThrow(
+        'Invalid event detail: missing or invalid "id" field'
+      );
+    });
+
+    it('should reject detail whose id is not a string', async () => {
+      const lambdaHandler = eventBridgeAdapter(router);
+
+      const event: EventBridgeEvent<string, unknown> = {
+        version: '0',
+        id: 'evt_numeric_id',
+        'detail-type': 'test.event',
+        source: 'stripe',
+        account: '123456789012',
+        time: '2021-01-01T00:00:00Z',
+        region: 'us-east-1',
+        resources: [],
+        detail: { id: 12345, type: 'test.event', data: { object: {} } },
+      };
+
+      await expect(lambdaHandler(event, mockContext)).rejects.toThrow(
+        'Invalid event detail: missing or invalid "id" field'
+      );
+    });
+
+    it('should reject detail whose id is an empty string', async () => {
+      const lambdaHandler = eventBridgeAdapter(router);
+
+      const event: EventBridgeEvent<string, unknown> = {
+        version: '0',
+        id: 'evt_empty_id',
+        'detail-type': 'test.event',
+        source: 'stripe',
+        account: '123456789012',
+        time: '2021-01-01T00:00:00Z',
+        region: 'us-east-1',
+        resources: [],
+        detail: { id: '', type: 'test.event', data: { object: {} } },
+      };
+
+      await expect(lambdaHandler(event, mockContext)).rejects.toThrow(
+        'Invalid event detail: missing or invalid "id" field'
+      );
+    });
+
+    it('should reject detail missing a string type', async () => {
+      const lambdaHandler = eventBridgeAdapter(router);
+
+      const event: EventBridgeEvent<string, unknown> = {
+        version: '0',
+        id: 'evt_bad_type',
+        'detail-type': 'test.event',
+        source: 'stripe',
+        account: '123456789012',
+        time: '2021-01-01T00:00:00Z',
+        region: 'us-east-1',
+        resources: [],
+        detail: { id: 'evt_bad_type', data: { object: {} } },
+      };
+
+      await expect(lambdaHandler(event, mockContext)).rejects.toThrow(
+        'Invalid event detail: missing or invalid "type" field'
+      );
+    });
+
+    it('should reject detail whose type is not a string', async () => {
+      const lambdaHandler = eventBridgeAdapter(router);
+
+      const event: EventBridgeEvent<string, unknown> = {
+        version: '0',
+        id: 'evt_non_string_type',
+        'detail-type': 'test.event',
+        source: 'stripe',
+        account: '123456789012',
+        time: '2021-01-01T00:00:00Z',
+        region: 'us-east-1',
+        resources: [],
+        detail: { id: 'evt_non_string_type', type: 99, data: { object: {} } },
+      };
+
+      await expect(lambdaHandler(event, mockContext)).rejects.toThrow(
+        'Invalid event detail: missing or invalid "type" field'
+      );
+    });
+
+    it('should reject detail with null data', async () => {
+      const lambdaHandler = eventBridgeAdapter(router);
+
+      const event: EventBridgeEvent<string, unknown> = {
+        version: '0',
+        id: 'evt_bad_data',
+        'detail-type': 'test.event',
+        source: 'stripe',
+        account: '123456789012',
+        time: '2021-01-01T00:00:00Z',
+        region: 'us-east-1',
+        resources: [],
+        detail: { id: 'evt_bad_data', type: 'test.event', data: null },
+      };
+
+      const err = await lambdaHandler(event, mockContext).catch((e: unknown) => e);
+      expect(err).toBeInstanceOf(Error);
+      expect((err as Error).message).toBe(
+        'Invalid event detail: missing or invalid "data" field'
+      );
+    });
+
+    it('should reject detail whose data is not an object', async () => {
+      const lambdaHandler = eventBridgeAdapter(router);
+
+      const event: EventBridgeEvent<string, unknown> = {
+        version: '0',
+        id: 'evt_string_data',
+        'detail-type': 'test.event',
+        source: 'stripe',
+        account: '123456789012',
+        time: '2021-01-01T00:00:00Z',
+        region: 'us-east-1',
+        resources: [],
+        detail: { id: 'evt_string_data', type: 'test.event', data: 'not-an-object' },
+      };
+
+      await expect(lambdaHandler(event, mockContext)).rejects.toThrow(
+        'Invalid event detail: missing or invalid "data" field'
+      );
+    });
+
+    it('should reject detail with no data property', async () => {
+      const lambdaHandler = eventBridgeAdapter(router);
+
+      const event: EventBridgeEvent<string, unknown> = {
+        version: '0',
+        id: 'evt_no_data',
+        'detail-type': 'test.event',
+        source: 'stripe',
+        account: '123456789012',
+        time: '2021-01-01T00:00:00Z',
+        region: 'us-east-1',
+        resources: [],
+        detail: { id: 'evt_no_data', type: 'test.event' },
+      };
+
+      await expect(lambdaHandler(event, mockContext)).rejects.toThrow(
+        'Invalid event detail: missing or invalid "data" field'
+      );
     });
 
     it('should handle multiple handlers for the same event', async () => {

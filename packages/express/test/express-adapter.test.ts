@@ -94,9 +94,22 @@ describe('expressAdapter', () => {
     await middleware(mockReq as Request, mockRes as Response, vi.fn());
 
     expect(mockRes.status).toHaveBeenCalledWith(400);
-    expect(mockRes.json).toHaveBeenCalledWith(
-      expect.objectContaining({ error: expect.any(String) })
-    );
+    expect(mockRes.json).toHaveBeenCalledWith({ error: 'Request body is required' });
+    expect(mockVerifier).not.toHaveBeenCalled();
+  });
+
+  it('should return 400 when body is null', async () => {
+    mockReq.body = null;
+
+    const middleware = expressAdapter(router, {
+      verifier: mockVerifier,
+    });
+
+    await middleware(mockReq as Request, mockRes as Response, vi.fn());
+
+    expect(mockRes.status).toHaveBeenCalledWith(400);
+    expect(mockRes.json).toHaveBeenCalledWith({ error: 'Request body is required' });
+    expect(mockVerifier).not.toHaveBeenCalled();
   });
 
   it('should return 400 when body is not a Buffer or string', async () => {
