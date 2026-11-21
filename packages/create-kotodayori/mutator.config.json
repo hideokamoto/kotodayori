@@ -1,0 +1,7 @@
+{
+  "$schema": "../../node_modules/@mizchi/mutator/schema/mutator.config.schema.json",
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/*.d.ts"],
+  "vitestConfig": "vitest.config.ts",
+  "thresholds": { "high": 80, "low": 60, "break": null }
+}

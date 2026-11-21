@@ -72,6 +72,7 @@ describe('lambdaAdapter', () => {
     expect(handler).toHaveBeenCalledOnce();
     expect(result.statusCode).toBe(200);
     expect(JSON.parse(result.body)).toEqual({ received: true });
+    expect(result.headers).toEqual({ 'Content-Type': 'application/json' });
   });
 
   it('should return 400 when body is missing', async () => {
@@ -84,7 +85,23 @@ describe('lambdaAdapter', () => {
     const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent, mockContext);
 
     expect(result.statusCode).toBe(400);
-    expect(JSON.parse(result.body)).toHaveProperty('error');
+    expect(JSON.parse(result.body)).toEqual({ error: 'Request body is required' });
+    expect(result.headers).toEqual({ 'Content-Type': 'application/json' });
+    expect(mockVerifier).not.toHaveBeenCalled();
+  });
+
+  it('should return 400 when body is undefined', async () => {
+    mockEvent.body = undefined;
+
+    const lambdaHandler = lambdaAdapter(router, {
+      verifier: mockVerifier,
+    });
+
+    const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent, mockContext);
+
+    expect(result.statusCode).toBe(400);
+    expect(JSON.parse(result.body)).toEqual({ error: 'Request body is required' });
+    expect(result.headers).toEqual({ 'Content-Type': 'application/json' });
   });
 
   it('should return 400 when verifier throws', async () => {
@@ -163,6 +180,55 @@ describe('lambdaAdapter', () => {
     );
     expect(handler).toHaveBeenCalledOnce();
     expect(result.statusCode).toBe(200);
+    expect(result.headers).toEqual({ 'Content-Type': 'application/json' });
+  });
+
+  it('should filter out undefined header values', async () => {
+    const handler = vi.fn().mockResolvedValue(undefined);
+    router.on('payment_intent.succeeded', handler);
+
+    mockEvent.headers = {
+      'stripe-signature': 'test_signature',
+      'x-undefined-header': undefined,
+      'x-valid-header': 'valid_value',
+    };
+
+    const lambdaHandler = lambdaAdapter(router, {
+      verifier: mockVerifier,
+    });
+
+    const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent, mockContext);
+
+    expect(mockVerifier).toHaveBeenCalledExactlyOnceWith(JSON.stringify(testEvent), {
+      'stripe-signature': 'test_signature',
+      'x-valid-header': 'valid_value',
+    });
+    const passedHeaders = (mockVerifier as ReturnType<typeof vi.fn>).mock.calls[0][1];
+    expect(passedHeaders).not.toHaveProperty('x-undefined-header');
+    expect(result.statusCode).toBe(200);
+  });
+
+  it('should omit null and undefined headers together', async () => {
+    const handler = vi.fn().mockResolvedValue(undefined);
+    router.on('payment_intent.succeeded', handler);
+
+    mockEvent.headers = {
+      'stripe-signature': 'test_signature',
+      'x-null-header': null,
+      'x-undefined-header': undefined,
+      'x-empty-header': '',
+    } as Record<string, string | null | undefined>;
+
+    const lambdaHandler = lambdaAdapter(router, {
+      verifier: mockVerifier,
+    });
+
+    await lambdaHandler(mockEvent as APIGatewayProxyEvent, mockContext);
+
+    expect(mockVerifier).toHaveBeenCalledExactlyOnceWith(JSON.stringify(testEvent), {
+      'stripe-signature': 'test_signature',
+      'x-empty-header': '',
+    });
   });
 
   it('should return 500 when handler throws', async () => {
@@ -271,20 +337,10 @@ describe('lambdaAdapter', () => {
 
     const result = await lambdaHandler(mockEvent as APIGatewayProxyEvent, mockContext);
 
-    expect(mockVerifier).toHaveBeenCalledWith(
-      JSON.stringify(testEvent),
-      expect.objectContaining({
-        'stripe-signature': 'test_signature',
-        'x-valid-header': 'valid_value',
-      })
-    );
-    // Verify null header was not included
-    expect(mockVerifier).toHaveBeenCalledWith(
-      expect.any(String),
-      expect.not.objectContaining({
-        'x-null-header': expect.anything(),
-      })
-    );
+    expect(mockVerifier).toHaveBeenCalledExactlyOnceWith(JSON.stringify(testEvent), {
+      'stripe-signature': 'test_signature',
+      'x-valid-header': 'valid_value',
+    });
     expect(handler).toHaveBeenCalledOnce();
     expect(result.statusCode).toBe(200);
   });

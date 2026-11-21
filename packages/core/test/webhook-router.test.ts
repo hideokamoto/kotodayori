@@ -559,6 +559,22 @@ describe('WebhookRouter', () => {
       expect(order.slice(0, 2)).toContain('handler3');
     });
 
+    it('defaults fanout to all-or-nothing when a handler rejects', async () => {
+      const router = new WebhookRouter();
+      const handler1 = vi.fn().mockResolvedValue(undefined);
+      const handler2 = vi.fn().mockRejectedValue(new Error('Default strategy should fail fast'));
+
+      router.fanout('payment_intent.succeeded', [handler1, handler2]);
+
+      const event = {
+        id: 'evt_123',
+        type: 'payment_intent.succeeded',
+        data: { object: { id: 'pi_123' } },
+      };
+
+      await expect(router.dispatch(event)).rejects.toThrow('Default strategy should fail fast');
+    });
+
     it('should handle errors in fanout with all-or-nothing strategy', async () => {
       const router = new WebhookRouter();
 
@@ -1138,6 +1154,17 @@ describe('WebhookRouter', () => {
       expect(() => {
         router.group('test', (group) => {
           group.on('', handler);
+        });
+      }).toThrow('Event type cannot be an empty string or whitespace');
+    });
+
+    it('should reject whitespace-only event type in PrefixedRouter.on()', () => {
+      const router = new WebhookRouter();
+      const handler = vi.fn();
+
+      expect(() => {
+        router.group('customer', (group) => {
+          group.on('   ', handler);
         });
       }).toThrow('Event type cannot be an empty string or whitespace');
     });
