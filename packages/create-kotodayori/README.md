@@ -76,7 +76,7 @@ Options:
 - An unsupported `--framework` / `--package-manager` value stops the CLI with an error before anything is written.
 - Unknown options are ignored.
 
-Full documentation: <https://tayori-docs.workers.dev/packages/create-kotodayori/>
+Full documentation: <https://kotodayori.hidetaka.dev/packages/create-kotodayori/>
 
 ## Agent skill
 
@@ -145,7 +145,7 @@ Next steps:
   stripe trigger payment_intent.succeeded
 
 📚 Documentation:
-  https://tayori-docs.workers.dev/packages/create-kotodayori/
+  https://kotodayori.hidetaka.dev/packages/create-kotodayori/
 
 ✔ Added agent skill: .claude/skills/kotodayori-webhooks/SKILL.md
 ```

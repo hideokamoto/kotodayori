@@ -23,7 +23,7 @@ Please be respectful and constructive in all interactions with the community. We
 
 Before contributing, please:
 
-1. Check existing [issues](https://github.com/hideokamoto/stripe-webhook-router/issues) to see if your concern is already being addressed
+1. Check existing [issues](https://github.com/hideokamoto/kotodayori/issues) to see if your concern is already being addressed
 2. For new features, open an issue first to discuss the proposed changes
 3. For bug fixes, feel free to submit a PR directly with a clear description
 
@@ -31,7 +31,7 @@ Before contributing, please:
 
 ### Prerequisites
 
-- **Node.js**: >= 18.0.0
+- **Node.js**: >= 22.23.4 for development (the docs site's Astro refuses to start on older versions, and `pnpm build` builds the docs too). This is the development requirement only; the runtime requirements of the published packages are documented in each package's README.
 - **pnpm**: 8.15.0 (exact version enforced by `packageManager` in package.json)
 - **TypeScript**: 5.3.0 or higher
 
@@ -40,8 +40,8 @@ Before contributing, please:
 1. Fork and clone the repository:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/stripe-webhook-router.git
-cd stripe-webhook-router
+git clone https://github.com/YOUR_USERNAME/kotodayori.git
+cd kotodayori
 ```
 
 2. Install dependencies:
@@ -425,7 +425,7 @@ pnpm build
 
 If you have questions or need help:
 
-- Open a [GitHub issue](https://github.com/hideokamoto/stripe-webhook-router/issues)
+- Open a [GitHub issue](https://github.com/hideokamoto/kotodayori/issues)
 - Check existing documentation in the [README](README.md)
 - Look at existing packages for examples
 

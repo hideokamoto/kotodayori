@@ -158,10 +158,21 @@ export const silentLogger: Logger = {
 
 /**
  * Options for WebhookRouter
+ *
+ * @typeParam TContext - The per-dispatch context forwarded to `onUnhandled`
  */
-export interface WebhookRouterOptions {
+export interface WebhookRouterOptions<TContext = unknown> {
   /** Logger used for warnings emitted by the router. Defaults to `consoleLogger`. */
   logger?: Logger;
+  /**
+   * Called when a dispatched event type has no registered handlers.
+   *
+   * Runs inside the middleware chain like a regular handler, so middleware
+   * still observes the event and errors propagate through the same path as
+   * handler failures. Use it for metrics, dead-letter queues, or alerts that
+   * go beyond the built-in log line.
+   */
+  onUnhandled?: EventHandler<WebhookEvent, TContext>;
 }
 
 /**
@@ -245,9 +256,11 @@ export class WebhookRouter<
   private handlers: Map<string, EventHandler<WebhookEvent, TContext>[]> = new Map();
   private middlewares: Middleware<WebhookEvent, TContext>[] = [];
   private readonly logger: Logger;
+  private readonly onUnhandled: EventHandler<WebhookEvent, TContext> | undefined;
 
-  constructor(options: WebhookRouterOptions = {}) {
+  constructor(options: WebhookRouterOptions<TContext> = {}) {
     this.logger = options.logger ?? consoleLogger;
+    this.onUnhandled = options.onUnhandled;
   }
 
   /**
@@ -415,9 +428,25 @@ export class WebhookRouter<
     ...args: ContextArgs<TContext>
   ): Promise<void> {
     const handlers = this.handlers.get(event.type) ?? [];
+    if (handlers.length === 0) {
+      // Stripe delivers every event the endpoint is subscribed to, so an
+      // unhandled type is routine — keep it at debug/info rather than warn.
+      const message = `No handlers registered for event type "${event.type}" (id: ${event.id})`;
+      if (this.logger.debug) {
+        this.logger.debug(message);
+      } else if (this.logger.info) {
+        this.logger.info(message);
+      } else {
+        this.logger.warn(message);
+      }
+    }
     // Forward exactly the arguments we were given, so a context-less dispatch keeps
     // calling handlers with the event alone.
     const runHandlers = async (): Promise<void> => {
+      if (handlers.length === 0) {
+        await this.onUnhandled?.(event as WebhookEvent, ...args);
+        return;
+      }
       for (const handler of handlers) {
         await handler(event as WebhookEvent, ...args);
       }

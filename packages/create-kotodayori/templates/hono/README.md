@@ -1,6 +1,6 @@
 # {{PROJECT_NAME}}
 
-A Stripe webhook handler built with [Kotodayori](https://github.com/hideokamoto/stripe-webhook-router) and [Hono](https://hono.dev).
+A Stripe webhook handler built with [Kotodayori](https://github.com/hideokamoto/kotodayori) and [Hono](https://hono.dev).
 
 ## Getting Started
 
@@ -49,7 +49,8 @@ stripe trigger payment_intent.succeeded
 
 ```
 src/
-├── index.ts              # Main application entry point
+├── index.ts              # Hono app (routes); the entry point on Workers/Bun/Deno
+├── server.ts             # Node.js entry point (@hono/node-server); `npm run dev` runs this
 └── handlers/
     ├── payment.ts        # Payment-related event handlers
     └── subscription.ts   # Subscription-related event handlers
@@ -116,7 +117,7 @@ See the [Hono deployment docs](https://hono.dev/getting-started/basic#starter) f
 
 ## Resources
 
-- [Kotodayori Documentation](https://github.com/hideokamoto/stripe-webhook-router)
+- [Kotodayori Documentation](https://github.com/hideokamoto/kotodayori)
 - [Hono Documentation](https://hono.dev)
 - [Stripe Webhooks Guide](https://stripe.com/docs/webhooks)
 - [Stripe Event Types Reference](https://stripe.com/docs/api/events/types)

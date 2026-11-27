@@ -19,7 +19,7 @@ We take the security of Kotodayori seriously. If you believe you have found a se
 Instead, please report security vulnerabilities by:
 
 1. **Opening a security advisory** on GitHub:
-   - Go to the [Security Advisories](https://github.com/hideokamoto/stripe-webhook-router/security/advisories) page
+   - Go to the [Security Advisories](https://github.com/hideokamoto/kotodayori/security/advisories) page
    - Click "Report a vulnerability"
    - Fill out the form with details about the vulnerability
 

@@ -1,6 +1,6 @@
 {
   "name": "@kotodayori/stripe",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Stripe-specific type definitions and utilities",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -13,7 +13,7 @@
         "default": "./dist/index.js"
       },
       "require": {
-        "types": "./dist/index.d.ts",
+        "types": "./dist/index.d.cts",
         "default": "./dist/index.cjs"
       }
     }

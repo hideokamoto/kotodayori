@@ -1,5 +1,21 @@
 # @kotodayori/core
 
+## 2.0.2
+
+### Patch Changes
+
+- e9bd3ab: feat(core): add `onUnhandled` callback for events with no registered handlers
+
+  `WebhookRouterOptions` accepts `onUnhandled?: EventHandler<WebhookEvent, TContext>`, invoked inside the middleware chain when a dispatched event type matches no handler — a hook for metrics, dead-letter queues, or alerts beyond the built-in log line (which still fires). `StripeWebhookRouter` inherits it via `WebhookRouter`'s constructor.
+
+## 2.0.1
+
+### Patch Changes
+
+- a90e6aa: feat(core): log a one-line notice when an event type has no registered handlers
+
+  `WebhookRouter.dispatch()` now logs `No handlers registered for event type "<type>" (id: <id>)` through the router's logger when an event matches no handler. It prefers `logger.debug`, falls back to `logger.info`, then `logger.warn`, so minimal loggers still see it while full loggers keep it out of warn-level noise (providers like Stripe deliver every subscribed event type, so unhandled types are routine). The response and middleware contract are unchanged.
+
 ## 2.0.0
 
 ### Major Changes

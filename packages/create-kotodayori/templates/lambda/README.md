@@ -1,6 +1,6 @@
 # {{PROJECT_NAME}}
 
-A Stripe webhook handler built with [Kotodayori](https://github.com/hideokamoto/stripe-webhook-router) and [AWS Lambda](https://aws.amazon.com/lambda).
+A Stripe webhook handler built with [Kotodayori](https://github.com/hideokamoto/kotodayori) and [AWS Lambda](https://aws.amazon.com/lambda).
 
 ## Getting Started
 
@@ -137,7 +137,7 @@ All Stripe event types are fully typed for TypeScript autocomplete and type safe
 
 ## Resources
 
-- [Kotodayori Documentation](https://github.com/hideokamoto/stripe-webhook-router)
+- [Kotodayori Documentation](https://github.com/hideokamoto/kotodayori)
 - [AWS Lambda Documentation](https://docs.aws.amazon.com/lambda)
 - [Stripe Webhooks Guide](https://stripe.com/docs/webhooks)
 - [Stripe Event Types Reference](https://stripe.com/docs/api/events/types)

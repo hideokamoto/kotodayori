@@ -1,5 +1,21 @@
 # @kotodayori/hono
 
+## 2.0.2
+
+### Patch Changes
+
+- fad48ec: fix: point the `require` condition's `types` at `dist/index.d.cts`
+
+  The `require` condition resolved to the ESM declaration file (`dist/index.d.ts`) while loading the CommonJS build, so CommonJS consumers type-checking with `moduleResolution: node16` / `nodenext` got ESM types for a CommonJS module ("Masquerading as ESM" in Are the Types Wrong?). The build already emits `dist/index.d.cts`; `@kotodayori/core`, `lambda`, `eventbridge` and `zod` already point at it.
+
+## 2.0.1
+
+### Patch Changes
+
+- 32de5d3: fix(create-kotodayori): scaffold a Node.js entry point for the Hono template
+
+  The generated `src/index.ts` only did `export default app`, which starts a server on Workers/Bun/Deno but never listens on Node.js — `npm run dev` started `tsx watch` with nothing on port 3000. The template now ships `src/server.ts` (`@hono/node-server`'s `serve()`) wired into the `dev`/`start` scripts, keeping `src/index.ts` as the edge entry point. `@kotodayori/hono` and the root README also explain the Node.js entry-point split.
+
 ## 2.0.0
 
 ### Major Changes

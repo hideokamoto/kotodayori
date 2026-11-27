@@ -715,6 +715,64 @@ describe('createStripeVerifier: errors other than signature verification', () =>
     expect(error).toBeInstanceOf(StripeVerifierRuntimeError);
     expect(error).toMatchObject({ cause: 'boom' });
     expect((error as Error).message).toContain('boom');
+    expect((error as Error).message).toContain(
+      'The signature itself was not judged invalid'
+    );
+    expect((error as Error).message).toContain('--conditions=worker');
+    expect((error as Error).message).toContain(
+      "the runtime may be incompatible with the Stripe SDK's Node.js build"
+    );
+  });
+
+  it('should wrap null rejections from the Stripe SDK', async () => {
+    const mockStripe = {
+      webhooks: { constructEventAsync: vi.fn().mockRejectedValue(null) },
+    } as unknown as Stripe;
+
+    const error = await createStripeVerifier(mockStripe, 'whsec_test')('{}', headers).catch(
+      (err: unknown) => err
+    );
+
+    expect(error).toBeInstanceOf(StripeVerifierRuntimeError);
+    expect((error as Error).name).toBe('StripeVerifierRuntimeError');
+  });
+
+  it('should wrap plain-object rejections that are not Stripe signature errors', async () => {
+    const mockStripe = {
+      webhooks: {
+        constructEventAsync: vi.fn().mockRejectedValue({ type: 'SomeOtherStripeError' }),
+      },
+    } as unknown as Stripe;
+
+    const error = await createStripeVerifier(mockStripe, 'whsec_test')('{}', headers).catch(
+      (err: unknown) => err
+    );
+
+    expect(error).toBeInstanceOf(StripeVerifierRuntimeError);
+  });
+
+  it('should not treat a string rejection as a signature verification error', async () => {
+    const mockStripe = {
+      webhooks: { constructEventAsync: vi.fn().mockRejectedValue('not-an-object') },
+    } as unknown as Stripe;
+
+    const error = await createStripeVerifier(mockStripe, 'whsec_test')('{}', headers).catch(
+      (err: unknown) => err
+    );
+
+    expect(error).toBeInstanceOf(StripeVerifierRuntimeError);
+    expect(error).not.toMatchObject({ type: 'StripeSignatureVerificationError' });
+  });
+
+  it('should rethrow Stripe signature verification errors unchanged', async () => {
+    const signatureError = signatureVerificationError('bad signature');
+    const mockStripe = {
+      webhooks: { constructEventAsync: vi.fn().mockRejectedValue(signatureError) },
+    } as unknown as Stripe;
+
+    await expect(createStripeVerifier(mockStripe, 'whsec_test')('{}', headers)).rejects.toBe(
+      signatureError
+    );
   });
 });
 

@@ -7,6 +7,8 @@
 
 A Hono-inspired, type-safe webhook routing library for TypeScript.
 
+![`npx create-kotodayori` scaffolding a project and a signed webhook reaching its handler with HTTP 200](assets/demo-scaffold.gif)
+
 ## Overview
 
 Kotodayori provides a clean, type-safe API for handling webhooks from any event source. It features a modular architecture with adapters for popular frameworks and platforms, and a pluggable verifier system for signature validation.
@@ -29,6 +31,8 @@ Not using Stripe? The [custom webhooks demo](./examples/custom-webhooks-demo) us
 - **Middleware Support**: Add cross-cutting concerns with middleware
 - **Flexible Routing**: Group handlers, mount nested routers, and fanout patterns
 - **Stripe Support**: First-class support for all 253+ Stripe event types
+
+![`router.on('...')` event name autocomplete and a typo caught as a compile error](assets/demo-typesafety.gif)
 
 ## Packages
 
@@ -127,6 +131,16 @@ app.post('/webhook', honoAdapter(router, {
 }));
 
 export default app;
+```
+
+On Cloudflare Workers, Bun, and Deno the `export default app` module *is* the server entry point. On Node.js nothing listens until you hand `app.fetch` to [`@hono/node-server`](https://github.com/honojs/node-server):
+
+```typescript
+// src/server.ts — run with `tsx src/server.ts` or `node dist/server.js`
+import { serve } from '@hono/node-server';
+import app from './index.js';
+
+serve({ fetch: app.fetch, port: Number(process.env.PORT ?? 3000) });
 ```
 
 ### With Express

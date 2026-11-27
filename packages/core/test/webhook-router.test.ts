@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { WebhookRouter, consoleLogger, silentLogger, dispatchWithContext, contextProvider, type Logger, type WebhookEvent } from '../src/index.js';
+import { WebhookRouter, consoleLogger, silentLogger, dispatchWithContext, contextProvider, type DefaultEventMap, type Logger, type WebhookEvent } from '../src/index.js';
 
 describe('WebhookRouter', () => {
   describe('instantiation', () => {
@@ -50,6 +50,118 @@ describe('WebhookRouter', () => {
 
       expect(handler).toHaveBeenCalledOnce();
       expect(handler).toHaveBeenCalledWith(event);
+    });
+
+    it('should log at debug level when no handlers are registered for the event type', async () => {
+      const logger: Logger = { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+      const router = new WebhookRouter({ logger });
+
+      await router.dispatch({
+        id: 'evt_unhandled',
+        type: 'payment_intent.canceled',
+        data: { object: {} },
+      });
+
+      expect(logger.debug).toHaveBeenCalledWith(
+        'No handlers registered for event type "payment_intent.canceled" (id: evt_unhandled)'
+      );
+      expect(logger.info).not.toHaveBeenCalled();
+      expect(logger.warn).not.toHaveBeenCalled();
+    });
+
+    it('should not log when a handler is registered for the event type', async () => {
+      const logger: Logger = { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+      const router = new WebhookRouter({ logger });
+      router.on('payment_intent.succeeded', vi.fn());
+
+      await router.dispatch({
+        id: 'evt_handled',
+        type: 'payment_intent.succeeded',
+        data: { object: {} },
+      });
+
+      expect(logger.debug).not.toHaveBeenCalled();
+      expect(logger.info).not.toHaveBeenCalled();
+      expect(logger.warn).not.toHaveBeenCalled();
+    });
+
+    it('should call onUnhandled when no handlers are registered for the event type', async () => {
+      const onUnhandled = vi.fn().mockResolvedValue(undefined);
+      const router = new WebhookRouter({ logger: silentLogger, onUnhandled });
+
+      const event = { id: 'evt_u1', type: 'unhandled.type', data: { object: { a: 1 } } };
+      await router.dispatch(event);
+
+      expect(onUnhandled).toHaveBeenCalledOnce();
+      expect(onUnhandled).toHaveBeenCalledWith(event);
+    });
+
+    it('should not call onUnhandled when a handler is registered', async () => {
+      const onUnhandled = vi.fn().mockResolvedValue(undefined);
+      const router = new WebhookRouter({ logger: silentLogger, onUnhandled });
+      const handler = vi.fn().mockResolvedValue(undefined);
+      router.on('payment_intent.succeeded', handler);
+
+      await router.dispatch({ id: 'evt_u2', type: 'payment_intent.succeeded', data: { object: {} } });
+
+      expect(handler).toHaveBeenCalledOnce();
+      expect(onUnhandled).not.toHaveBeenCalled();
+    });
+
+    it('should still log when onUnhandled is provided', async () => {
+      const onUnhandled = vi.fn().mockResolvedValue(undefined);
+      const logger: Logger = { debug: vi.fn(), warn: vi.fn(), error: vi.fn() };
+      const router = new WebhookRouter({ logger, onUnhandled });
+
+      await router.dispatch({ id: 'evt_u3', type: 'unhandled.type', data: { object: {} } });
+
+      expect(logger.debug).toHaveBeenCalledWith(
+        'No handlers registered for event type "unhandled.type" (id: evt_u3)'
+      );
+      expect(onUnhandled).toHaveBeenCalledOnce();
+    });
+
+    it('should forward the dispatch context to onUnhandled', async () => {
+      const onUnhandled = vi.fn().mockResolvedValue(undefined);
+      const router = new WebhookRouter<DefaultEventMap, { requestId: string }>({
+        logger: silentLogger,
+        onUnhandled,
+      });
+
+      const event = { id: 'evt_u4', type: 'unhandled.type', data: { object: {} } };
+      await router.dispatch(event, { requestId: 'req_1' });
+
+      expect(onUnhandled).toHaveBeenCalledWith(event, { requestId: 'req_1' });
+    });
+
+    it('should propagate errors thrown by onUnhandled to the dispatch caller', async () => {
+      const onUnhandled = vi.fn().mockRejectedValue(new Error('unhandled sink failed'));
+      const router = new WebhookRouter({ logger: silentLogger, onUnhandled });
+
+      await expect(
+        router.dispatch({ id: 'evt_u5', type: 'unhandled.type', data: { object: {} } })
+      ).rejects.toThrow('unhandled sink failed');
+    });
+
+    it('should fall back to info, then warn, for loggers without debug', async () => {
+      const infoOnly: Logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+      const infoRouter = new WebhookRouter({ logger: infoOnly });
+
+      await infoRouter.dispatch({ id: 'evt_1', type: 'a.b', data: { object: {} } });
+
+      expect(infoOnly.info).toHaveBeenCalledWith(
+        'No handlers registered for event type "a.b" (id: evt_1)'
+      );
+      expect(infoOnly.warn).not.toHaveBeenCalled();
+
+      const minimal: Logger = { warn: vi.fn(), error: vi.fn() };
+      const minimalRouter = new WebhookRouter({ logger: minimal });
+
+      await minimalRouter.dispatch({ id: 'evt_2', type: 'c.d', data: { object: {} } });
+
+      expect(minimal.warn).toHaveBeenCalledWith(
+        'No handlers registered for event type "c.d" (id: evt_2)'
+      );
     });
 
     it('should not call handlers for non-matching event types', async () => {
@@ -445,6 +557,22 @@ describe('WebhookRouter', () => {
       expect(order[2]).toBe('handler1'); // handler1 completes last due to delay
       expect(order.slice(0, 2)).toContain('handler2');
       expect(order.slice(0, 2)).toContain('handler3');
+    });
+
+    it('defaults fanout to all-or-nothing when a handler rejects', async () => {
+      const router = new WebhookRouter();
+      const handler1 = vi.fn().mockResolvedValue(undefined);
+      const handler2 = vi.fn().mockRejectedValue(new Error('Default strategy should fail fast'));
+
+      router.fanout('payment_intent.succeeded', [handler1, handler2]);
+
+      const event = {
+        id: 'evt_123',
+        type: 'payment_intent.succeeded',
+        data: { object: { id: 'pi_123' } },
+      };
+
+      await expect(router.dispatch(event)).rejects.toThrow('Default strategy should fail fast');
     });
 
     it('should handle errors in fanout with all-or-nothing strategy', async () => {
@@ -1026,6 +1154,17 @@ describe('WebhookRouter', () => {
       expect(() => {
         router.group('test', (group) => {
           group.on('', handler);
+        });
+      }).toThrow('Event type cannot be an empty string or whitespace');
+    });
+
+    it('should reject whitespace-only event type in PrefixedRouter.on()', () => {
+      const router = new WebhookRouter();
+      const handler = vi.fn();
+
+      expect(() => {
+        router.group('customer', (group) => {
+          group.on('   ', handler);
         });
       }).toThrow('Event type cannot be an empty string or whitespace');
     });

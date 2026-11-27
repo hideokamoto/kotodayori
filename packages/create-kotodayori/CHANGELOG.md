@@ -1,5 +1,39 @@
 # create-kotodayori
 
+## 1.2.3
+
+### Patch Changes
+
+- 69489a4: テンプレ README 内の旧リポジトリ名 (`hideokamoto/stripe-webhook-router`) へのリンクを `hideokamoto/kotodayori` に修正。
+
+## 1.2.2
+
+### Patch Changes
+
+- 32de5d3: fix(create-kotodayori): scaffold a Node.js entry point for the Hono template
+
+  The generated `src/index.ts` only did `export default app`, which starts a server on Workers/Bun/Deno but never listens on Node.js — `npm run dev` started `tsx watch` with nothing on port 3000. The template now ships `src/server.ts` (`@hono/node-server`'s `serve()`) wired into the `dev`/`start` scripts, keeping `src/index.ts` as the edge entry point. `@kotodayori/hono` and the root README also explain the Node.js entry-point split.
+
+## 1.2.1
+
+### Patch Changes
+
+- 003a5ff: fix(create-kotodayori): point the documentation URL at https://kotodayori.hidetaka.dev
+
+  The docs site moves from the (unresolvable) tayori-docs.workers.dev address to the custom domain kotodayori.hidetaka.dev. Updates the URL the CLI prints after scaffolding, the README links, and the bundled skill.
+
+- 5820522: fix(create-kotodayori): stop pinning `apiVersion` in scaffold templates
+
+  The hono/express/lambda templates hardcoded `apiVersion: '2026-09-30.endive'`, which fails `npm run typecheck` as soon as the installed `stripe` package pins a newer API version. The `Stripe` client is now created without `apiVersion`, so the SDK default applies and the generated project stays in sync with whatever stripe version it installs.
+
+## 1.2.0
+
+### Minor Changes
+
+- 9e09417: feat(create-kotodayori): add a Cloudflare Workers template (`--fw=workers`)
+
+  New framework option scaffolding a Worker entry point (`export default { fetch }`) that serves `POST /webhook` through `@kotodayori/fetch` + `@kotodayori/stripe` with `constructEventAsync`-compatible signature verification. Ships `wrangler.jsonc`, `.dev.vars.example`, typed `Env` bindings, and `wrangler dev`/`wrangler deploy` scripts.
+
 ## 1.1.4
 
 ### Patch Changes

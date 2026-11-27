@@ -246,6 +246,18 @@ describe('SchemaRegistry', () => {
     const result = registry.safeParse(invalidEvent);
     expect(result.success).toBe(false);
   });
+
+  it('safeParse passes through events without a registered schema', () => {
+    const registry = new SchemaRegistry();
+    const unknownEvent = {
+      id: 'evt_123',
+      type: 'unknown.event',
+      data: { object: { anything: 'goes' } },
+    };
+
+    const result = registry.safeParse(unknownEvent);
+    expect(result).toEqual({ success: true, data: unknownEvent });
+  });
 });
 
 describe('withValidation middleware', () => {
@@ -276,13 +288,22 @@ describe('withValidation middleware', () => {
       .use(withValidation(registry))
       .on('issue.opened', handler);
 
-    await expect(
-      router.dispatch({
+    let caught: unknown;
+    await router
+      .dispatch({
         id: 'evt_123',
         type: 'issue.opened',
         data: { object: { id: 'not-a-number' } },
       })
-    ).rejects.toThrow(WebhookValidationError);
+      .catch((err: unknown) => {
+        caught = err;
+      });
+
+    expect(caught).toBeInstanceOf(WebhookValidationError);
+    expect((caught as WebhookValidationError).name).toBe('WebhookValidationError');
+    expect((caught as WebhookValidationError).message).toContain(
+      'Validation failed for event type "issue.opened":'
+    );
 
     expect(handler).not.toHaveBeenCalled();
   });
@@ -345,6 +366,10 @@ describe('withValidation middleware', () => {
     const result = await router.dispatch(invalidEvent).catch((e) => e);
 
     expect(result).toBeInstanceOf(WebhookValidationError);
+    expect((result as WebhookValidationError).name).toBe('WebhookValidationError');
+    expect((result as WebhookValidationError).message).toContain(
+      'Unknown event type "unknown.event" failed base structure validation:'
+    );
     expect(handler).not.toHaveBeenCalled();
   });
 
@@ -475,6 +500,35 @@ describe('withValidation middleware', () => {
     consoleError.mockRestore();
   });
 
+  it('rejects unknown events when allowUnknownEvents is explicitly false', async () => {
+    const registry = new SchemaRegistry();
+    const handler = vi.fn();
+
+    const routerFalse = new WebhookRouter()
+      .use(withValidation(registry, { allowUnknownEvents: false }))
+      .on('unknown.event', handler);
+
+    await expect(
+      routerFalse.dispatch({
+        id: 'evt_123',
+        type: 'unknown.event',
+        data: { object: {} },
+      })
+    ).rejects.toThrow(UnknownEventTypeError);
+
+    const routerTrue = new WebhookRouter()
+      .use(withValidation(registry, { allowUnknownEvents: true }))
+      .on('unknown.event', handler);
+
+    await routerTrue.dispatch({
+      id: 'evt_456',
+      type: 'unknown.event',
+      data: { object: {} },
+    });
+
+    expect(handler).toHaveBeenCalledOnce();
+  });
+
   it('throws UnknownEventTypeError when allowUnknownEvents is false', async () => {
     const issueOpened = defineEvent('issue.opened', z.object({ id: z.number() }));
     const registry = new SchemaRegistry().registerAll({ issueOpened });
@@ -484,13 +538,20 @@ describe('withValidation middleware', () => {
       .use(withValidation(registry, { allowUnknownEvents: false }))
       .on('unknown.event', handler);
 
-    await expect(
-      router.dispatch({
+    let caught: unknown;
+    await router
+      .dispatch({
         id: 'evt_123',
         type: 'unknown.event',
         data: { object: {} },
       })
-    ).rejects.toThrow(UnknownEventTypeError);
+      .catch((err: unknown) => {
+        caught = err;
+      });
+
+    expect(caught).toBeInstanceOf(UnknownEventTypeError);
+    expect((caught as UnknownEventTypeError).name).toBe('UnknownEventTypeError');
+    expect((caught as UnknownEventTypeError).message).toBe('Unknown event type: "unknown.event"');
 
     expect(handler).not.toHaveBeenCalled();
   });
@@ -734,7 +795,43 @@ describe('createZodVerifier', () => {
       registry,
     });
 
-    await expect(verifier('payload', {})).rejects.toThrow(WebhookValidationError);
+    let caught: unknown;
+    await verifier('payload', {}).catch((err: unknown) => {
+      caught = err;
+    });
+
+    expect(caught).toBeInstanceOf(WebhookValidationError);
+    expect((caught as WebhookValidationError).name).toBe('WebhookValidationError');
+    expect((caught as WebhookValidationError).message).toContain(
+      'Event validation failed for "issue.opened":'
+    );
+  });
+
+  it('validates base structure for unknown events from the verifier', async () => {
+    const registry = new SchemaRegistry();
+
+    const mockVerifier = vi.fn().mockResolvedValue({
+      event: {
+        type: 'unknown.event',
+        data: { object: {} },
+      },
+    });
+
+    const verifier = createZodVerifier({
+      verifier: mockVerifier,
+      registry,
+      allowUnknownEvents: true,
+    });
+
+    let caught: unknown;
+    await verifier('payload', {}).catch((err: unknown) => {
+      caught = err;
+    });
+
+    expect(caught).toBeInstanceOf(WebhookValidationError);
+    expect((caught as WebhookValidationError).message).toContain(
+      'Unknown event type "unknown.event" failed base structure validation:'
+    );
   });
 
   it('passes through unknown events when allowUnknownEvents is true', async () => {
@@ -776,7 +873,14 @@ describe('createZodVerifier', () => {
       allowUnknownEvents: false,
     });
 
-    await expect(verifier('payload', {})).rejects.toThrow(UnknownEventTypeError);
+    let caught: unknown;
+    await verifier('payload', {}).catch((err: unknown) => {
+      caught = err;
+    });
+
+    expect(caught).toBeInstanceOf(UnknownEventTypeError);
+    expect((caught as UnknownEventTypeError).name).toBe('UnknownEventTypeError');
+    expect((caught as UnknownEventTypeError).message).toBe('Unknown event type: "unknown.event"');
   });
 });
 

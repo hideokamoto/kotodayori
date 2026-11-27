@@ -13,9 +13,9 @@ if (!process.env.STRIPE_WEBHOOK_SECRET) {
 }
 
 // Initialize Stripe
-const stripe = new Stripe(process.env.STRIPE_API_KEY, {
-  apiVersion: '2026-09-30.endive',
-});
+// apiVersion is left to the SDK default so this file stays in sync with the
+// installed stripe package. Pin it explicitly if you need a specific version.
+const stripe = new Stripe(process.env.STRIPE_API_KEY);
 
 // Create webhook router
 const webhookRouter = new StripeWebhookRouter();
