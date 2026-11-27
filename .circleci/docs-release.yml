@@ -19,12 +19,13 @@ jobs:
     executor:
       name: node/default
       tag: '22.23'
-    resource_class: small
+    # small (2GB) was SIGKILLed during a cold-cache `pnpm install` of the whole
+    # workspace, and even warm-cache runs peaked near 80% of 2GB in the Astro build.
+    resource_class: medium
     steps:
       - checkout
-      - node/install-packages:
-          pkg-manager: pnpm
-          cache-version: kotodayori-docs-v1
+      # Plan before anything that can fail, so the on_fail step below always has a
+      # planned release to mark FAILED (otherwise it gets 404 from the releases API).
       - run:
           name: Plan deployment (deploy marker)
           command: |
@@ -33,6 +34,9 @@ jobs:
               --environment-name=production \
               --component-name=kotodayori-docs \
               --target-version="build.${CIRCLE_BUILD_NUM}-${SHORT_SHA}"
+      - node/install-packages:
+          pkg-manager: pnpm
+          cache-version: kotodayori-docs-v1
       - run:
           name: Build docs (Starlight)
           command: pnpm --filter kotodayori-docs build
