@@ -14,10 +14,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@hono/node-server": "^2.1.6",
-    "@kotodayori/core": "^2.0.0",
-    "@kotodayori/hono": "^2.0.0",
-    "hono": "^4.13.17"
+    "@hono/node-server": "^2.1.11",
+    "@kotodayori/core": "^2.0.2",
+    "@kotodayori/hono": "^2.0.1",
+    "hono": "^4.13.21"
   },
   "devDependencies": {
     "@line/bot-sdk": "^11.4.0",
