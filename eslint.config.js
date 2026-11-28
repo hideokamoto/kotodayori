@@ -32,7 +32,7 @@ export default tseslint.config(
       ],
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
-      'no-dupe-class-members': 'off', // TypeScript handles method overloads
+      'no-dupe-class-members': 'off',
       '@typescript-eslint/no-dupe-class-members': 'error',
     },
   },

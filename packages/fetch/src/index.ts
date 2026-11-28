@@ -97,7 +97,6 @@ export function fetchAdapter<
       return jsonResponse({ error: 'Method not allowed' }, 405, { allow: 'POST' });
     }
 
-    // Get raw body text for signature verification
     const rawBody = await request.text();
 
     const headers: Record<string, string> = {};
@@ -116,5 +115,4 @@ export function fetchAdapter<
   };
 }
 
-// Re-export core types
 export { WebhookRouter, type WebhookDispatcher, type WebhookEvent, type EventHandler, type Middleware, type Verifier, type VerifyResult } from '@kotodayori/core';

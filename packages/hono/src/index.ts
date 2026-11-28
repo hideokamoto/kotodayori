@@ -126,9 +126,6 @@ export function honoAdapter<
   TContext = unknown,
 >(
   router: WebhookDispatcher<NoInfer<TEvent>, TContext>,
-  // Without createContext, `c` itself is the handler context. Only a Context-shaped
-  // TContext can be satisfied that way; otherwise this overload is skipped and the
-  // next one reports the missing createContext.
   options: HonoAdapterOptions<TEvent, never> & { createContext?: never } &
     ([Context] extends [TContext] ? unknown : { createContext: never })
 ): <C extends AnyContext>(
@@ -153,16 +150,13 @@ export function honoAdapter<TEvent extends WebhookEvent, TContext>(
   const { createContext } = options;
 
   return async (c: Context): Promise<Response> => {
-    // Get raw body text for signature verification
     const rawBody = await c.req.text();
 
-    // Collect headers for verifier
     const headers: Record<string, string> = {};
     c.req.raw.headers.forEach((value, key) => {
       headers[key] = value;
     });
 
-    // Without createContext, the overloads require the caller's `c` to satisfy TContext
     const { status, body } = await handleWebhook(
       router,
       options,
@@ -174,5 +168,4 @@ export function honoAdapter<TEvent extends WebhookEvent, TContext>(
   };
 }
 
-// Re-export core types
 export { WebhookRouter, type WebhookDispatcher, type WebhookEvent, type EventHandler, type Middleware, type Verifier, type VerifyResult } from '@kotodayori/core';

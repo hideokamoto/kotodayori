@@ -41,7 +41,6 @@ export function createEventSchema<
   TType extends string,
   TDataObject extends z.ZodTypeAny,
 >(type: TType, dataObjectSchema: TDataObject) {
-  // Use baseEventSchema.shape.id to keep the id definition DRY
   return z.object({
     id: baseEventSchema.shape.id,
     type: z.literal(type),
@@ -278,31 +277,6 @@ export interface ValidationMiddlewareOptions {
  *     // event is validated before reaching this handler
  *   });
  * ```
- *
- * @remarks
- * **IMPORTANT: Event Mutation Behavior**
- *
- * This middleware mutates the event object in-place to propagate Zod transformations,
- * defaults, and field stripping to downstream handlers. This is necessary because:
- * - The middleware pattern doesn't support returning a new event object
- * - Zod transformations (e.g., `.default()`, `.transform()`) must be reflected in handlers
- * - Zod's `.strip()` mode removes unknown fields that shouldn't reach handlers
- *
- * **Potential Issues:**
- * - Multiple middlewares may see inconsistent state if they cache event properties
- * - Event references stored before validation will be mutated
- * - Property enumeration order may change after validation
- *
- * **Best Practices:**
- * - Place this middleware early in the chain before other middlewares
- * - Don't cache event properties in middleware that runs before validation
- * - Be aware that the event object identity remains the same but contents change
- *
- * **onError Callback Handling:**
- * - The onError callback is wrapped with try-catch to handle errors gracefully
- * - Errors in the callback are logged but do not suppress the original validation error
- * - Consider implementing timeout mechanisms in your callback to prevent hanging requests
- * - If your callback performs async operations, ensure they complete or timeout appropriately
  */
 export function withValidation<TEventMap extends Record<string, WebhookEvent>>(
   registry: SchemaRegistry<TEventMap>,
@@ -311,10 +285,8 @@ export function withValidation<TEventMap extends Record<string, WebhookEvent>>(
   const { allowUnknownEvents = true, onError, logger = consoleLogger } = options;
 
   return async (event, next) => {
-    // Check if schema is registered
     const hasSchema = registry.has(event.type);
 
-    // Validate base structure for unknown events when allowUnknownEvents is true
     if (!hasSchema && allowUnknownEvents) {
       const baseResult = baseEventSchema.safeParse(event);
       if (!baseResult.success) {
@@ -337,7 +309,6 @@ export function withValidation<TEventMap extends Record<string, WebhookEvent>>(
       return next();
     }
 
-    // Reject unregistered events when allowUnknownEvents is false
     if (!hasSchema && !allowUnknownEvents) {
       const error = new UnknownEventTypeError(event.type);
       if (onError) {
@@ -370,31 +341,13 @@ export function withValidation<TEventMap extends Record<string, WebhookEvent>>(
       throw error;
     }
 
-    // MUTATION: Replace event properties with validated/transformed data
-    //
-    // Why we mutate instead of returning a new object:
-    // - The Middleware type signature doesn't support returning a new event
-    // - All handlers and subsequent middleware receive the same event reference
-    // - Zod transformations (defaults, transforms, field stripping) must propagate
-    //
-    // How it works:
-    // 1. Delete all existing properties from the original event object
-    // 2. Copy all properties from the validated event to the original object
-    //
-    // This ensures:
-    // - Transformed values (e.g., from .transform()) are reflected
-    // - Default values (e.g., from .default()) are added
-    // - Stripped fields (e.g., from .strip()) are removed
-    // - The event object reference remains the same across the middleware chain
     const validatedEvent = result.data;
 
-    // Use getOwnPropertyNames to ensure we catch all properties, not just enumerable ones
     const eventKeys = Object.getOwnPropertyNames(event);
     for (const key of eventKeys) {
       delete (event as unknown as Record<string, unknown>)[key];
     }
 
-    // Copy all properties from validated event (Object.assign handles enumerable properties)
     Object.assign(event, validatedEvent);
 
     return next();
@@ -447,12 +400,10 @@ export function createZodVerifier<T extends WebhookEvent>(
   const { verifier, registry, allowUnknownEvents = true } = options;
 
   return async (payload, headers): Promise<VerifyResult<T>> => {
-    // First, verify signature and parse event
     const result = await verifier(payload, headers);
 
     const hasSchema = registry.has(result.event.type);
 
-    // Validate base structure for unknown events when allowUnknownEvents is true
     if (!hasSchema && allowUnknownEvents) {
       const baseResult = baseEventSchema.safeParse(result.event);
       if (!baseResult.success) {
@@ -465,7 +416,6 @@ export function createZodVerifier<T extends WebhookEvent>(
       return result;
     }
 
-    // Reject unregistered events when allowUnknownEvents is false
     if (!hasSchema && !allowUnknownEvents) {
       throw new UnknownEventTypeError(result.event.type);
     }

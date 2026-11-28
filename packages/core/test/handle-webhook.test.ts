@@ -187,6 +187,35 @@ describe('handleWebhook', () => {
     expect(asyncReject).toEqual({ status: 500, body: { error: 'Internal server error' } });
   });
 
+  it('still returns 500 when logging onError failures throws', async () => {
+    const router = new WebhookRouter();
+    router.on('test.event', async () => {
+      throw new Error('Handler failed');
+    });
+    const logger = {
+      warn: vi.fn(),
+      error: vi.fn(() => {
+        throw new Error('logger failed');
+      }),
+    };
+
+    const result = await handleWebhook(
+      router,
+      {
+        verifier: okVerifier,
+        onError: () => {
+          throw new Error('onError failed');
+        },
+        logger,
+      },
+      '{}',
+      {}
+    );
+
+    expect(result).toEqual({ status: 500, body: { error: 'Internal server error' } });
+    expect(logger.error).toHaveBeenCalledWith('onError handler failed:', expect.any(Error));
+  });
+
   it('accepts any structural dispatcher, not only WebhookRouter', async () => {
     const dispatch = vi.fn(async () => {});
 

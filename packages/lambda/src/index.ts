@@ -83,7 +83,6 @@ export function lambdaAdapter<
     lambdaEvent: APIGatewayProxyEvent,
     lambdaContext: Context
   ): Promise<APIGatewayProxyResult> => {
-    // Validate request body exists
     if (lambdaEvent.body == null) {
       return {
         statusCode: 400,
@@ -92,12 +91,10 @@ export function lambdaAdapter<
       };
     }
 
-    // Decode body if base64 encoded (API Gateway preserves raw bytes this way)
     const rawBody = lambdaEvent.isBase64Encoded
       ? Buffer.from(lambdaEvent.body, 'base64').toString('utf8')
       : lambdaEvent.body;
 
-    // Collect headers for verifier
     const headers: Record<string, string | undefined> = {};
     for (const [key, value] of Object.entries(lambdaEvent.headers)) {
       if (value !== null && value !== undefined) {
@@ -121,5 +118,4 @@ export function lambdaAdapter<
   };
 }
 
-// Re-export core types
 export { WebhookRouter, type WebhookDispatcher, type WebhookEvent, type EventHandler, type Middleware, type Verifier, type VerifyResult } from '@kotodayori/core';

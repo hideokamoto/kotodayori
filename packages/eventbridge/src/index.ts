@@ -67,17 +67,14 @@ export function eventBridgeAdapter<TContext = unknown>(
     eventBridgeEvent: EventBridgeEvent<string, unknown>,
     lambdaContext: Context
   ): Promise<void> => {
-    // Validate and extract the webhook event from the EventBridge detail
     const detail = eventBridgeEvent.detail;
 
-    // Type validation for required fields
     if (typeof detail !== 'object' || detail === null) {
       throw new Error('Invalid event detail: must be an object');
     }
 
     const detailObj = detail as Record<string, unknown>;
 
-    // Validate required fields
     if (!detailObj['id'] || typeof detailObj['id'] !== 'string') {
       throw new Error('Invalid event detail: missing or invalid "id" field');
     }
@@ -111,5 +108,4 @@ export function eventBridgeAdapter<TContext = unknown>(
   };
 }
 
-// Re-export core types
 export { WebhookRouter, type WebhookDispatcher, type WebhookEvent, type EventHandler, type Middleware, type Verifier, type VerifyResult } from '@kotodayori/core';
