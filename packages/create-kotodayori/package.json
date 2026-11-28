@@ -12,7 +12,8 @@
   ],
   "scripts": {
     "sync:skill": "node scripts/sync-skill.mjs",
-    "prebuild": "node scripts/sync-skill.mjs",
+    "sync:handlers": "node scripts/sync-scaffold-handlers.mjs",
+    "prebuild": "node scripts/sync-skill.mjs && node scripts/sync-scaffold-handlers.mjs",
     "build": "tsup",
     "dev": "tsup --watch",
     "test": "vitest run",
