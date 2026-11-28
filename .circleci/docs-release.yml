@@ -20,11 +20,19 @@ jobs:
       name: node/default
       tag: '22.23'
     resource_class: small
+    # The Docker executor reports the host's CPU count (36) instead of the resource
+    # class's, so pnpm 9.15 starts 35 tarball workers and a cold-cache install of the
+    # whole workspace is OOM-killed (exit 137) within small's 2GiB. Pin pnpm to one
+    # worker, as hideokamoto/circleci-configurations#141 does for npm-package.yaml:
+    # pnpm 10+ reads PNPM_MAX_WORKERS; pnpm 9 reads PNPM_WORKERS as "CPUs to keep
+    # idle" (workers = max(2, CPUs - PNPM_WORKERS) - 1), so a large value gives 1.
+    environment:
+      PNPM_MAX_WORKERS: '1'
+      PNPM_WORKERS: '1000'
     steps:
       - checkout
-      - node/install-packages:
-          pkg-manager: pnpm
-          cache-version: kotodayori-docs-v1
+      # Plan before anything that can fail, so the on_fail step below always has a
+      # planned release to mark FAILED (otherwise it gets 404 from the releases API).
       - run:
           name: Plan deployment (deploy marker)
           command: |
@@ -33,6 +41,9 @@ jobs:
               --environment-name=production \
               --component-name=kotodayori-docs \
               --target-version="build.${CIRCLE_BUILD_NUM}-${SHORT_SHA}"
+      - node/install-packages:
+          pkg-manager: pnpm
+          cache-version: kotodayori-docs-v1
       - run:
           name: Build docs (Starlight)
           command: pnpm --filter kotodayori-docs build
