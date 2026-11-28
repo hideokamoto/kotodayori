@@ -185,6 +185,63 @@ async function runWithMiddleware<TContext>(
   await chain();
 }
 
+function assertNonBlankString(value: string, errorMessage: string): void {
+  if (value.trim() === '') {
+    throw new Error(errorMessage);
+  }
+}
+
+function parseEventTypesForRegistration(
+  eventOrEvents: string | string[],
+  emptyArrayLog: string,
+  logger: Logger
+): string[] | undefined {
+  const events = Array.isArray(eventOrEvents) ? eventOrEvents : [eventOrEvents];
+  if (Array.isArray(eventOrEvents) && eventOrEvents.length === 0) {
+    logger.warn(emptyArrayLog);
+    return undefined;
+  }
+  for (const event of events) {
+    if (typeof event === 'string' && event.trim() === '') {
+      throw new Error('Event type cannot be an empty string or whitespace');
+    }
+  }
+  return events;
+}
+
+function appendEventHandlers<TContext>(
+  handlers: Map<string, EventHandler<WebhookEvent, TContext>[]>,
+  eventType: string,
+  ...toAppend: EventHandler<WebhookEvent, TContext>[]
+): void {
+  const existing = handlers.get(eventType) ?? [];
+  existing.push(...toAppend);
+  handlers.set(eventType, existing);
+}
+
+async function runFanoutHandlers<TContext>(
+  evt: WebhookEvent,
+  handlers: EventHandler<WebhookEvent, TContext>[],
+  strategy: FanoutStrategy,
+  onError: ((error: Error) => void) | undefined,
+  ...args: ContextArgs<TContext>
+): Promise<void> {
+  if (strategy === 'all-or-nothing') {
+    const promises = handlers.map((handler) => handler(evt, ...args));
+    await Promise.all(promises);
+  } else {
+    const promises = handlers.map((handler) =>
+      handler(evt, ...args).catch((error: unknown) => {
+        if (onError) {
+          onError(error instanceof Error ? error : new Error(String(error)));
+        }
+        return undefined;
+      })
+    );
+    await Promise.allSettled(promises);
+  }
+}
+
 /**
  * Logger that discards every message
  */
@@ -326,20 +383,18 @@ export class WebhookRouter<
     eventOrEvents: T | T[],
     handler: EventHandler<TEventMap[T], TContext>
   ): this {
-    const events = Array.isArray(eventOrEvents) ? eventOrEvents : [eventOrEvents];
-
-    if (Array.isArray(eventOrEvents) && eventOrEvents.length === 0) {
-      this.logger.warn('WebhookRouter.on(): Empty event array passed. No handlers registered.');
+    const events = parseEventTypesForRegistration(
+      eventOrEvents,
+      'WebhookRouter.on(): Empty event array passed. No handlers registered.',
+      this.logger
+    );
+    if (!events) {
       return this;
     }
 
+    const bound = handler as EventHandler<WebhookEvent, TContext>;
     for (const event of events) {
-      if (typeof event === 'string' && event.trim() === '') {
-        throw new Error('Event type cannot be an empty string or whitespace');
-      }
-      const existing = this.handlers.get(event) ?? [];
-      existing.push(handler as EventHandler<WebhookEvent, TContext>);
-      this.handlers.set(event, existing);
+      appendEventHandlers(this.handlers, event, bound);
     }
     return this;
   }
@@ -368,15 +423,15 @@ export class WebhookRouter<
     router: WebhookRouter<DefaultEventMap, TChildContext> &
       ([TContext] extends [TChildContext] ? unknown : never)
   ): this {
-    if (prefix.trim() === '') {
-      throw new Error('Route prefix cannot be an empty string or whitespace');
-    }
+    assertNonBlankString(prefix, 'Route prefix cannot be an empty string or whitespace');
 
     for (const [eventType, handlers] of router.handlers) {
       const fullEventType = `${prefix}.${eventType}`;
-      const existing = this.handlers.get(fullEventType) ?? [];
-      existing.push(...(handlers as unknown as EventHandler<WebhookEvent, TContext>[]));
-      this.handlers.set(fullEventType, existing);
+      appendEventHandlers(
+        this.handlers,
+        fullEventType,
+        ...(handlers as unknown as EventHandler<WebhookEvent, TContext>[])
+      );
     }
     return this;
   }
@@ -392,9 +447,7 @@ export class WebhookRouter<
     prefix: TPrefix,
     callback: (router: PrefixedRouter<TEventMap, TPrefix, TContext>) => void
   ): this {
-    if (prefix.trim() === '') {
-      throw new Error('Group prefix cannot be an empty string or whitespace');
-    }
+    assertNonBlankString(prefix, 'Group prefix cannot be an empty string or whitespace');
 
     const prefixedRouter = new PrefixedRouter<TEventMap, TPrefix, TContext>(prefix, this, this.logger);
     callback(prefixedRouter);
@@ -417,27 +470,16 @@ export class WebhookRouter<
     const { strategy = 'all-or-nothing', onError } = options;
 
     const fanoutHandler: EventHandler<WebhookEvent, TContext> = async (evt, ...args) => {
-      if (strategy === 'all-or-nothing') {
-        const promises = handlers.map((handler) =>
-          (handler as EventHandler<WebhookEvent, TContext>)(evt, ...args)
-        );
-        await Promise.all(promises);
-      } else {
-        const promises = handlers.map((handler) =>
-          (handler as EventHandler<WebhookEvent, TContext>)(evt, ...args).catch((error: unknown) => {
-            if (onError) {
-              onError(error instanceof Error ? error : new Error(String(error)));
-            }
-            return undefined;
-          })
-        );
-        await Promise.allSettled(promises);
-      }
+      await runFanoutHandlers(
+        evt,
+        handlers as EventHandler<WebhookEvent, TContext>[],
+        strategy,
+        onError,
+        ...args
+      );
     };
 
-    const existing = this.handlers.get(event) ?? [];
-    existing.push(fanoutHandler);
-    this.handlers.set(event, existing);
+    appendEventHandlers(this.handlers, event, fanoutHandler);
     return this;
   }
 
@@ -511,21 +553,20 @@ class PrefixedRouter<
     eventOrEvents: string | string[],
     handler: EventHandler<never, TContext>
   ): this {
-    const events = Array.isArray(eventOrEvents) ? eventOrEvents : [eventOrEvents];
-
-    if (Array.isArray(eventOrEvents) && eventOrEvents.length === 0) {
-      this.logger.warn('PrefixedRouter.on(): Empty event array passed. No handlers registered.');
+    const events = parseEventTypesForRegistration(
+      eventOrEvents,
+      'PrefixedRouter.on(): Empty event array passed. No handlers registered.',
+      this.logger
+    );
+    if (!events) {
       return this;
     }
 
     const parent = this.parent as unknown as WebhookRouter<DefaultEventMap, TContext>;
+    const bound = handler as EventHandler<WebhookEvent, TContext>;
 
     for (const event of events) {
-      if (typeof event === 'string' && event.trim() === '') {
-        throw new Error('Event type cannot be an empty string or whitespace');
-      }
-      const fullEventType = `${this.prefix}.${event}`;
-      parent.on(fullEventType, handler as EventHandler<WebhookEvent, TContext>);
+      parent.on(`${this.prefix}.${event}`, bound);
     }
     return this;
   }
