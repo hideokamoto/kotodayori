@@ -107,7 +107,7 @@ Inside the **kotodayori** monorepo you can also run the workspace CLI after `pnp
 1. Change implementation under `packages/<pkg>/src/`.
 2. Adjust or add tests in `packages/<pkg>/test/`.
 3. From repo root: `pnpm build && pnpm typecheck && pnpm lint && pnpm test`.
-4. If templates change, rebuild the CLI and regenerate or manually sync `examples/` and `packages/create-kotodayori/templates/`.
+4. Stripe sample handlers (`payment.ts`, `subscription.ts`): edit `packages/create-kotodayori/scaffold-handlers/stripe/` (`subscription-flat.ts` vs `subscription-grouped.ts` for lambda/eventbridge), then run `pnpm --filter create-kotodayori sync:handlers`. Other template files still sync manually with `examples/` when needed.
 
 ## Stripe event map maintenance
 

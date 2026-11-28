@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 import {
   contextProvider,
   handleWebhook,
+  headersFromIncomingHeaders,
   type ContextFactory,
   type ContextFactoryOption,
   type Logger,
@@ -92,16 +93,11 @@ export function expressAdapter<
       return;
     }
 
-    const headers: Record<string, string | undefined> = {};
-    for (const [key, value] of Object.entries(req.headers)) {
-      headers[key] = Array.isArray(value) ? value[0] : value;
-    }
-
     const { status, body } = await handleWebhook(
       router,
       options,
       rawBody,
-      headers,
+      headersFromIncomingHeaders(req.headers),
       contextProvider(createContext, [req, res], req)
     );
     if (!res.headersSent) {
