@@ -158,6 +158,33 @@ function logUnregisteredEventType(logger: Logger, message: string): void {
   }
 }
 
+async function runWithMiddleware<TContext>(
+  event: WebhookEvent,
+  middlewares: Middleware<WebhookEvent, TContext>[],
+  inner: () => Promise<void>,
+  ...args: ContextArgs<TContext>
+): Promise<void> {
+  let chain = inner;
+  for (let i = middlewares.length - 1; i >= 0; i--) {
+    const middleware = middlewares[i];
+    const next = chain;
+    chain = async () => {
+      if (middleware) {
+        let nextCalled = false;
+        const wrappedNext = async () => {
+          if (nextCalled) {
+            throw new Error('Middleware next() function called multiple times');
+          }
+          nextCalled = true;
+          return await next();
+        };
+        await middleware(event, wrappedNext, ...args);
+      }
+    };
+  }
+  await chain();
+}
+
 /**
  * Logger that discards every message
  */
@@ -442,26 +469,7 @@ export class WebhookRouter<
       }
     };
 
-    let chain = runHandlers;
-    for (let i = this.middlewares.length - 1; i >= 0; i--) {
-      const middleware = this.middlewares[i];
-      const next = chain;
-      chain = async () => {
-        if (middleware) {
-          let nextCalled = false;
-          const wrappedNext = async () => {
-            if (nextCalled) {
-              throw new Error('Middleware next() function called multiple times');
-            }
-            nextCalled = true;
-            return await next();
-          };
-          await middleware(event as WebhookEvent, wrappedNext, ...args);
-        }
-      };
-    }
-
-    await chain();
+    await runWithMiddleware(event as WebhookEvent, this.middlewares, runHandlers, ...args);
   }
 }
 
