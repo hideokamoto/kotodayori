@@ -75,13 +75,11 @@ export function expressAdapter<
   const { createContext } = options as ExpressAdapterOptions<TEvent, TContext>;
 
   return async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
-    // Validate request body exists and is the correct type
     if (req.body == null) {
       res.status(400).json({ error: 'Request body is required' });
       return;
     }
 
-    // Get raw body (Buffer or string)
     let rawBody: string | Buffer;
     if (Buffer.isBuffer(req.body)) {
       rawBody = req.body;
@@ -94,7 +92,6 @@ export function expressAdapter<
       return;
     }
 
-    // Collect headers for verifier
     const headers: Record<string, string | undefined> = {};
     for (const [key, value] of Object.entries(req.headers)) {
       headers[key] = Array.isArray(value) ? value[0] : value;
@@ -107,12 +104,10 @@ export function expressAdapter<
       headers,
       contextProvider(createContext, [req, res], req)
     );
-    // User code (createContext, or a handler via `req.res`) may have responded already
     if (!res.headersSent) {
       res.status(status).json(body);
     }
   };
 }
 
-// Re-export core types
 export { WebhookRouter, type WebhookDispatcher, type WebhookEvent, type EventHandler, type Middleware, type Verifier, type VerifyResult } from '@kotodayori/core';

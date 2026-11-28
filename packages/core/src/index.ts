@@ -148,6 +148,16 @@ export const consoleLogger: Logger = {
   error: (message, ...args) => console.error(message, ...args),
 };
 
+function logUnregisteredEventType(logger: Logger, message: string): void {
+  if (logger.debug) {
+    logger.debug(message);
+  } else if (logger.info) {
+    logger.info(message);
+  } else {
+    logger.warn(message);
+  }
+}
+
 /**
  * Logger that discards every message
  */
@@ -231,8 +241,6 @@ export async function dispatchWithContext<TEvent extends WebhookEvent, TContext>
   event: TEvent,
   getContext?: () => TContext | Promise<TContext>
 ): Promise<void> {
-  // The context argument is optional on the router only when TContext admits undefined,
-  // and the adapter option types require `getContext` otherwise.
   const dispatcher = router as unknown as { dispatch(event: TEvent, ...context: unknown[]): Promise<void> };
   if (getContext) {
     await dispatcher.dispatch(event, await getContext());
@@ -293,14 +301,12 @@ export class WebhookRouter<
   ): this {
     const events = Array.isArray(eventOrEvents) ? eventOrEvents : [eventOrEvents];
 
-    // Warn if empty array is passed
     if (Array.isArray(eventOrEvents) && eventOrEvents.length === 0) {
       this.logger.warn('WebhookRouter.on(): Empty event array passed. No handlers registered.');
       return this;
     }
 
     for (const event of events) {
-      // Reject empty string event types
       if (typeof event === 'string' && event.trim() === '') {
         throw new Error('Event type cannot be an empty string or whitespace');
       }
@@ -332,21 +338,16 @@ export class WebhookRouter<
    */
   route<TChildContext>(
     prefix: string,
-    // Routers are invariant in their context, so accept any child context that this
-    // router's context is assignable to; anything else collapses the parameter to `never`.
     router: WebhookRouter<DefaultEventMap, TChildContext> &
       ([TContext] extends [TChildContext] ? unknown : never)
   ): this {
-    // Reject empty prefix
     if (prefix.trim() === '') {
       throw new Error('Route prefix cannot be an empty string or whitespace');
     }
 
-    // Copy handlers from nested router with prefixed event types
     for (const [eventType, handlers] of router.handlers) {
       const fullEventType = `${prefix}.${eventType}`;
       const existing = this.handlers.get(fullEventType) ?? [];
-      // Safe: TContext is assignable to TChildContext (enforced by the parameter type)
       existing.push(...(handlers as unknown as EventHandler<WebhookEvent, TContext>[]));
       this.handlers.set(fullEventType, existing);
     }
@@ -364,7 +365,6 @@ export class WebhookRouter<
     prefix: TPrefix,
     callback: (router: PrefixedRouter<TEventMap, TPrefix, TContext>) => void
   ): this {
-    // Reject empty prefix
     if (prefix.trim() === '') {
       throw new Error('Group prefix cannot be an empty string or whitespace');
     }
@@ -391,13 +391,11 @@ export class WebhookRouter<
 
     const fanoutHandler: EventHandler<WebhookEvent, TContext> = async (evt, ...args) => {
       if (strategy === 'all-or-nothing') {
-        // All-or-nothing: all handlers must succeed, or the entire operation fails
         const promises = handlers.map((handler) =>
           (handler as EventHandler<WebhookEvent, TContext>)(evt, ...args)
         );
         await Promise.all(promises);
       } else {
-        // Best-effort: continue even if some handlers fail
         const promises = handlers.map((handler) =>
           (handler as EventHandler<WebhookEvent, TContext>)(evt, ...args).catch((error: unknown) => {
             if (onError) {
@@ -429,19 +427,11 @@ export class WebhookRouter<
   ): Promise<void> {
     const handlers = this.handlers.get(event.type) ?? [];
     if (handlers.length === 0) {
-      // Stripe delivers every event the endpoint is subscribed to, so an
-      // unhandled type is routine — keep it at debug/info rather than warn.
-      const message = `No handlers registered for event type "${event.type}" (id: ${event.id})`;
-      if (this.logger.debug) {
-        this.logger.debug(message);
-      } else if (this.logger.info) {
-        this.logger.info(message);
-      } else {
-        this.logger.warn(message);
-      }
+      logUnregisteredEventType(
+        this.logger,
+        `No handlers registered for event type "${event.type}" (id: ${event.id})`
+      );
     }
-    // Forward exactly the arguments we were given, so a context-less dispatch keeps
-    // calling handlers with the event alone.
     const runHandlers = async (): Promise<void> => {
       if (handlers.length === 0) {
         await this.onUnhandled?.(event as WebhookEvent, ...args);
@@ -452,7 +442,6 @@ export class WebhookRouter<
       }
     };
 
-    // Build the middleware chain (reverse order for proper nesting)
     let chain = runHandlers;
     for (let i = this.middlewares.length - 1; i >= 0; i--) {
       const middleware = this.middlewares[i];
@@ -516,19 +505,14 @@ class PrefixedRouter<
   ): this {
     const events = Array.isArray(eventOrEvents) ? eventOrEvents : [eventOrEvents];
 
-    // Warn if empty array is passed
     if (Array.isArray(eventOrEvents) && eventOrEvents.length === 0) {
       this.logger.warn('PrefixedRouter.on(): Empty event array passed. No handlers registered.');
       return this;
     }
 
-    // The parent is strongly typed, but the prefixed event name is only known
-    // to be a valid key at the call site, so dispatch through the open-typed
-    // router signature.
     const parent = this.parent as unknown as WebhookRouter<DefaultEventMap, TContext>;
 
     for (const event of events) {
-      // Reject empty string event types
       if (typeof event === 'string' && event.trim() === '') {
         throw new Error('Event type cannot be an empty string or whitespace');
       }
@@ -539,11 +523,9 @@ class PrefixedRouter<
   }
 
   /**
-   * Register a middleware function for this group
+   * Register a middleware function on the parent router (not limited to this group's prefix).
    */
   use(middleware: Middleware<WebhookEvent, TContext>): this {
-    // For simplicity, middleware in groups is applied to the parent router
-    // A more advanced implementation could scope middleware to the group
     (this.parent as unknown as WebhookRouter<DefaultEventMap, TContext>).use(middleware);
     return this;
   }
@@ -578,8 +560,8 @@ export type WebhookHandlerResult =
  *
  * - Empty or whitespace-only body → 400 `Request body cannot be empty`
  * - Verifier throws/rejects → 400 `Verification failed`
- * - Dispatch (or `getContext`) throws/rejects → `onError` is called (its own errors are
- *   ignored), then 500
+ * - Dispatch (or `getContext`) throws/rejects → `onError` is called (failures from `onError`
+ *   are logged), then 500
  * - Otherwise → 200 `{ received: true }`
  *
  * @param router - A WebhookDispatcher (any object with a `dispatch(event)` method, e.g. WebhookRouter)
@@ -612,7 +594,6 @@ export async function handleWebhook<TEvent extends WebhookEvent = WebhookEvent, 
 
   let event: TEvent;
 
-  // Verify signature and parse event
   try {
     const result = await verifier(rawBody, normalizedHeaders);
     event = result.event;
@@ -621,7 +602,6 @@ export async function handleWebhook<TEvent extends WebhookEvent = WebhookEvent, 
     return { status: 400, body: { error: 'Verification failed' } };
   }
 
-  // Dispatch the event
   try {
     await dispatchWithContext(router, event, getContext);
     return { status: 200, body: { received: true } };
@@ -631,8 +611,8 @@ export async function handleWebhook<TEvent extends WebhookEvent = WebhookEvent, 
     if (onError) {
       try {
         await onError(error, event);
-      } catch {
-        // Ignore errors from onError handler to preserve original error response
+      } catch (onErrorFailure) {
+        logger.error('onError handler failed:', onErrorFailure);
       }
     }
 

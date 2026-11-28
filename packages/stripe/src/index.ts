@@ -3,14 +3,9 @@ import type Stripe from 'stripe';
 /**
  * Maps Stripe event type strings to their corresponding event types.
  *
- * IMPORTANT: This map is MANUALLY MAINTAINED and must be updated when
- * new Stripe events are added. Run `pnpm run check-events` to detect
- * any missing or extra events compared to the installed Stripe SDK.
- *
  * @see MAINTAINING_STRIPE_EVENTMAP.md for maintenance instructions.
  */
 export type StripeEventMap = {
-  // Account events
   'account.application.authorized': Stripe.AccountApplicationAuthorizedEvent;
   'account.application.deauthorized': Stripe.AccountApplicationDeauthorizedEvent;
   'account.external_account.created': Stripe.AccountExternalAccountCreatedEvent;
@@ -18,21 +13,17 @@ export type StripeEventMap = {
   'account.external_account.updated': Stripe.AccountExternalAccountUpdatedEvent;
   'account.updated': Stripe.AccountUpdatedEvent;
 
-  // Application fee events
   'application_fee.created': Stripe.ApplicationFeeCreatedEvent;
   'application_fee.refund.updated': Stripe.ApplicationFeeRefundUpdatedEvent;
   'application_fee.refunded': Stripe.ApplicationFeeRefundedEvent;
 
-  // Apps events
   'apps.install.created': Stripe.AppsInstallCreatedEvent;
   'apps.install.deleted': Stripe.AppsInstallDeletedEvent;
   'apps.install.updated': Stripe.AppsInstallUpdatedEvent;
 
-  // Balance events
   'balance.available': Stripe.BalanceAvailableEvent;
   'balance_settings.updated': Stripe.BalanceSettingsUpdatedEvent;
 
-  // Billing events
   'billing.alert.triggered': Stripe.BillingAlertTriggeredEvent;
   'billing.credit_balance_transaction.created': Stripe.BillingCreditBalanceTransactionCreatedEvent;
   'billing.credit_grant.created': Stripe.BillingCreditGrantCreatedEvent;
@@ -45,13 +36,10 @@ export type StripeEventMap = {
   'billing_portal.configuration.updated': Stripe.BillingPortalConfigurationUpdatedEvent;
   'billing_portal.session.created': Stripe.BillingPortalSessionCreatedEvent;
 
-  // Capability events
   'capability.updated': Stripe.CapabilityUpdatedEvent;
 
-  // Cash balance events
   'cash_balance.funds_available': Stripe.CashBalanceFundsAvailableEvent;
 
-  // Charge events
   'charge.captured': Stripe.ChargeCapturedEvent;
   'charge.dispute.closed': Stripe.ChargeDisputeClosedEvent;
   'charge.dispute.created': Stripe.ChargeDisputeCreatedEvent;
@@ -66,13 +54,11 @@ export type StripeEventMap = {
   'charge.succeeded': Stripe.ChargeSucceededEvent;
   'charge.updated': Stripe.ChargeUpdatedEvent;
 
-  // Checkout events
   'checkout.session.async_payment_failed': Stripe.CheckoutSessionAsyncPaymentFailedEvent;
   'checkout.session.async_payment_succeeded': Stripe.CheckoutSessionAsyncPaymentSucceededEvent;
   'checkout.session.completed': Stripe.CheckoutSessionCompletedEvent;
   'checkout.session.expired': Stripe.CheckoutSessionExpiredEvent;
 
-  // Climate events
   'climate.order.canceled': Stripe.ClimateOrderCanceledEvent;
   'climate.order.created': Stripe.ClimateOrderCreatedEvent;
   'climate.order.delayed': Stripe.ClimateOrderDelayedEvent;
@@ -81,17 +67,14 @@ export type StripeEventMap = {
   'climate.product.created': Stripe.ClimateProductCreatedEvent;
   'climate.product.pricing_updated': Stripe.ClimateProductPricingUpdatedEvent;
 
-  // Coupon events
   'coupon.created': Stripe.CouponCreatedEvent;
   'coupon.deleted': Stripe.CouponDeletedEvent;
   'coupon.updated': Stripe.CouponUpdatedEvent;
 
-  // Credit note events
   'credit_note.created': Stripe.CreditNoteCreatedEvent;
   'credit_note.updated': Stripe.CreditNoteUpdatedEvent;
   'credit_note.voided': Stripe.CreditNoteVoidedEvent;
 
-  // Customer events
   'customer.created': Stripe.CustomerCreatedEvent;
   'customer.deleted': Stripe.CustomerDeletedEvent;
   'customer.discount.created': Stripe.CustomerDiscountCreatedEvent;
@@ -115,13 +98,10 @@ export type StripeEventMap = {
   'customer.updated': Stripe.CustomerUpdatedEvent;
   'customer_cash_balance_transaction.created': Stripe.CustomerCashBalanceTransactionCreatedEvent;
 
-  // Entitlements events
   'entitlements.active_entitlement_summary.updated': Stripe.EntitlementsActiveEntitlementSummaryUpdatedEvent;
 
-  // File events
   'file.created': Stripe.FileCreatedEvent;
 
-  // Financial Connections events
   'financial_connections.account.account_numbers_updated': Stripe.FinancialConnectionsAccountAccountNumbersUpdatedEvent;
   'financial_connections.account.created': Stripe.FinancialConnectionsAccountCreatedEvent;
   'financial_connections.account.deactivated': Stripe.FinancialConnectionsAccountDeactivatedEvent;
@@ -137,7 +117,6 @@ export type StripeEventMap = {
   'financial_connections.authorization.expected_deactivation_date_updated': Stripe.FinancialConnectionsAuthorizationExpectedDeactivationDateUpdatedEvent;
   'financial_connections.authorization.upcoming_deactivation': Stripe.FinancialConnectionsAuthorizationUpcomingDeactivationEvent;
 
-  // Identity events
   'identity.verification_session.canceled': Stripe.IdentityVerificationSessionCanceledEvent;
   'identity.verification_session.created': Stripe.IdentityVerificationSessionCreatedEvent;
   'identity.verification_session.processing': Stripe.IdentityVerificationSessionProcessingEvent;
@@ -145,7 +124,6 @@ export type StripeEventMap = {
   'identity.verification_session.requires_input': Stripe.IdentityVerificationSessionRequiresInputEvent;
   'identity.verification_session.verified': Stripe.IdentityVerificationSessionVerifiedEvent;
 
-  // Invoice events
   'invoice.created': Stripe.InvoiceCreatedEvent;
   'invoice.deleted': Stripe.InvoiceDeletedEvent;
   'invoice.finalization_failed': Stripe.InvoiceFinalizationFailedEvent;
@@ -167,7 +145,6 @@ export type StripeEventMap = {
   'invoiceitem.created': Stripe.InvoiceItemCreatedEvent;
   'invoiceitem.deleted': Stripe.InvoiceItemDeletedEvent;
 
-  // Issuing events
   'issuing_authorization.created': Stripe.IssuingAuthorizationCreatedEvent;
   'issuing_authorization.request': Stripe.IssuingAuthorizationRequestEvent;
   'issuing_authorization.updated': Stripe.IssuingAuthorizationUpdatedEvent;
@@ -191,10 +168,8 @@ export type StripeEventMap = {
   'issuing_transaction.purchase_details_receipt_updated': Stripe.IssuingTransactionPurchaseDetailsReceiptUpdatedEvent;
   'issuing_transaction.updated': Stripe.IssuingTransactionUpdatedEvent;
 
-  // Mandate events
   'mandate.updated': Stripe.MandateUpdatedEvent;
 
-  // Payment intent events
   'payment_intent.amount_capturable_updated': Stripe.PaymentIntentAmountCapturableUpdatedEvent;
   'payment_intent.canceled': Stripe.PaymentIntentCanceledEvent;
   'payment_intent.created': Stripe.PaymentIntentCreatedEvent;
@@ -204,17 +179,14 @@ export type StripeEventMap = {
   'payment_intent.requires_action': Stripe.PaymentIntentRequiresActionEvent;
   'payment_intent.succeeded': Stripe.PaymentIntentSucceededEvent;
 
-  // Payment link events
   'payment_link.created': Stripe.PaymentLinkCreatedEvent;
   'payment_link.updated': Stripe.PaymentLinkUpdatedEvent;
 
-  // Payment method events
   'payment_method.attached': Stripe.PaymentMethodAttachedEvent;
   'payment_method.automatically_updated': Stripe.PaymentMethodAutomaticallyUpdatedEvent;
   'payment_method.detached': Stripe.PaymentMethodDetachedEvent;
   'payment_method.updated': Stripe.PaymentMethodUpdatedEvent;
 
-  // Payout events
   'payout.canceled': Stripe.PayoutCanceledEvent;
   'payout.created': Stripe.PayoutCreatedEvent;
   'payout.failed': Stripe.PayoutFailedEvent;
@@ -222,51 +194,41 @@ export type StripeEventMap = {
   'payout.reconciliation_completed': Stripe.PayoutReconciliationCompletedEvent;
   'payout.updated': Stripe.PayoutUpdatedEvent;
 
-  // Person events
   'person.created': Stripe.PersonCreatedEvent;
   'person.deleted': Stripe.PersonDeletedEvent;
   'person.updated': Stripe.PersonUpdatedEvent;
 
-  // Plan events
   'plan.created': Stripe.PlanCreatedEvent;
   'plan.deleted': Stripe.PlanDeletedEvent;
   'plan.updated': Stripe.PlanUpdatedEvent;
 
-  // Price events
   'price.created': Stripe.PriceCreatedEvent;
   'price.deleted': Stripe.PriceDeletedEvent;
   'price.updated': Stripe.PriceUpdatedEvent;
 
-  // Product events
   'product.created': Stripe.ProductCreatedEvent;
   'product.deleted': Stripe.ProductDeletedEvent;
   'product.updated': Stripe.ProductUpdatedEvent;
 
-  // Promotion code events
   'promotion_code.created': Stripe.PromotionCodeCreatedEvent;
   'promotion_code.updated': Stripe.PromotionCodeUpdatedEvent;
 
-  // Quote events
   'quote.accepted': Stripe.QuoteAcceptedEvent;
   'quote.canceled': Stripe.QuoteCanceledEvent;
   'quote.created': Stripe.QuoteCreatedEvent;
   'quote.finalized': Stripe.QuoteFinalizedEvent;
 
-  // Radar events
   'radar.early_fraud_warning.created': Stripe.RadarEarlyFraudWarningCreatedEvent;
   'radar.early_fraud_warning.updated': Stripe.RadarEarlyFraudWarningUpdatedEvent;
 
-  // Refund events
   'refund.created': Stripe.RefundCreatedEvent;
   'refund.failed': Stripe.RefundFailedEvent;
   'refund.updated': Stripe.RefundUpdatedEvent;
 
-  // Reporting events
   'reporting.report_run.failed': Stripe.ReportingReportRunFailedEvent;
   'reporting.report_run.succeeded': Stripe.ReportingReportRunSucceededEvent;
   'reporting.report_type.updated': Stripe.ReportingReportTypeUpdatedEvent;
 
-  // Reserve events
   'reserve.hold.created': Stripe.ReserveHoldCreatedEvent;
   'reserve.hold.updated': Stripe.ReserveHoldUpdatedEvent;
   'reserve.plan.created': Stripe.ReservePlanCreatedEvent;
@@ -275,21 +237,17 @@ export type StripeEventMap = {
   'reserve.plan.updated': Stripe.ReservePlanUpdatedEvent;
   'reserve.release.created': Stripe.ReserveReleaseCreatedEvent;
 
-  // Review events
   'review.closed': Stripe.ReviewClosedEvent;
   'review.opened': Stripe.ReviewOpenedEvent;
 
-  // Setup intent events
   'setup_intent.canceled': Stripe.SetupIntentCanceledEvent;
   'setup_intent.created': Stripe.SetupIntentCreatedEvent;
   'setup_intent.requires_action': Stripe.SetupIntentRequiresActionEvent;
   'setup_intent.setup_failed': Stripe.SetupIntentSetupFailedEvent;
   'setup_intent.succeeded': Stripe.SetupIntentSucceededEvent;
 
-  // Sigma events
   'sigma.scheduled_query_run.created': Stripe.SigmaScheduledQueryRunCreatedEvent;
 
-  // Source events
   'source.canceled': Stripe.SourceCanceledEvent;
   'source.chargeable': Stripe.SourceChargeableEvent;
   'source.failed': Stripe.SourceFailedEvent;
@@ -298,7 +256,6 @@ export type StripeEventMap = {
   'source.transaction.created': Stripe.SourceTransactionCreatedEvent;
   'source.transaction.updated': Stripe.SourceTransactionUpdatedEvent;
 
-  // Subscription schedule events
   'subscription_schedule.aborted': Stripe.SubscriptionScheduleAbortedEvent;
   'subscription_schedule.canceled': Stripe.SubscriptionScheduleCanceledEvent;
   'subscription_schedule.completed': Stripe.SubscriptionScheduleCompletedEvent;
@@ -307,36 +264,30 @@ export type StripeEventMap = {
   'subscription_schedule.released': Stripe.SubscriptionScheduleReleasedEvent;
   'subscription_schedule.updated': Stripe.SubscriptionScheduleUpdatedEvent;
 
-  // Tax events
   'tax.settings.updated': Stripe.TaxSettingsUpdatedEvent;
   'tax_rate.created': Stripe.TaxRateCreatedEvent;
   'tax_rate.updated': Stripe.TaxRateUpdatedEvent;
 
-  // Terminal events
   'terminal.reader.action_failed': Stripe.TerminalReaderActionFailedEvent;
   'terminal.reader.action_succeeded': Stripe.TerminalReaderActionSucceededEvent;
   'terminal.reader.action_updated': Stripe.TerminalReaderActionUpdatedEvent;
 
-  // Test helpers events
   'test_helpers.test_clock.advancing': Stripe.TestHelpersTestClockAdvancingEvent;
   'test_helpers.test_clock.created': Stripe.TestHelpersTestClockCreatedEvent;
   'test_helpers.test_clock.deleted': Stripe.TestHelpersTestClockDeletedEvent;
   'test_helpers.test_clock.internal_failure': Stripe.TestHelpersTestClockInternalFailureEvent;
   'test_helpers.test_clock.ready': Stripe.TestHelpersTestClockReadyEvent;
 
-  // Top-up events
   'topup.canceled': Stripe.TopupCanceledEvent;
   'topup.created': Stripe.TopupCreatedEvent;
   'topup.failed': Stripe.TopupFailedEvent;
   'topup.reversed': Stripe.TopupReversedEvent;
   'topup.succeeded': Stripe.TopupSucceededEvent;
 
-  // Transfer events
   'transfer.created': Stripe.TransferCreatedEvent;
   'transfer.reversed': Stripe.TransferReversedEvent;
   'transfer.updated': Stripe.TransferUpdatedEvent;
 
-  // Treasury events
   'treasury.credit_reversal.created': Stripe.TreasuryCreditReversalCreatedEvent;
   'treasury.credit_reversal.posted': Stripe.TreasuryCreditReversalPostedEvent;
   'treasury.debit_reversal.completed': Stripe.TreasuryDebitReversalCompletedEvent;
@@ -384,7 +335,6 @@ export type StripeEventType<T extends StripeEventName> = StripeEventMap[T];
  */
 export type { Stripe };
 
-// Re-export core types and classes
 import { WebhookRouter, type WebhookDispatcher, type WebhookEvent, type EventHandler, type Verifier, type VerifyResult } from '@kotodayori/core';
 export { WebhookRouter, type WebhookDispatcher, type WebhookEvent, type EventHandler, type Verifier, type VerifyResult };
 
@@ -479,7 +429,6 @@ export function createStripeVerifier(
         webhookSecret
       );
     } catch (err) {
-      // Signature, timestamp and header-format failures are rethrown unchanged
       if (isStripeSignatureVerificationError(err)) {
         throw err;
       }
