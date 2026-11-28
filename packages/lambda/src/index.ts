@@ -2,6 +2,7 @@ import type { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-l
 import {
   contextProvider,
   handleWebhook,
+  headersFromIncomingHeaders,
   type ContextFactory,
   type ContextFactoryOption,
   type Logger,
@@ -95,19 +96,12 @@ export function lambdaAdapter<
       ? Buffer.from(lambdaEvent.body, 'base64').toString('utf8')
       : lambdaEvent.body;
 
-    const headers: Record<string, string | undefined> = {};
-    for (const [key, value] of Object.entries(lambdaEvent.headers)) {
-      if (value !== null && value !== undefined) {
-        headers[key] = value;
-      }
-    }
-
     const invocation: LambdaInvocation = { event: lambdaEvent, context: lambdaContext };
     const { status, body } = await handleWebhook(
       router,
       options,
       rawBody,
-      headers,
+      headersFromIncomingHeaders(lambdaEvent.headers),
       contextProvider(createContext, [lambdaEvent, lambdaContext], invocation)
     );
     return {

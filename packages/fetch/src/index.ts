@@ -1,6 +1,7 @@
 import {
   contextProvider,
   handleWebhook,
+  headersFromHeadersObject,
   type ContextFactory,
   type ContextFactoryOption,
   type WebhookDispatcher,
@@ -99,16 +100,11 @@ export function fetchAdapter<
 
     const rawBody = await request.text();
 
-    const headers: Record<string, string> = {};
-    request.headers.forEach((value, key) => {
-      headers[key] = value;
-    });
-
     const { status, body } = await handleWebhook(
       router,
       options,
       rawBody,
-      headers,
+      headersFromHeadersObject(request.headers),
       contextProvider(createContext, [request], request)
     );
     return jsonResponse(body, status);

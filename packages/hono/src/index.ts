@@ -3,6 +3,7 @@ import type { ParamKeys } from 'hono/types';
 import {
   contextProvider,
   handleWebhook,
+  headersFromHeadersObject,
   type Logger,
   type WebhookDispatcher,
   type WebhookEvent,
@@ -152,16 +153,11 @@ export function honoAdapter<TEvent extends WebhookEvent, TContext>(
   return async (c: Context): Promise<Response> => {
     const rawBody = await c.req.text();
 
-    const headers: Record<string, string> = {};
-    c.req.raw.headers.forEach((value, key) => {
-      headers[key] = value;
-    });
-
     const { status, body } = await handleWebhook(
       router,
       options,
       rawBody,
-      headers,
+      headersFromHeadersObject(c.req.raw.headers),
       contextProvider(createContext, [c], c)
     );
     return c.json(body, status);

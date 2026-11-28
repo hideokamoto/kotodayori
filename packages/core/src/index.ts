@@ -581,6 +581,46 @@ class PrefixedRouter<
 }
 
 /**
+ * Lowercases header names before signature verification (e.g. `Stripe-Signature` → `stripe-signature`).
+ */
+export function lowercaseWebhookHeaders(
+  headers: Record<string, string | undefined>
+): Record<string, string | undefined> {
+  const normalized: Record<string, string | undefined> = {};
+  for (const [key, value] of Object.entries(headers)) {
+    normalized[key.toLowerCase()] = value;
+  }
+  return normalized;
+}
+
+/**
+ * Collects headers from a Web `Headers` instance (Fetch API, Hono raw request).
+ */
+export function headersFromHeadersObject(headers: Headers): Record<string, string> {
+  const record: Record<string, string> = {};
+  headers.forEach((value, key) => {
+    record[key] = value;
+  });
+  return record;
+}
+
+/**
+ * Flattens Node-style incoming headers (Express `req.headers`, API Gateway).
+ */
+export function headersFromIncomingHeaders(
+  headers: Record<string, string | string[] | undefined | null>
+): Record<string, string | undefined> {
+  const record: Record<string, string | undefined> = {};
+  for (const [key, value] of Object.entries(headers)) {
+    if (value === null || value === undefined) {
+      continue;
+    }
+    record[key] = Array.isArray(value) ? value[0] : value;
+  }
+  return record;
+}
+
+/**
  * Options shared by HTTP adapters built on {@link handleWebhook}
  */
 export interface WebhookHandlerOptions<T extends WebhookEvent = WebhookEvent> {
@@ -636,15 +676,10 @@ export async function handleWebhook<TEvent extends WebhookEvent = WebhookEvent, 
     return { status: 400, body: { error: 'Request body cannot be empty' } };
   }
 
-  const normalizedHeaders: Record<string, string | undefined> = {};
-  for (const [key, value] of Object.entries(headers)) {
-    normalizedHeaders[key.toLowerCase()] = value;
-  }
-
   let event: TEvent;
 
   try {
-    const result = await verifier(rawBody, normalizedHeaders);
+    const result = await verifier(rawBody, lowercaseWebhookHeaders(headers));
     event = result.event;
   } catch (err) {
     logger.error('Webhook verification failed:', err);
