@@ -612,7 +612,11 @@ export async function handleWebhook<TEvent extends WebhookEvent = WebhookEvent, 
       try {
         await onError(error, event);
       } catch (onErrorFailure) {
-        logger.error('onError handler failed:', onErrorFailure);
+        try {
+          logger.error('onError handler failed:', onErrorFailure);
+        } catch {
+          // Logger failures must not prevent the 500 response.
+        }
       }
     }
 
